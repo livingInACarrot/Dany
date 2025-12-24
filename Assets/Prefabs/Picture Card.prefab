@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7156504420619869064}
   - component: {fileID: 6690236095857992971}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -36,8 +36,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 238, y: 0}
-  m_SizeDelta: {x: 125.6032, y: 196.6334}
+  m_AnchoredPosition: {x: -177, y: -101}
+  m_SizeDelta: {x: 225.5095, y: 336.4148}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8230204394330617920
 CanvasRenderer:
@@ -67,8 +67,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 1756391690858583741, guid: 917ff715e731b9f4c84d8884dfa4705a, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -133,12 +133,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c152dfe3185051743b8ab066fa333daa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Card
-  normalSortingOrder: 0
-  rotationSpeed: 1
-  maxRotationAngle: 45
-  dragSpeed: 1
-  snapToGrid: 0
-  gridSize: 0.1
+  sprite: {fileID: -7697711465488131432, guid: 6e3f3be17c24dbb4d9a3f4dbe974f163, type: 3}
+  InHand: 1
 --- !u!1 &6684154414885958514
 GameObject:
   m_ObjectHideFlags: 0

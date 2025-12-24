@@ -91,6 +91,10 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
 
         if (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed)
         {
+            ScaleCard(scrollDelta);
+        }
+        else if (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed)
+        {
             PlayingCardsTable.ChangeCardInOrder(this, -(int)Mathf.Sign(scrollDelta));
         }
         else
@@ -109,6 +113,7 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         RectTransform rect = GetComponent<RectTransform>();
         rect.anchoredPosition = newPos;
         rect.rotation = Quaternion.Euler(0f, 0f, 0f);
+        rect.localScale = Vector3.one;
     }
 
     // Private methods-helpers
@@ -117,6 +122,15 @@ public class Card : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IP
         float currentRotation = transform.rotation.eulerAngles.z;
         if (currentRotation > 180f) currentRotation -= 360f;
         transform.rotation = Quaternion.Euler(0f, 0f, currentRotation + delta * PlayingCardsTable.CardsRotationSpeed);
+    }
+
+    private void ScaleCard(float delta)
+    {
+        float scale = delta * PlayingCardsTable.ScaleDuration;
+        Vector3 newScale = transform.localScale + new Vector3(scale, scale, scale);
+        if (newScale.x >= PlayingCardsTable.MinScale && newScale.y >= PlayingCardsTable.MinScale && newScale.z >= PlayingCardsTable.MinScale &&
+            newScale.x <= PlayingCardsTable.MaxScale && newScale.y <= PlayingCardsTable.MaxScale && newScale.z <= PlayingCardsTable.MaxScale)
+            transform.localScale = newScale;
     }
 
     private void FollowPointer(PointerEventData eventData)

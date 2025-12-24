@@ -4,7 +4,10 @@ using UnityEngine;
 public class PlayingCardsTable : MonoBehaviour
 {
     public const float CardsRotationSpeed = 0.5f;
-    public const float CardsFlipSpeed = 700f;
+    public const float CardsFlipSpeed = 1000f;
+    public const float MinScale = 0.5f;
+    public const float MaxScale = 3f;
+    public const float ScaleDuration = 0.01f;
 
     private const float HandCardsDownOffset = 20f;
     private const float HandCardsBetweenOffset = 10f;

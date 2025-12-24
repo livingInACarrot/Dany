@@ -1,0 +1,5 @@
+key;eng;rus;fr;cn
+settings_but;Settings;Настройки;;
+create_room_but;Create room;Создать комнату;;
+hints;LMB - drag \nRMB - return to deck \nCtrl + RMB - flip \nMouse scroll - rotate \nCtrl + scroll - change layer;ЛКМ - перемещать \nПКМ - вернуть в руку \nCtrl + ПКМ - перевенуть \nКолёсико - вертеть \nCtrl + колёсико - изменить порядок;;
+chat;Enter message;Ввод;;
