@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
+  m_Name: Word Cards Labels
+  m_EditorClassIdentifier: Unity.Localization.Editor::UnityEditor.Localization.StringTableCollection
+  m_SharedTableData: {fileID: 11400000, guid: c72af343b1225284e8afba2da16ca02f, type: 2}
+  m_Tables:
+  - {fileID: 11400000, guid: a26342218c811e74083eb1af1641e1ee, type: 2}
+  - {fileID: 11400000, guid: 7ba8a1dc2111f0d49b7ff70a52d39190, type: 2}
+  - {fileID: 11400000, guid: d1b6a86af9a90a548be1f7a25c9b00c8, type: 2}
+  - {fileID: 11400000, guid: 759a8c58b3df2424c84ca53b3c1e19d0, type: 2}
+  - {fileID: 11400000, guid: 04f97cd7bd298584a9021d3dfec0cfb2, type: 2}
+  - {fileID: 11400000, guid: c8dc4fb03285c0747a3cd936a94d3cdd, type: 2}
+  - {fileID: 11400000, guid: 3e152a29f90a93147b20e27376a30b73, type: 2}
+  m_Extensions: []
+  m_Group: String Table
+  references:
+    version: 2
+    RefIds: []

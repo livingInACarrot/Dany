@@ -1,0 +1,374 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Word Cards Labels_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: c72af343b1225284e8afba2da16ca02f, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 11034112000
+    m_Localized: '1. Provision
+
+      2. Father
+
+      3. Decision
+
+      4. Trust
+
+      5.
+      Great'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25483489280
+    m_Localized: '1. Elegant
+
+      2. Autism
+
+      3. Passive
+
+      4. Memory
+
+      5.
+      Sleep'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31388081270784
+    m_Localized: '1. Cosmonaut
+
+      2. Protection
+
+      3. Happiness
+
+      4.
+      Simplicity
+
+      5. Packaging'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31410835369984
+    m_Localized: '1. Childhood dream
+
+      2. Prisoner
+
+      3. Eroticism
+
+      4.
+      Illusion
+
+      5. Complete loneliness'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31427453202432
+    m_Localized: '1. Mountain
+
+      2. House of cards
+
+      3. Peak
+
+      4. Craftsman
+
+      5.
+      Pyramid'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31447007047680
+    m_Localized: '1. Thought
+
+      2. Space
+
+      3. Bed
+
+      4. Violence
+
+      5.
+      Universal approval'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31476283289600
+    m_Localized: '1. Warrior
+
+      2. Fate
+
+      3. Confused
+
+      4. Back
+
+      5.
+      Direction'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31490346790912
+    m_Localized: '1. Concert
+
+      2. Solitude
+
+      3. Prison
+
+      4. Conviction
+
+      5.
+      Christmas'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31505383370752
+    m_Localized: '1. Voice
+
+      2. Religion
+
+      3. Creation
+
+      4. House
+
+      5.
+      Shyness'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31517270028288
+    m_Localized: '1. Center
+
+      2. Loss of self
+
+      3. Conversation
+
+      4.
+      Friendship
+
+      5. Parting'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31534420537344
+    m_Localized: '1. Ocean
+
+      2. Journey
+
+      3. Zoo
+
+      4. Celebration
+
+      5.
+      Full stomach'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31551361331200
+    m_Localized: '1. Oaths
+
+      2. Rainbow
+
+      3. Immersion
+
+      4. Thoughtful
+      / Pensive
+
+      5. Absent-minded'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31628112900096
+    m_Localized: '1. Inner peace
+
+      2. Soul
+
+      3. Regret
+
+      4. Eastern
+
+      5.
+      Planet'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31681288286208
+    m_Localized: '1. Eruption
+
+      2. Unshared joy
+
+      3. Love
+
+      4. Seduction
+
+      5.
+      Fetish'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31709566283776
+    m_Localized: '1. Against
+
+      2. Give up
+
+      3. Obligation
+
+      4. Precipitation
+
+      5.
+      Cornered'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31728327405568
+    m_Localized: '1. Duality
+
+      2. Sexism
+
+      3. Adrenaline
+
+      4. Ascent
+
+      5.
+      Vulgar'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31742713868288
+    m_Localized: '1. Sky
+
+      2. Box
+
+      3. Cinema
+
+      4. Extraterrestrial
+
+      5.
+      Absurdity'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31752784392192
+    m_Localized: '1. Determination
+
+      2. Birth
+
+      3. Homemade
+
+      4. Grief
+
+      5.
+      Luck'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31767997132800
+    m_Localized: '1. Lie
+
+      2. Vegan
+
+      3. Flower
+
+      4. Music
+
+      5.
+      Obsession'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31783293759488
+    m_Localized: '1. Danny
+
+      2. Immortality
+
+      3. Confusion
+
+      4. Vice
+
+      5.
+      Personality'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31796774252544
+    m_Localized: '1. Nature
+
+      2. Spirituality
+
+      3. Western
+
+      4. Universe
+
+      5.
+      Reunion'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31808631549952
+    m_Localized: '1. Reasoning
+
+      2. Unfinished
+
+      3. Balance
+
+      4. Hope
+
+      5.
+      Wisdom'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31817708023808
+    m_Localized: '1. Mask
+
+      2. Femme fatale
+
+      3. Sex
+
+      4. Psychoanalysis
+
+      5.
+      Artist'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31829745676288
+    m_Localized: '1. Suppression
+
+      2. Reality
+
+      3. Exceptional
+
+      4.
+      Bad luck
+
+      5. Sensitivity'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31846220902400
+    m_Localized: '1. Dance
+
+      2. Disc
+
+      3. Game
+
+      4. Defeat
+
+      5.
+      Infinity'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46299649880064
+    m_Localized: '1. Living the dream
+
+      2. Race
+
+      3. Fantasy
+
+      4.
+      Suicide
+
+      5. Master of the world'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46304322334720
+    m_Localized: '1. Paradise
+
+      2. Destruction
+
+      3. Now
+
+      4. Bliss
+
+      5.
+      Earthquake'
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

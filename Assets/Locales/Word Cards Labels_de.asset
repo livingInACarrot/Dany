@@ -1,0 +1,228 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Word Cards Labels_de
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: de
+  m_SharedData: {fileID: 11400000, guid: c72af343b1225284e8afba2da16ca02f, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 11034112000
+    m_Localized: "1. Versorgung\r\n2. Vater\r\n3. Entscheidung\r\n4. Vertrauen\r\n5.
+      Gro\xDFartig"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25483489280
+    m_Localized: '1. Elegant
+
+      2. Autismus
+
+      3. Passiv
+
+      4. Erinnerung
+
+      5.
+      Schlaf'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31388081270784
+    m_Localized: "1. Kosmonaut\r\n2. Schutz\r\n3. Gl\xFCck\r\n4. Einfachheit\r\n5.
+      Verpackung"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31410835369984
+    m_Localized: "1. Kindheitstraum\r\n2. Gefangener\r\n3. Erotik\r\n4. Illusion\r\n5.
+      V\xF6llige Einsamkeit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31427453202432
+    m_Localized: '1. Berg
+
+      2. Kartenhaus
+
+      3. Gipfel
+
+      4. Handwerker
+
+      5.
+      Pyramide'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31447007047680
+    m_Localized: '1. Gedanke
+
+      2. Raum
+
+      3. Bett
+
+      4. Gewalt
+
+      5.
+      Allgemeine Zustimmung'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31476283289600
+    m_Localized: "1. Krieger\r\n2. Schicksal\r\n3. Verwirrt\r\n4. Zur\xFCck\r\n5.
+      Richtung"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31490346790912
+    m_Localized: "1. Konzert\r\n2. Abgeschiedenheit\r\n3. Gef\xE4ngnis\r\n4. \xDCberzeugung\r\n5.
+      Weihnachten"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31505383370752
+    m_Localized: "1. Stimme\r\n2. Religion\r\n3. Sch\xF6pfung\r\n4. Zuhause\r\n5.
+      Sch\xFCchternheit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31517270028288
+    m_Localized: "1. Zentrum\r\n2. Selbstverlust\r\n3. Gespr\xE4ch\r\n4. Freundschaft\r\n5.
+      Abschied"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31534420537344
+    m_Localized: '1. Ozean
+
+      2. Reise
+
+      3. Zoo
+
+      4. Feier
+
+      5.
+      Vollgefressen'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31551361331200
+    m_Localized: '1. Eide
+
+      2. Regenbogen
+
+      3. Eintauchen
+
+      4. Nachdenklich
+
+      5.
+      Zerstreut'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31628112900096
+    m_Localized: "1. Innerer Frieden\r\n2. Seele\r\n3. Bedauern\r\n4. \xD6stlich\r\n5.
+      Planet"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31681288286208
+    m_Localized: "1. Ausbruch\r\n2. Ungeteilte Freude\r\n3. Liebe\r\n4. Verf\xFChrung\r\n5.
+      Fetisch"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31709566283776
+    m_Localized: '1. Gegen
+
+      2. Aufgeben
+
+      3. Verpflichtung
+
+      4. Groll
+
+      5.
+      In die Enge getrieben'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31728327405568
+    m_Localized: "1. Dualit\xE4t\r\n2. Sexismus\r\n3. Adrenalin\r\n4. Aufstieg\r\n5.
+      Vulgar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31742713868288
+    m_Localized: "1. Himmel\r\n2. Kiste\r\n3. Kino\r\n4. Au\xDFerirdisch\r\n5. Absurdit\xE4t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31752784392192
+    m_Localized: "1. Entschlossenheit\r\n2. Geburt\r\n3. Selbstgemacht\r\n4. Trauer\r\n5.
+      Gl\xFCck"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31767997132800
+    m_Localized: "1. L\xFCge\r\n2. Veganer\r\n3. Blume\r\n4. Musik\r\n5. Besessenheit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31783293759488
+    m_Localized: "1. Danny\r\n2. Unsterblichkeit\r\n3. Verwirrung\r\n4. Laster\r\n5.
+      Pers\xF6nlichkeit"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31796774252544
+    m_Localized: "1. Natur\r\n2. Spiritualit\xE4t\r\n3. Westlich\r\n4. Universum\r\n5.
+      Wiedervereinigung"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31808631549952
+    m_Localized: '1. Argumentation
+
+      2. Unvollendet
+
+      3. Gleichgewicht
+
+      4.
+      Hoffnung
+
+      5. Weisheit'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31817708023808
+    m_Localized: "1. Maske\r\n2. Femme fatale\r\n3. Sex\r\n4. Psychoanalyse\r\n5.
+      K\xFCnstler"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31829745676288
+    m_Localized: "1. Verdr\xE4ngung\r\n2. Realit\xE4t\r\n3. Au\xDFergew\xF6hnlich\r\n4.
+      Pech\r\n5. Sensibilit\xE4t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31846220902400
+    m_Localized: '1. Tanz
+
+      2. Scheibe
+
+      3. Spiel
+
+      4. Niederlage
+
+      5.
+      Unendlichkeit'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46299649880064
+    m_Localized: '1. Den Traum leben
+
+      2. Rennen
+
+      3. Fantasie
+
+      4.
+      Selbstmord
+
+      5. Herrscher der Welt'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46304322334720
+    m_Localized: "1. Paradies\r\n2. Zerst\xF6rung\r\n3. Jetzt\r\n4. Gl\xFCckseligkeit\r\n5.
+      Erdbeben"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

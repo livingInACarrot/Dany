@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UI Labels Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: UI Labels
+  m_TableCollectionNameGuidString: 1d1a08cefaf8c35419d5d6d6183599c3
+  m_Entries:
+  - m_Id: 479563034624
+    m_Key: mainMenu.dany
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11313693536256
+    m_Key: mainMenu.createRoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11341967339520
+    m_Key: mainMenu.connectByCode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11360699101184
+    m_Key: mainMenu.findOpenRoom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11869191352320
+    m_Key: mainMenu.findOpenRoom.myLangSpeakers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 623176003584
+    m_Key: gameUI.score.personalities
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2649456848896
+    m_Key: gameUI.score.dany
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3158976704512
+    m_Key: gameUI.chat.input
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12777249093660672
+    m_Key: lobby.ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13936809108037632
+    m_Key: voice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14084517210828800
+    m_Key: lobby.start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14086603176620032
+    m_Key: lobby.roomCode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14087567262560256
+    m_Key: mainMenu.voices
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 5680824882638356751
+  references:
+    version: 2
+    RefIds:
+    - rid: 5680824882638356751
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1770375352345

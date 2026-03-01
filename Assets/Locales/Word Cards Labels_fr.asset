@@ -1,0 +1,170 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Word Cards Labels_fr
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: fr
+  m_SharedData: {fileID: 11400000, guid: c72af343b1225284e8afba2da16ca02f, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 11034112000
+    m_Localized: "1. Provision\r\n2. P\xE8re\r\n3. D\xE9cision\r\n4. Confiance\r\n5.
+      Grand"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25483489280
+    m_Localized: "1. \xC9l\xE9gant\r\n2. Autisme\r\n3. Passif\r\n4. M\xE9moire\r\n5.
+      Sommeil"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31388081270784
+    m_Localized: "1. Cosmonaute\r\n2. Protection\r\n3. Bonheur\r\n4. Simplicit\xE9\r\n5.
+      Emballage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31410835369984
+    m_Localized: "1. R\xEAve d'enfance\r\n2. Prisonnier\r\n3. \xC9rotisme\r\n4. Illusion\r\n5.
+      Solitude compl\xE8te"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31427453202432
+    m_Localized: "1. Montagne\r\n2. Ch\xE2teau de cartes\r\n3. Sommet\r\n4. Artisan\r\n5.
+      Pyramide"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31447007047680
+    m_Localized: "1. Pens\xE9e\r\n2. Espace\r\n3. Lit\r\n4. Violence\r\n5. Approbation
+      universelle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31476283289600
+    m_Localized: "1. Guerrier\r\n2. Destin\r\n3. Confus\r\n4. Arri\xE8re\r\n5. Direction"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31490346790912
+    m_Localized: "1. Concert\r\n2. Retraite\r\n3. Prison\r\n4. Conviction\r\n5. No\xEBl"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31505383370752
+    m_Localized: "1. Voix\r\n2. Religion\r\n3. Cr\xE9ation\r\n4. Maison\r\n5. Timidit\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31517270028288
+    m_Localized: "1. Centre\r\n2. Perte de soi\r\n3. Conversation\r\n4. Amiti\xE9\r\n5.
+      S\xE9paration"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31534420537344
+    m_Localized: "1. Oc\xE9an\r\n2. Voyage\r\n3. Zoo\r\n4. C\xE9l\xE9bration\r\n5.
+      Ventre plein"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31551361331200
+    m_Localized: '1. Serments
+
+      2. Arc-en-ciel
+
+      3. Immersion
+
+      4.
+      Pensif
+
+      5. Distrait'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31628112900096
+    m_Localized: "1. Paix int\xE9rieure\r\n2. \xC2me\r\n3. Regret\r\n4. Oriental\r\n5.
+      Plan\xE8te"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31681288286208
+    m_Localized: "1. \xC9ruption\r\n2. Joie non partag\xE9e\r\n3. Amour\r\n4. S\xE9duction\r\n5.
+      F\xE9tichisme"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31709566283776
+    m_Localized: "1. Contre\r\n2. Abandonner\r\n3. Engagement\r\n4. Ressentiment\r\n5.
+      Accul\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31728327405568
+    m_Localized: "1. Dualit\xE9\r\n2. Sexisme\r\n3. Adr\xE9naline\r\n4. Ascension\r\n5.
+      Vulgaire"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31742713868288
+    m_Localized: "1. Ciel\r\n2. Bo\xEEte\r\n3. Cin\xE9ma\r\n4. Extraterrestre\r\n5.
+      Absurdit\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31752784392192
+    m_Localized: "1. D\xE9termination\r\n2. Naissance\r\n3. Fait maison\r\n4. Chagrin\r\n5.
+      Chance"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31767997132800
+    m_Localized: "1. Mensonge\r\n2. V\xE9g\xE9talien\r\n3. Fleur\r\n4. Musique\r\n5.
+      Obsession"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31783293759488
+    m_Localized: "1. Danny\r\n2. Immortalit\xE9\r\n3. Confusion\r\n4. Vice\r\n5.
+      Personnalit\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31796774252544
+    m_Localized: "1. Nature\r\n2. Spiritualit\xE9\r\n3. Occidental\r\n4. Univers\r\n5.
+      R\xE9union"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31808631549952
+    m_Localized: "1. Raisonnement\r\n2. Inachev\xE9\r\n3. \xC9quilibre\r\n4. Espoir\r\n5.
+      Sagesse"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31817708023808
+    m_Localized: '1. Masque
+
+      2. Femme fatale
+
+      3. Sexe
+
+      4. Psychanalyse
+
+      5.
+      Artiste'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31829745676288
+    m_Localized: "1. Refoulement\r\n2. R\xE9alit\xE9\r\n3. Exceptionnel\r\n4. Malchance\r\n5.
+      Sensibilit\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31846220902400
+    m_Localized: "1. Danse\r\n2. Disque\r\n3. Jeu\r\n4. D\xE9faite\r\n5. Infini"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46299649880064
+    m_Localized: "1. Vivre son r\xEAve\r\n2. Course\r\n3. Fantaisie\r\n4. Suicide\r\n5.
+      Ma\xEEtre du monde"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46304322334720
+    m_Localized: "1. Paradis\r\n2. Destruction\r\n3. Maintenant\r\n4. B\xE9atitude\r\n5.
+      Tremblement de terre"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
