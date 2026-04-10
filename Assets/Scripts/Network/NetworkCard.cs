@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class NetworkCard : NetworkBehaviour
 {
-    [SyncVar(hook = nameof(OnSpriteIndexChanged))]
-    public int spriteIndex;
-
     [SyncVar(hook = nameof(OnPositionChanged))]
     public Vector2 position;
 
@@ -21,74 +18,56 @@ public class NetworkCard : NetworkBehaviour
     [SyncVar]
     public uint ownerNetId;
 
-    private Card cardComponent;
+    private Card card;
     private RectTransform rectTransform;
 
     private void Awake()
     {
-        cardComponent = GetComponent<Card>();
+        card = GetComponent<Card>();
         rectTransform = GetComponent<RectTransform>();
     }
 
-    public override void OnStartServer()
+    public void Initialize(Sprite sprite, uint ownerId)
     {
-        base.OnStartServer();
-
-        if (cardComponent != null)
-        {
-            position = rectTransform.anchoredPosition;
-            rotation = rectTransform.rotation.eulerAngles.z;
-            scale = rectTransform.localScale;
-            isFlipped = false;
-        }
+        card.SetSprite(sprite);
+        ownerNetId = ownerId;
+        position = rectTransform.anchoredPosition;
+        rotation = 0f;
+        scale = rectTransform.localScale;
+        isFlipped = false;
     }
 
-    public void Initialize(int index, uint owner)
+    public bool IsOwnedByLocalPlayer()
     {
-        spriteIndex = index;
-        ownerNetId = owner;
+        return NetworkClient.localPlayer.netId == ownerNetId;
     }
 
-    private void OnSpriteIndexChanged(int oldIndex, int newIndex)
+    [Command(requiresAuthority = false)]
+    public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped)
     {
-        if (cardComponent != null && CardsStorage.PictureCardsSprites != null)
-        {
-            if (newIndex >= 0 && newIndex < CardsStorage.PictureCardsSprites.Count)
-            {
-                cardComponent.SetSprite(CardsStorage.PictureCardsSprites[newIndex]);
-            }
-        }
-    }
-
-    private void OnPositionChanged(Vector2 oldPos, Vector2 newPos)
-    {
-        if (rectTransform != null)
-            rectTransform.anchoredPosition = newPos;
-    }
-
-    private void OnRotationChanged(float oldRot, float newRot)
-    {
-        if (rectTransform != null)
-            rectTransform.rotation = Quaternion.Euler(0, 0, newRot);
-    }
-
-    private void OnScaleChanged(Vector3 oldScale, Vector3 newScale)
-    {
-        if (rectTransform != null)
-            rectTransform.localScale = newScale;
-    }
-
-    private void OnFlippedChanged(bool oldFlip, bool newFlip)
-    {
-        cardComponent.FlipCard(newFlip);
-    }
-
-    [Command]
-    public void CmdUpdateCard(Vector2 newPos, float newRot, Vector3 newScale, bool flipped)
-    {
-        position = newPos;
-        rotation = newRot;
+        position = newPosition;
+        rotation = newRotation;
         scale = newScale;
         isFlipped = flipped;
+    }
+
+    private void OnPositionChanged(Vector2 oldValue, Vector2 newValue)
+    {
+        rectTransform.anchoredPosition = newValue;
+    }
+
+    private void OnRotationChanged(float oldValue, float newValue)
+    {
+        transform.rotation = Quaternion.Euler(0, 0, newValue);
+    }
+
+    private void OnScaleChanged(Vector3 oldValue, Vector3 newValue)
+    {
+        rectTransform.localScale = newValue;
+    }
+
+    private void OnFlippedChanged(bool oldValue, bool newValue)
+    {
+        card.FlipCard(newValue);
     }
 }

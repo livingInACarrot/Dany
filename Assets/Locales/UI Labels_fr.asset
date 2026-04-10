@@ -22,6 +22,10 @@ MonoBehaviour:
     m_Localized: Voix
     m_Metadata:
       m_Items: []
+  - m_Id: 22618040905445376
+    m_Localized: Langue
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

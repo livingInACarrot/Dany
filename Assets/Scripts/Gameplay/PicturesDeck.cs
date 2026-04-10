@@ -1,23 +1,11 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class IdeasCard
+public class PicturesDeck : MonoBehaviour
 {
-    public string[] Words = new string[5];
+    public static PicturesDeck Instance { get; private set; }
 
-    public int GetRandomWord()
-    {
-        return UnityEngine.Random.Range(0, Words.Length);
-    }
-}
-
-public class IdeasDeck : MonoBehaviour
-{
-    public static IdeasDeck Instance { get; private set; }
-
-    private Queue<IdeasCard> deck = new();
+    private Queue<Sprite> deck = new();
 
     private void Start()
     {
@@ -31,7 +19,7 @@ public class IdeasDeck : MonoBehaviour
 
     private void InitializeDeck()
     {
-        List<IdeasCard> cards = CardsStorage.IdeasCards;
+        List<Sprite> cards = CardsStorage.PictureCardsSprites;
         deck.Clear();
         Shuffle(cards);
         foreach (var card in cards)
@@ -40,15 +28,20 @@ public class IdeasDeck : MonoBehaviour
         }
     }
 
-    public IdeasCard DrawCard()
+    public Sprite DrawCard()
     {
         if (deck.Count == 0)
         {
-            Debug.LogError("Закончились карты идей!");
+            Debug.LogError("Закончились карты воспоминаний!");
             return null;
         }
 
         return deck.Dequeue();
+    }
+
+    public bool EnoughCardsToDraw()
+    {
+        return deck.Count >= 7;
     }
 
     private void Shuffle<T>(IList<T> list)

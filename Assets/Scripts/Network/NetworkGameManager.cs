@@ -3,19 +3,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-/// <summary>
-/// Основной менеджер игры для мультиплеера.
-/// Вся игровая логика находится здесь (серверная авторитетность).
-/// Реализует хост-миграцию при выходе текущего хоста.
-/// </summary>
 public class NetworkGameManager : NetworkBehaviour
 {
     public static NetworkGameManager Instance { get; private set; }
 
     [Header("Prefabs")]
-    public GameObject networkPlayerPrefab;
-    public GameObject cardPrefab;
-    public Transform tableTransform;
+    [SerializeField] private GameObject networkPlayerPrefab;
 
     [Header("Game Settings")]
     public int minPlayers = 3;
@@ -48,7 +41,7 @@ public class NetworkGameManager : NetworkBehaviour
 
     private IdeasCard currentIdeasCard;
     private int secretWordIndex;
-    private float discussionTime = 60f;
+    private readonly float discussionTime = 60f;
 
     private void Awake()
     {
@@ -65,12 +58,20 @@ public class NetworkGameManager : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        Debug.Log("Server started");
         base.OnStartServer();
 
         personalitiesScore = 0;
         dannyScore = 0;
         currentPhase = GamePhase.Lobby;
         hostPlayerNumber = 0;
+
+        GameObject playerObj = Instantiate(networkPlayerPrefab);
+        NetworkServer.Spawn(playerObj);
+        NetworkPlayer player = playerObj.GetComponent<NetworkPlayer>();
+        player.playerCountry = "Россия";
+
+        UpdatePlayersList();
 
         if (debugMode)
         {
@@ -101,16 +102,13 @@ public class NetworkGameManager : NetworkBehaviour
             playersOrder.Add(playerNumber);
         }
 
-        // Первый подключившийся становится хостом
         if (hostPlayerNumber == 0)
         {
             hostPlayerNumber = playerNumber;
             player.isHost = true;
             Debug.Log($"Игрок {playerNumber} стал хостом");
         }
-
         Debug.Log($"Игрок {playerNumber} зарегистрирован. Всего: {players.Count}");
-
         UpdatePlayersList();
     }
 
@@ -127,7 +125,6 @@ public class NetworkGameManager : NetworkBehaviour
 
         Debug.Log($"Игрок {playerNumber} отключился. Осталось: {players.Count}");
 
-        // Хост-миграция: если ушедший был хостом, передаём хост следующему игроку
         if (wasHost && playersOrder.Count > 0)
         {
             MigrateHost();
@@ -135,10 +132,6 @@ public class NetworkGameManager : NetworkBehaviour
 
         UpdatePlayersList();
     }
-
-    /// <summary>
-    /// Передаёт хост другому игроку при выходе текущего хоста
-    /// </summary>
     [Server]
     private void MigrateHost()
     {
@@ -148,17 +141,14 @@ public class NetworkGameManager : NetworkBehaviour
             return;
         }
 
-        // Находим следующего доступного игрока после текущего индекса хоста
         int oldHostIndex = playersOrder.IndexOf(hostPlayerNumber);
         int newHostIndex = (oldHostIndex + 1) % playersOrder.Count;
         
-        // Если старый хост больше не в списке, берём первого игрока
         if (oldHostIndex < 0)
             newHostIndex = 0;
 
         hostPlayerNumber = playersOrder[newHostIndex];
 
-        // Обновляем флаг isHost у всех игроков
         foreach (var kvp in players)
         {
             kvp.Value.isHost = (kvp.Key == hostPlayerNumber);
@@ -197,7 +187,7 @@ public class NetworkGameManager : NetworkBehaviour
         playersList = playersList.OrderBy(p => p.Number).ToList();
 
         PlayerListUI.Instance.UpdatePlayerList(playersList);
-        LobbyManager.Instance?.UpdatePlayerListFromNetwork(playersList);
+        LobbyManager.Instance.UpdatePlayerListFromNetwork(playersList);
     }
 
     [Server]
@@ -235,7 +225,7 @@ public class NetworkGameManager : NetworkBehaviour
     {
         if (isDanny)
         {
-            NetworkChat.Instance.AddSystemMessage("Вы - Дэнни! Мешайте другим угадывать слово.");
+            NetworkChat.Instance.AddSystemMessage("Вы - Дэни! Мешайте другим угадывать слово.");
         }
         else
         {
@@ -312,13 +302,14 @@ public class NetworkGameManager : NetworkBehaviour
         if (!players.TryGetValue(playerNumber, out NetworkPlayer player))
             return;
 
-        int spriteIndex = Random.Range(0, CardsStorage.PictureCardsSprites.Count);
+        Sprite pic = PicturesDeck.Instance.DrawCard();
+        if (pic == null) CheckGameEndConditions();
 
-        GameObject cardObj = Instantiate(cardPrefab, tableTransform);
+        GameObject cardObj = PlayingCardsTable.Instance.SpawnCardInHand();
         NetworkServer.Spawn(cardObj);
 
         NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
-        netCard.Initialize(spriteIndex, (uint)playerNumber);
+        netCard.Initialize(pic, (uint)playerNumber);
 
         player.handCardNetIds.Add(netCard.netId);
 
@@ -331,8 +322,7 @@ public class NetworkGameManager : NetworkBehaviour
         if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
         {
             Card card = identity.GetComponent<Card>();
-            card.InHand = true;
-            HandUI.Instance.AddCardToHand(card);
+            PlayingCardsTable.Instance.ReturnCardToHand(card);
         }
     }
 
@@ -340,9 +330,9 @@ public class NetworkGameManager : NetworkBehaviour
     private void DrawIdeasCard()
     {
         currentIdeasCard = IdeasDeck.Instance.DrawCard();
-        if (currentIdeasCard == null) return;
+        if (currentIdeasCard == null) CheckGameEndConditions();
 
-        secretWordIndex = Random.Range(0, 5);
+        secretWordIndex = currentIdeasCard.GetRandomWord();
 
         foreach (var kvp in players)
         {
@@ -455,7 +445,7 @@ public class NetworkGameManager : NetworkBehaviour
         {
             EndGame(false);
         }
-        else if (dannyScore >= 3 || Deck.Instance.RemainingCards < 7)
+        else if (dannyScore >= 3 || !PicturesDeck.Instance.EnoughCardsToDraw())
         {
             currentPhase = GamePhase.FinalRound;
             RpcStartFinalRound();
@@ -503,9 +493,9 @@ public class NetworkGameManager : NetworkBehaviour
     [ClientRpc]
     private void RpcReturnToLobby()
     {
-        PlayingCardsTable.Instance?.ClearTable();
-        ScoreUI.Instance?.ResetScore();
-        HandUI.Instance?.ClearHand();
+        PlayingCardsTable.Instance.ClearTable();
+        PlayingCardsTable.Instance.ClearHand();
+        ScoreUI.Instance.ResetScore();
         LobbyManager.Instance.ShowLobby();
     }
 
@@ -513,14 +503,10 @@ public class NetworkGameManager : NetworkBehaviour
     {
         Debug.Log($"Фаза изменена: {oldPhase} -> {newPhase}");
     }
-
-    #region Public Helpers for Client
     
     [Server]
     public bool IsHost(int playerNumber)
     {
         return playerNumber == hostPlayerNumber;
     }
-    
-    #endregion
 }

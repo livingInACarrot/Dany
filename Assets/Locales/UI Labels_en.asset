@@ -23,7 +23,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 2649456848896
-    m_Localized: Danny
+    m_Localized: Dany
     m_Metadata:
       m_Items: []
   - m_Id: 3158976704512
@@ -31,7 +31,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 479563034624
-    m_Localized: DANNY
+    m_Localized: DANY
     m_Metadata:
       m_Items: []
   - m_Id: 11313693536256
@@ -68,6 +68,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 14087567262560256
     m_Localized: voices in the head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22618040905445376
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623551268794368
+    m_Localized: Mic volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623751194488832
+    m_Localized: Master volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22624159577092096
+    m_Localized: Push to talk
     m_Metadata:
       m_Items: []
   references:

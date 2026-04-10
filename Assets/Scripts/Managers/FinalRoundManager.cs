@@ -13,7 +13,7 @@ public class FinalRoundManager : MonoBehaviour
     [SerializeField] private GameObject finalRoundPanel;
     [SerializeField] private Transform votingButtonsContainer;
     [SerializeField] private GameObject voteButtonPrefab;
-    [SerializeField] private float discussionTime = 90f;
+    [SerializeField] private readonly float discussionTime = 90f;
 
     private Dictionary<Player, Button> voteButtons = new();
     private Dictionary<Player, int> votes = new();
@@ -55,8 +55,7 @@ public class FinalRoundManager : MonoBehaviour
             Button btn = btnObj.GetComponent<Button>();
 
             TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TextMeshProUGUI>();
-            // Добавить сюда "Голос номер.." с ссылкой на таблицу
-            btnText.text = "" ;
+            btnText.text = LocalizationManager.Instance.GetText("voice") + " " + player.Number;
 
             btn.onClick.AddListener(() => OnVote(player));
             btn.interactable = false;
@@ -118,18 +117,7 @@ public class FinalRoundManager : MonoBehaviour
 
         bool isDanny = (mostVoted == GameManager.Instance.Players.FirstOrDefault(p => p.IsDanny));
         PlayerListUI.Instance.HighlightDannyReveal(mostVoted);
-
-        if (isDanny)
-        {
-            NetworkChat.Instance.AddSystemMessage($"Победа! {mostVoted.Data.Id} - Дэнни! Личности побеждают.");
-            GameManager.Instance.EndGame(false);
-        }
-        else
-        {
-            NetworkChat.Instance.AddSystemMessage($"Поражение! {mostVoted.Data.Id} не Дэнни. Дэнни побеждает.");
-            GameManager.Instance.EndGame(true);
-        }
-
+        GameManager.Instance.EndGame(!isDanny);
         finalRoundPanel.SetActive(false);
     }
 
@@ -137,7 +125,6 @@ public class FinalRoundManager : MonoBehaviour
     {
         NetworkChat.Instance.AddSystemMessage("Ничья в голосовании! Претенденты не раскрываются.");
 
-        // Находим претендентов с максимальным числом голосов
         List<Player> tiedPlayers = new();
         int maxVotes = 0;
 
@@ -163,7 +150,7 @@ public class FinalRoundManager : MonoBehaviour
                 if (player.IsDanny)
                 {
                     dannyFound = true;
-                    NetworkChat.Instance.AddSystemMessage($"{player.Data.Id} был Дэнни! Дэнни побеждает.");
+                    NetworkChat.Instance.AddSystemMessage($"{player.Data.Id} был Дэни! Дэни побеждает.");
                     GameManager.Instance.EndGame(true);
                     return;
                 }
@@ -172,10 +159,8 @@ public class FinalRoundManager : MonoBehaviour
 
         if (!dannyFound)
         {
-            // Среди раскрывшихся нет Дэнни - повторное голосование
-            NetworkChat.Instance.AddSystemMessage("Среди раскрывшихся нет Дэнни! Голосуйте снова.");
+            NetworkChat.Instance.AddSystemMessage("Среди раскрывшихся нет Дэни! Голосуйте снова.");
 
-            // Создаем новые кнопки только для претендентов
             foreach (Transform child in votingButtonsContainer)
             {
                 Destroy(child.gameObject);
@@ -199,17 +184,7 @@ public class FinalRoundManager : MonoBehaviour
         if (hasVoted) return;
 
         hasVoted = true;
-
-        if (suspectedPlayer.IsDanny)
-        {
-            NetworkChat.Instance.AddSystemMessage($"{suspectedPlayer.Data.Id} - Дэнни! Личности побеждают.");
-            GameManager.Instance.EndGame(false);
-        }
-        else
-        {
-            NetworkChat.Instance.AddSystemMessage($"{suspectedPlayer.Data.Id} не Дэнни. Дэнни побеждает.");
-            GameManager.Instance.EndGame(true);
-        }
+        GameManager.Instance.EndGame(suspectedPlayer.IsDanny);
         finalRoundPanel.SetActive(false);
     }
 }

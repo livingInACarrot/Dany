@@ -1,44 +1,54 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+﻿using Mirror;
 using System.Collections.Generic;
-using System.Linq;
-using Mirror;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using static System.Net.Mime.MediaTypeNames;
 
-/// <summary>
-/// Менеджер лобби для мультиплеера.
-/// Работает в связке с NetworkGameManager (вся сетевая логика там).
-/// Отвечает только за UI лобби и отображение игроков.
-/// </summary>
 public class LobbyManager : MonoBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
-    [Header("Menu Panels")]
+    [Header("Panels")]
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject lobbyPanel;
+    [SerializeField] private GameObject settingsPanel;
+    [SerializeField] private GameObject rulesPanel;
     [SerializeField] private GameObject openRoomsPanel;
-    [SerializeField] private GameObject gamePanel;
-    [SerializeField] private GameObject endGamePanel;
+    [SerializeField] private GameObject rolePanel;
+    [SerializeField] private GameObject gameEndPanel;
 
-    [Header("Lobby UI")]
-    [SerializeField] private Transform playersContainer;
-    [SerializeField] private GameObject playerEntryPrefab;
-    [SerializeField] private Button startGameButton;
-    [SerializeField] private Button roomCodeButton;
+    [Header("Several-scenes objects")]
+    [SerializeField] private GameObject chatPanel;
+    [SerializeField] private Button rulesButton;
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private Button exitButton;
+
+    [Header("Main Menu")]
+    [SerializeField] private TMP_InputField roomCodeInput;
+
+    [Header("Lobby")]
     [SerializeField] private TextMeshProUGUI roomCodeText;
-    [SerializeField] private TMP_Dropdown countryDropdown;
+    [SerializeField] private Button startGameButton;
+    [SerializeField] private Toggle readyToggle;
+    [SerializeField] private Toggle privateRoomToggle;
 
-    [Header("Player Data")]
-    public Player localPlayer = new(new("Россия"));
-    private List<NetworkPlayer> networkPlayers = new List<NetworkPlayer>();
-    private bool isPrivate = true;
+    [Header("Settings")]
+    [SerializeField] private Dropdown languageDropdown;
+    [SerializeField] private Slider voiceVolumeSlider;
+    [SerializeField] private Slider micVolumeSlider;
+    [SerializeField] private Button bindPushToTalkButton;
+
+    [Header("Rules")]
+    [SerializeField] private Scrollbar rulesScrollbar;
+    [SerializeField] private UnityEngine.UI.Image rulesImage;
+
+    [Header("Game End")]
+    [SerializeField] private TextMeshProUGUI winnerText;
+
     private string currentRoomCode = "";
-    [SerializeField] private Color myColor;
-    [SerializeField] private Color othersColor;
-
-    private int localPlayerNumber = -1;
-    private int currentHostNumber = -1;
+    private bool isHost = false;
+    private List<Player> playersList = new();
 
     private void Awake()
     {
@@ -50,427 +60,253 @@ public class LobbyManager : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("Lobby Manager started");
+        SetupUI();
+        SubscribeToEvents();
         ShowMainMenu();
     }
 
+    private void SetupUI()
+    {
+        languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
+        //voiceVolumeSlider.onValueChanged.AddListener(VoiceChatManager.Instance.SetVoiceVolume);
+        //micVolumeSlider.onValueChanged.AddListener(VoiceChatManager.Instance.SetMicVolume);
+
+        startGameButton.onClick.AddListener(OnStartGameClick);
+        readyToggle.onValueChanged.AddListener(OnReadyToggleChanged);
+        privateRoomToggle.onValueChanged.AddListener(OnPrivateRoomToggleChanged);
+
+        rulesButton.onClick.AddListener(ShowRules);
+        settingsButton.onClick.AddListener(ShowSettings);
+        exitButton.onClick.AddListener(OnExitClick);
+    }
+
+    private void SubscribeToEvents()
+    {
+        NetworkPlayer.OnPlayerAdded += OnPlayerAdded;
+        NetworkPlayer.OnPlayerRemoved += OnPlayerRemoved;
+    }
+
+
     public void ShowMainMenu()
     {
-        HideAllPanelsExceptOne(mainMenuPanel);
+        HideAllPanels();
+        mainMenuPanel.SetActive(true);
     }
 
     public void ShowLobby()
     {
-        HideAllPanelsExceptOne(lobbyPanel);
-        UpdatePlayersList();
+        HideAllPanels();
+        lobbyPanel.SetActive(true);
+    }
+
+    public void ShowSettings()
+    {
+        settingsPanel.SetActive(true);
+    }
+
+    public void ShowRules()
+    {
+        rulesPanel.SetActive(true);
+    }
+
+    public void ShowOpenRooms()
+    {
+        HideAllPanels();
+        if (openRoomsPanel != null)
+            openRoomsPanel.SetActive(true);
+    }
+
+    public void ShowRolePanel(bool isDanny)
+    {
+        HideAllPanels();
+        if (rolePanel != null)
+        {
+            rolePanel.SetActive(true);
+            TextMeshProUGUI text = rolePanel.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.text = isDanny ? "Вы - Дэнни!" : "Вы - личность!";
+            }
+        }
+        Invoke(nameof(HideRolePanel), 5f);
+    }
+
+    private void HideRolePanel()
+    {
+        rolePanel.SetActive(false);
     }
 
     public void ShowGameEndScreen(bool dannyWins)
     {
-        HideAllPanelsExceptOne(endGamePanel);
-        
-        var endText = endGamePanel.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-        if (endText != null)
+        HideAllPanels();
+        if (gameEndPanel != null)
         {
-            endText.text = dannyWins ? "Дэнни победил!" : "Личности победили!";
+            gameEndPanel.SetActive(true);
+            if (winnerText != null)
+            {
+                winnerText.text = dannyWins ? "Дэнни победил!" : "Личности победили!";
+            }
         }
     }
 
-    /// <summary>
-    /// Вызывается при миграции хоста
-    /// </summary>
-    public void OnHostMigrated(int newHostNumber)
+    private void HideAllPanels()
     {
-        currentHostNumber = newHostNumber;
-        UpdatePlayersList();
-        
-        // Если новый хост - локальный игрок, даём ему права хоста
-        if (newHostNumber == localPlayerNumber)
-        {
-            NetworkChat.Instance.AddSystemMessage("Вы стали хостом!");
-            if (startGameButton != null)
-                startGameButton.interactable = CheckAllReady();
-        }
+        mainMenuPanel.SetActive(false);
+        lobbyPanel.SetActive(false);
+        settingsPanel.SetActive(false);
+        rulesPanel.SetActive(false);
+        openRoomsPanel.SetActive(false);
+        rolePanel.SetActive(false);
+        gameEndPanel.SetActive(false);
     }
 
     public void OnCreateRoomClick()
     {
-        HideAllPanelsExceptOne(lobbyPanel);
-        ConfirmCreateRoom(isPrivate);
+        NetworkManager.singleton.StartHost();
+        isHost = true;
+
+        //Invoke(nameof(GenerateRoomCode), 0.5f);
+        GenerateRoomCode();
+        ShowLobby();
     }
 
-    public void OnJoinRoomClick()
+    private void GenerateRoomCode()
     {
-        HideAllPanelsExceptOne(lobbyPanel);
+        currentRoomCode = Random.Range(10000, 99999).ToString();
+        roomCodeText.text = currentRoomCode;
+        Debug.Log($"Создана комната с кодом: {currentRoomCode}");
+    }
+
+    public void OnJoinByCodeClick()
+    {
+        if (string.IsNullOrWhiteSpace(roomCodeInput.text))
+        {
+            return;
+        }
+        
+        // Добавить проверку кода комнаты
+        NetworkManager.singleton.networkAddress = "localhost";
+        NetworkManager.singleton.StartClient();
+
+        ShowLobby();
     }
 
     public void OnOpenRoomsClick()
     {
-        HideAllPanelsExceptOne(openRoomsPanel);
-        RefreshOpenRoomsList();
+        ShowOpenRooms();
+    }
+
+    public void OnSettingsClick()
+    {
+        ShowSettings();
+    }
+
+    public void OnRulesClick()
+    {
+        ShowRules();
+    }
+
+    public void OnExitClick()
+    {
+        UnityEngine.Application.Quit();
     }
 
     public void OnRoomCodeButtonClick()
     {
-        GUIUtility.systemCopyBuffer = currentRoomCode;
-        Debug.Log("Код скопирован в буфер обмена");
+        GUIUtility.systemCopyBuffer = roomCodeText.text;
+
     }
 
-    public void OnCountrySelected(int index)
+    public void OnBackToMainMenuClick()
     {
-        string[] countries = { "Россия", "СНГ", "Европа", "Азия", "Америка", "Другое" };
-        localPlayer.Data.Country = countries[index];
-        
-        // Отправляем на сервер обновление страны
-        if (NetworkClient.active && localPlayerNumber >= 0)
+        if (NetworkServer.active || NetworkClient.active)
         {
-            // Здесь можно добавить команду на сервер для обновления страны
+            NetworkManager.singleton.StopHost();
         }
-    }
-
-    public void ConfirmCreateRoom(bool isPrivate)
-    {
-        currentRoomCode = GenerateRoomCode();
-        roomCodeText.text = currentRoomCode;
-
-        CreateRoom(currentRoomCode, isPrivate);
-
-        ShowLobby();
-
-        localPlayer.IsHost = true;
-        localPlayer.IsReady = false;
-
-        UpdatePlayersList();
-
-        startGameButton.interactable = false;
-    }
-
-    public void JoinRoomByCode(string code)
-    {
-        ShowLobby();
-        if (TryJoinRoom(code))
-        {
-            currentRoomCode = code;
-
-            ShowLobby();
-
-            localPlayer.IsHost = false;
-            localPlayer.IsReady = false;
-
-            UpdatePlayersList();
-
-            roomCodeText.text = code;
-
-            NetworkChat.Instance?.AddSystemMessage($"Присоединились к комнате {code}");
-        }
-        else
-        {
-            NetworkChat.Instance?.AddSystemMessage("Не удалось присоединиться к комнате. Проверьте код.");
-        }
-    }
-
-    /// <summary>
-    /// Сюда ссылается кнопка "Готов"
-    /// </summary>
-    public void OnReadyClick()
-    {
-        localPlayer.IsReady = !localPlayer.IsReady;
-        
-        // Отправляем команду на сервер
-        if (NetworkClient.active)
-        {
-            var localNetPlayer = GetLocalNetworkPlayer();
-            if (localNetPlayer != null)
-            {
-                localNetPlayer.CmdSetReady(localPlayer.IsReady);
-            }
-        }
-        
-        UpdatePlayersList();
-        CheckAllReady();
-    }
-    
-    public void OnReadyClick(Toggle readyToggle)
-    {
-        localPlayer.IsReady = !localPlayer.IsReady;
-
-        if(CheckAllReady() && IsLocalPlayerHost())
-            startGameButton.interactable = true;
-    }
-
-    /// <summary>
-    /// Сюда ссылается кнопка начала игры
-    /// </summary>
-    public void OnStartGameClick()
-    {
-        if (!IsLocalPlayerHost())
-        {
-            NetworkChat.Instance.AddSystemMessage("Только хост может начать игру!");
-            return;
-        }
-
-        if (!CheckAllReady())
-        {
-            NetworkChat.Instance.AddSystemMessage("Не все игроки готовы!");
-            return;
-        }
-
-        // Отправляем команду на сервер через NetworkPlayer
-        if (NetworkClient.active)
-        {
-            var localNetPlayer = GetLocalNetworkPlayer();
-            if (localNetPlayer != null)
-            {
-                localNetPlayer.CmdStartGame();
-            }
-        }
-    }
-
-    public void OnLeaveRoomClick()
-    {
-        if (NetworkClient.active)
-        {
-            NetworkClient.Disconnect();
-        }
-        
-        currentRoomCode = "";
-        networkPlayers.Clear();
-
         ShowMainMenu();
-
-        NetworkChat.Instance.AddSystemMessage("Вы покинули комнату");
     }
 
-    private void OnEnable()
+    private void OnStartGameClick()
     {
-        NetworkPlayer.OnPlayerAdded += HandlePlayerAdded;
-        NetworkPlayer.OnPlayerRemoved += HandlePlayerRemoved;
-    }
-
-    private void OnDisable()
-    {
-        NetworkPlayer.OnPlayerAdded -= HandlePlayerAdded;
-        NetworkPlayer.OnPlayerRemoved -= HandlePlayerRemoved;
-    }
-
-    private void HandlePlayerAdded(NetworkPlayer netPlayer)
-    {
-        if (!networkPlayers.Contains(netPlayer))
+        NetworkPlayer localPlayer = NetworkClient.localPlayer.GetComponent<NetworkPlayer>();
+        if (localPlayer != null)
         {
-            networkPlayers.Add(netPlayer);
-            
-            if (netPlayer.isLocalPlayer)
-            {
-                localPlayerNumber = netPlayer.playerNumber;
-            }
-            
-            UpdatePlayerListFromNetwork();
+            localPlayer.CmdStartGame();
         }
     }
 
-    private void HandlePlayerRemoved(NetworkPlayer netPlayer)
+    private void OnReadyToggleChanged(bool isReady)
     {
-        networkPlayers.Remove(netPlayer);
-        UpdatePlayerListFromNetwork();
-    }
-
-    /// <summary>
-    /// Обновляет список игроков из сети (вызывается из NetworkGameManager)
-    /// </summary>
-    public void UpdatePlayerListFromNetwork(List<Player> playersList)
-    {
-        UpdatePlayersListInternal(playersList);
-    }
-
-    private void UpdatePlayerListFromNetwork()
-    {
-        // Очищаем старый список и создаем новый из networkPlayers
-        List<Player> playersList = new();
-        foreach (var netPlayer in networkPlayers)
+        NetworkPlayer localPlayer = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
+        if (localPlayer != null)
         {
-            Player player = new Player(new PlayerData(netPlayer.playerCountry))
-            {
-                Number = netPlayer.playerNumber,
-                IsReady = netPlayer.isReady,
-                IsHost = netPlayer.isHost,
-                IsDanny = netPlayer.isDanny,
-                Role = netPlayer.role
-            };
-            playersList.Add(player);
+            localPlayer.CmdSetReady(isReady);
         }
-        playersList = playersList.OrderBy(p => p.Number).ToList();
-        
-        UpdatePlayersListInternal(playersList);
     }
 
-    private void UpdatePlayersListInternal(List<Player> playersList)
+    private void OnPrivateRoomToggleChanged(bool isPrivate)
     {
-        if (playersContainer == null || playerEntryPrefab == null) return;
+        // Добавить логику приватности комнаты
+        Debug.Log($"Приватность комнаты изменена: {isPrivate}");
+    }
 
-        foreach (Transform child in playersContainer)
+    public void CopyRoomCode()
+    {
+        if (!string.IsNullOrEmpty(currentRoomCode))
         {
-            Destroy(child.gameObject);
+            GUIUtility.systemCopyBuffer = currentRoomCode;
+            NetworkChat.Instance.AddSystemMessage("Код комнаты скопирован!");
+        }
+    }
+
+    public void UpdatePlayerListFromNetwork(List<Player> players)
+    {
+        playersList = players;
+        UpdateStartGameButton();
+    }
+
+    private void UpdateStartGameButton()
+    {
+        if (startGameButton == null) return;
+
+        if (!isHost)
+        {
+            startGameButton.interactable = false;
+            return;
         }
 
+        int readyCount = 0;
         foreach (var player in playersList)
         {
-            GameObject entry = Instantiate(playerEntryPrefab, playersContainer);
-
-            TextMeshProUGUI nameText = entry.GetComponentInChildren<TextMeshProUGUI>();
-            string hostMark = player.IsHost ? " (хост)" : "";
-            nameText.text = $"{LocalizationManager.Instance.GetText("voice")} {player.Number}" + hostMark;
-
-            Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
-            readyToggle.isOn = player.IsReady;
-            readyToggle.interactable = (player.Number == localPlayerNumber);
-
-            Image image = entry.GetComponent<Image>();
-            if (player.Number == localPlayerNumber)
-            {
-                image.color = myColor;
-            }
-            else
-            {
-                image.color = othersColor;
-            }
+            if (player.IsReady) readyCount++;
         }
-        
-        // Обновляем состояние кнопки старта
-        if (startGameButton != null)
+
+        startGameButton.interactable = readyCount >= playersList.Count && playersList.Count >= 3;
+    }
+
+    private void OnPlayerAdded(NetworkPlayer player)
+    {
+        Debug.Log($"Игрок добавлен: {player.playerNumber}");
+    }
+
+    private void OnPlayerRemoved(NetworkPlayer player)
+    {
+        Debug.Log($"Игрок удалён: {player.playerNumber}");
+    }
+
+    public void OnHostMigrated(int newHostNumber)
+    {
+        NetworkChat.Instance.AddSystemMessage($"Хост передан игроку {newHostNumber}");
+    }
+
+    private void OnLanguageChanged(int index)
+    {
+        string[] languages = { "ru", "en", "fr", "es", "de", "ch" };
+        if (index >= 0 && index < languages.Length)
         {
-            startGameButton.interactable = IsLocalPlayerHost() && CheckAllReady();
+            PlayerPrefs.SetString("Language", languages[index]);
+            LocalizationManager.Instance.SetLocale(index);
         }
-    }
-
-    private void UpdatePlayersList()
-    {
-        if (playersContainer == null || playerEntryPrefab == null) return;
-
-        foreach (Transform child in playersContainer)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // Показываем локального игрока и сетевых игроков
-        List<Player> allPlayers = new List<Player>();
-        
-        // Добавляем локального игрока
-        allPlayers.Add(localPlayer);
-        
-        // Добавляем сетевых игроков
-        foreach (var netPlayer in networkPlayers)
-        {
-            if (!netPlayer.isLocalPlayer)
-            {
-                Player player = new Player(new PlayerData(netPlayer.playerCountry))
-                {
-                    Number = netPlayer.playerNumber,
-                    IsReady = netPlayer.isReady,
-                    IsHost = netPlayer.isHost,
-                    IsDanny = netPlayer.isDanny,
-                    Role = netPlayer.role
-                };
-                allPlayers.Add(player);
-            }
-        }
-
-        foreach (var player in allPlayers)
-        {
-            GameObject entry = Instantiate(playerEntryPrefab, playersContainer);
-
-            TextMeshProUGUI nameText = entry.GetComponentInChildren<TextMeshProUGUI>();
-            string hostMark = player.IsHost ? " (хост)" : "";
-            nameText.text = $"{LocalizationManager.Instance.GetText("voice")} {player.Number}" + hostMark;
-
-            Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
-            readyToggle.isOn = player.IsReady;
-            readyToggle.interactable = (player == localPlayer);
-
-            Image image = entry.GetComponent<Image>();
-            if (player == localPlayer)
-            {
-                image.color = myColor;
-            }
-            else
-            {
-                image.color = othersColor;
-            }
-        }
-        
-        if (startGameButton != null)
-        {
-            startGameButton.interactable = IsLocalPlayerHost() && CheckAllReady();
-        }
-    }
-
-    private bool CheckAllReady()
-    {
-        if (networkPlayers.Count == 0)
-            return false;
-            
-        foreach (var netPlayer in networkPlayers)
-        {
-            if (!netPlayer.isReady)
-                return false;
-        }
-        
-        return networkPlayers.Count >= (NetworkGameManager.Instance != null ? NetworkGameManager.Instance.minPlayers : 3);
-    }
-
-    private bool IsLocalPlayerHost()
-    {
-        if (NetworkGameManager.Instance != null)
-        {
-            return NetworkGameManager.Instance.IsHost(localPlayerNumber);
-        }
-        
-        // Fallback: проверяем по флагу isHost у локального NetworkPlayer
-        var localNetPlayer = GetLocalNetworkPlayer();
-        return localNetPlayer != null && localNetPlayer.isHost;
-    }
-
-    private NetworkPlayer GetLocalNetworkPlayer()
-    {
-        return networkPlayers.FirstOrDefault(p => p.isLocalPlayer);
-    }
-
-    private string GenerateRoomCode()
-    {
-        const string chars = "0123456789";
-        string code = "";
-        for (int i = 0; i < 5; i++)
-        {
-            code += chars[Random.Range(0, chars.Length)];
-        }
-        return code;
-    }
-
-    private void CreateRoom(string code, bool isPrivate)
-    {
-        // В мультиплеере здесь создание комнаты на сервере
-        Debug.Log($"Создана комната {code}, приватная: {isPrivate}");
-    }
-
-    private bool TryJoinRoom(string code)
-    {
-        // В мультиплеере здесь попытка присоединения
-        Debug.Log($"Попытка присоединиться к комнате {code}");
-        return true; // Для демо всегда успешно
-    }
-
-    private void RefreshOpenRoomsList()
-    {
-        // В мультиплеере здесь получение списка открытых комнат
-        Debug.Log("Обновление списка открытых комнат");
-    }
-
-    private void HideAllPanelsExceptOne(GameObject panel)
-    {
-        mainMenuPanel.SetActive(false);
-        lobbyPanel.SetActive(false);
-        openRoomsPanel.SetActive(false);
-        gamePanel.SetActive(false);
-        endGamePanel.SetActive(false);
-
-        panel.SetActive(true);
     }
 }

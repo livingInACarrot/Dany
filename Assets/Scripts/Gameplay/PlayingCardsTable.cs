@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class PlayingCardsTable : MonoBehaviour
@@ -7,10 +8,16 @@ public class PlayingCardsTable : MonoBehaviour
 
     [SerializeField] private RectTransform tableArea;
     [SerializeField] private RectTransform handArea;
+    [SerializeField] private GameObject cardPrefab;
 
     private void Awake()
     {
         Instance = this;
+    }
+
+    public GameObject SpawnCardInHand()
+    {
+        return Instantiate(cardPrefab, tableArea);
     }
 
     public void PlaceCardFromHandOnTable(Card card)
@@ -46,8 +53,15 @@ public class PlayingCardsTable : MonoBehaviour
         Card[] cardsOnTable = tableArea.GetComponentsInChildren<Card>();
         foreach (Card card in cardsOnTable) 
         {
-            card.ReturnToHand();
-            card.transform.SetParent(handArea);
+            Destroy(card.gameObject);
+        }
+    }
+    public void ClearHand()
+    {
+        Card[] cardsInHand = handArea.GetComponentsInChildren<Card>();
+        foreach (var card in cardsInHand)
+        {
+            Destroy(card.gameObject);
         }
     }
     public void HideHand()

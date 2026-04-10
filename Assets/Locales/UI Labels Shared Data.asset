@@ -67,6 +67,22 @@ MonoBehaviour:
     m_Key: mainMenu.voices
     m_Metadata:
       m_Items: []
+  - m_Id: 22618040905445376
+    m_Key: settings.lang
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623551268794368
+    m_Key: settings.mic
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623751194488832
+    m_Key: settings.volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22624159577092096
+    m_Key: settings.micBind
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

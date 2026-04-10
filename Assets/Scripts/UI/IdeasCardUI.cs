@@ -25,12 +25,12 @@ public class IdeasCardUI : MonoBehaviour
             Destroy(gameObject);
 
         wordButtons = wordsPanel.GetComponentsInChildren<Button>();
-        //wordsPanel.SetActive(false);
+        wordsPanel.SetActive(true);
     }
 
     public void ShowForActiveRole(IdeasCard card, int wordIndex)
     {
-        ShowCard();
+        wordsPanel.SetActive(true);
         ColorBlock colors = new();
 
         // Активная личность видит все слова, и выделено то, которое надо показать
@@ -55,14 +55,12 @@ public class IdeasCardUI : MonoBehaviour
                 wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = "(" + card.Words[i] + ")";
             }
         }
-
-        // Отключаем кнопки (загадывающий не угадывает)
-        //SetButtonsActive(false);
+        SetButtonsActive(false);
     }
 
     public void ShowForOthers(IdeasCard card)
     {
-        ShowCard();
+        wordsPanel.SetActive(true);
         ColorBlock colors = new();
 
         // Все слова белые
@@ -75,23 +73,13 @@ public class IdeasCardUI : MonoBehaviour
             colors.disabledColor = Color.gray;
             wordButtons[i].colors = colors;
         }
-
         SetButtonsActive(false);
     }
-
-
     public void ShowGuessPanel(IdeasCard card)
     {
         ShowForOthers(card);
 
-        //SetButtonsActive(true);
-
         NetworkChat.Instance.AddSystemMessage($"Решающая личность ({GameManager.Instance.Players.FirstOrDefault(p => p.Role == Role.Decisive)}) должна угадать слово!");
-    }
-
-    private void ShowCard()
-    {
-        wordsPanel.SetActive(true);
     }
 
     public void HideCard()
@@ -105,14 +93,5 @@ public class IdeasCardUI : MonoBehaviour
         {
             wordButtons[i].interactable = active;
         }
-    }
-
-    private void OnWordGuessed(int wordIndex)
-    {
-        //string guessedWord = currentCard.Words[wordIndex];
-        TurnManager.Instance.OnWordGuessed(wordIndex);
-
-        SetButtonsActive(false);
-        HideCard();
     }
 }

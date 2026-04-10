@@ -1,11 +1,3 @@
-using UnityEngine;
-
-public enum Role
-{
-    Active,     // Активная личность - игрок: ходит, не голосует, чат отключен
-    Decisive,   // Решающая личность - игрок голосует, общается
-    Waiting     // Игрок ждёт свой ход, общается
-}
 
 [System.Serializable]
 public class Player

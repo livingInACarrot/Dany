@@ -8,8 +8,6 @@ public class ScoreUI : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI personalitiesScoreText;
     [SerializeField] private TextMeshProUGUI dannyScoreText;
-    [SerializeField] private Image personalitiesProgressBar;
-    [SerializeField] private Image dannyProgressBar;
     [SerializeField] private int maxPersonalitiesScore = 6;
     [SerializeField] private int maxDannyScore = 3;
 
@@ -25,9 +23,6 @@ public class ScoreUI : MonoBehaviour
     {
         personalitiesScoreText.text = $"{personalitiesScore}/{maxPersonalitiesScore}";
         dannyScoreText.text = $"{dannyScore}/{maxDannyScore}";
-
-        personalitiesProgressBar.fillAmount = (float)personalitiesScore / maxPersonalitiesScore;
-        dannyProgressBar.fillAmount = (float)dannyScore / maxDannyScore;
     }
 
     public void ResetScore()

@@ -117,6 +117,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
 
     public void SetSprite(Sprite newSprite)
     {
+        sprite = newSprite;
         image.sprite = newSprite;
     }
     public void FlipCard(bool newIsFlipped)
