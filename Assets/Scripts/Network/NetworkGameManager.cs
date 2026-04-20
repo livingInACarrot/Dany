@@ -1,512 +1,478 @@
+using System.Collections;
+using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
 
+/// <summary>
+/// –¶–µ–Ω—Ç—Ä–∞–ª—å–Ω—ã–π –∏–≥—Ä–æ–≤–æ–π –º–µ–Ω–µ–¥–∂–µ—Ä. –£–ø—Ä–∞–≤–ª—è–µ—Ç –∫–æ–º–Ω–∞—Ç–∞–º–∏ –∏ –≤—Å–µ–π –∏–≥—Ä–æ–≤–æ–π –ª–æ–≥–∏–∫–æ–π –≤–Ω—É—Ç—Ä–∏ –∫–∞–∂–¥–æ–π –∫–æ–º–Ω–∞—Ç—ã.
+/// </summary>
 public class NetworkGameManager : NetworkBehaviour
 {
     public static NetworkGameManager Instance { get; private set; }
 
     [Header("Prefabs")]
-    [SerializeField] private GameObject networkPlayerPrefab;
+    [SerializeField] private GameRoom gameRoomPrefab;
+    [SerializeField] private GamePlayer gamePlayerPrefab;
 
     [Header("Game Settings")]
-    public int minPlayers = 3;
-    public int maxPlayers = 8;
+    [SerializeField] private float discussionTime = 60f;
 
-    [Header("Debug")]
-    public bool debugMode = false;
-
-    [SyncVar(hook = nameof(OnPhaseChanged))]
-    public GamePhase currentPhase;
-
-    [SyncVar]
-    public int personalitiesScore;
-
-    [SyncVar]
-    public int dannyScore;
-
-    [SyncVar]
-    public int currentPlayerNumber;
-
-    [SyncVar]
-    public int dannyPlayerNumber;
-
-    [SyncVar]
-    public int hostPlayerNumber;
-
-    public readonly SyncList<int> playersOrder = new SyncList<int>();
-
-    private Dictionary<int, NetworkPlayer> players = new Dictionary<int, NetworkPlayer>();
-
-    private IdeasCard currentIdeasCard;
-    private int secretWordIndex;
-    private readonly float discussionTime = 60f;
+    // –°–ï–†–í–ï–†
+    private readonly Dictionary<string, GameRoom> _rooms = new Dictionary<string, GameRoom>();
+    private readonly Dictionary<string, RoomGameState> _states = new Dictionary<string, RoomGameState>();
 
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
+    #region –£–ø—Ä–∞–≤–ª–µ–Ω–∏–µ –∫–æ–º–Ω–∞—Ç–∞–º–∏ (Commands)
+
+    [Command(requiresAuthority = false)]
+    public void CmdCreateRoom(NetworkConnectionToClient sender = null)
+    {
+        NetworkPlayer player = sender.identity.GetComponent<NetworkPlayer>();
+        if (player == null || !string.IsNullOrEmpty(player.CurrentRoomCode)) return;
+
+        string code = GenerateCode();
+        GameRoom room = Instantiate(gameRoomPrefab);
+        room.RoomCode = code;
+        NetworkServer.Spawn(room.gameObject);
+        _rooms[code] = room;
+
+        room.TryAddPlayer(player);
+        player.CurrentRoomCode = code;
+        TargetRoomCreated(sender, code);
+        Debug.Log($"[Server] Room {code} created by conn {sender?.connectionId}");
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdJoinRoom(string code, NetworkConnectionToClient sender = null)
+    {
+        NetworkPlayer player = sender.identity.GetComponent<NetworkPlayer>();
+        if (player == null) return;
+
+        if (!_rooms.TryGetValue(code, out GameRoom room))
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            TargetRoomError(sender, "–ö–æ–º–Ω–∞—Ç–∞ –Ω–µ –Ω–∞–π–¥–µ–Ω–∞");
+            return;
+        }
+        if (!room.TryAddPlayer(player))
+        {
+            TargetRoomError(sender, "–ö–æ–º–Ω–∞—Ç–∞ –∑–∞–ø–æ–ª–Ω–µ–Ω–∞ –∏–ª–∏ –∏–≥—Ä–∞ —É–∂–µ –∏–¥—ë—Ç");
+            return;
+        }
+        player.CurrentRoomCode = code;
+        TargetJoinedRoom(sender, code);
+        RpcRoomUpdated(code);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdLeaveRoom(NetworkConnectionToClient sender = null)
+    {
+        NetworkPlayer player = sender?.identity?.GetComponent<NetworkPlayer>();
+        if (player != null) ServerLeaveRoom(player);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdStartGame(NetworkConnectionToClient sender = null)
+    {
+        NetworkPlayer player = sender?.identity?.GetComponent<NetworkPlayer>();
+        if (player == null || !player.IsHost) return;
+        if (!_rooms.TryGetValue(player.CurrentRoomCode, out GameRoom room) || !room.CanStart) return;
+        ServerStartGame(room);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdReturnToLobby(NetworkConnectionToClient sender = null)
+    {
+        NetworkPlayer player = sender?.identity?.GetComponent<NetworkPlayer>();
+        if (player == null || !player.IsHost) return;
+        ServerReturnToLobby(player.CurrentRoomCode);
+    }
+    #endregion
+
+    #region –£–ø—Ä–∞–≤–ª–µ–Ω–∏–µ –∫–æ–º–Ω–∞—Ç–∞–º–∏ (Server)
+    [Server]
+    public void OnPlayerDisconnected(NetworkPlayer player)
+    {
+        if (!string.IsNullOrEmpty(player.CurrentRoomCode))
+            ServerLeaveRoom(player);
+    }
+
+    [Server]
+    private void ServerLeaveRoom(NetworkPlayer player)
+    {
+        string code = player.CurrentRoomCode;
+        if (string.IsNullOrEmpty(code) || !_rooms.TryGetValue(code, out GameRoom room)) return;
+
+        room.RemovePlayer(player);
+        player.CurrentRoomCode = string.Empty;
+        player.IsHost = false;
+
+        if (room.PlayerCount == 0)
+        {
+            _rooms.Remove(code);
+            _states.Remove(code);
+            NetworkServer.Destroy(room.gameObject);
         }
         else
         {
-            Destroy(gameObject);
+            RpcRoomUpdated(code);
         }
     }
+    #endregion
 
-    public override void OnStartServer()
+    #region –°—Ç–∞—Ä—Ç –∏–≥—Ä—ã
+    [Server]
+    private void ServerStartGame(GameRoom room)
     {
-        Debug.Log("Server started");
-        base.OnStartServer();
+        room.IsInProgress = true;
+        var players = new List<NetworkPlayer>(room.Players);
+        int dannyIdx = Random.Range(0, players.Count);
 
-        personalitiesScore = 0;
-        dannyScore = 0;
-        currentPhase = GamePhase.Lobby;
-        hostPlayerNumber = 0;
+        var state = new RoomGameState(room);
+        _states[room.RoomCode] = state;
+        state.DanyIndex = dannyIdx;
 
-        GameObject playerObj = Instantiate(networkPlayerPrefab);
-        NetworkServer.Spawn(playerObj);
-        NetworkPlayer player = playerObj.GetComponent<NetworkPlayer>();
-        player.playerCountry = "–ÓÒÒËˇ";
-
-        UpdatePlayersList();
-
-        if (debugMode)
+        for (int i = 0; i < players.Count; i++)
         {
-            Invoke(nameof(CreateDebugPlayers), 1f);
+            GamePlayer gp = Instantiate(gamePlayerPrefab);
+            gp.RoomIndex = i;
+            gp.IsDanny = (i == dannyIdx);
+            gp.OwnerNetId = players[i].netId;
+            NetworkServer.Spawn(gp.gameObject, players[i].connectionToClient);
+            players[i].GamePlayerNetId = gp.netId;
+            state.GamePlayers.Add(gp);
         }
-    }
 
-    private void CreateDebugPlayers()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            GameObject playerObj = Instantiate(networkPlayerPrefab);
-            NetworkServer.Spawn(playerObj);
-
-            NetworkPlayer player = playerObj.GetComponent<NetworkPlayer>();
-            player.playerCountry = new string[] { "–ÓÒÒËˇ", "—Õ√", "≈‚ÓÔ‡", "¿ÁËˇ" }[i];
-        }
+        RpcGameStarted(room.RoomCode);
+        StartCoroutine(DelayedAction(0.5f, room.RoomCode, () => ServerDistributeRoles(room.RoomCode)));
     }
 
     [Server]
-    public void RegisterPlayer(NetworkPlayer player)
+    private void ServerDistributeRoles(string roomCode)
     {
-        int playerNumber = player.playerNumber;
-        players[playerNumber] = player;
+        if (!_states.TryGetValue(roomCode, out var state)) return;
+        state.Room.Phase = GamePhase.RoleDistribution;
 
-        if (!playersOrder.Contains(playerNumber))
+        foreach (var gp in state.GamePlayers)
+            gp.TargetSendRole(gp.connectionToClient, gp.IsDanny);
+
+        StartCoroutine(DelayedAction(3f, roomCode, () => ServerStartNextTurn(roomCode)));
+    }
+    #endregion
+
+    #region –•–æ–¥—ã
+    [Server]
+    public void ServerStartNextTurn(string roomCode)
+    {
+        if (!_states.TryGetValue(roomCode, out var state)) return;
+        state.Room.Phase = GamePhase.TurnInProgress;
+
+        // –†–µ—à–∞—é—â–∏–π ‚Äî —Ç–æ—Ç, –∫—Ç–æ –±—ã–ª –∞–∫—Ç–∏–≤–Ω—ã–º –≤ –ø—Ä–æ—à–ª–æ–º —Ö–æ–¥—É
+        state.DecisiveIndex = state.CurrentIndex;
+
+        // –°–ª–µ–¥—É—é—â–∏–π –∞–∫—Ç–∏–≤–Ω—ã–π ‚Äî –ø—Ä–æ—Å—Ç–æ —Å–ª–µ–¥—É—é—â–∏–π –ø–æ –∫—Ä—É–≥—É
+        int count = state.GamePlayers.Count;
+        state.CurrentIndex = (state.CurrentIndex + 1) % count;
+
+        foreach (var gp in state.GamePlayers)
         {
-            playersOrder.Add(playerNumber);
+            gp.HasFinishedTurn = false;
+            if (gp.RoomIndex == state.CurrentIndex)       gp.Role = Role.Active;
+            else if (gp.RoomIndex == state.DecisiveIndex) gp.Role = Role.Decisive;
+            else                                           gp.Role = Role.Waiting;
         }
 
-        if (hostPlayerNumber == 0)
-        {
-            hostPlayerNumber = playerNumber;
-            player.isHost = true;
-            Debug.Log($"»„ÓÍ {playerNumber} ÒÚ‡Î ıÓÒÚÓÏ");
-        }
-        Debug.Log($"»„ÓÍ {playerNumber} Á‡Â„ËÒÚËÓ‚‡Ì. ¬ÒÂ„Ó: {players.Count}");
-        UpdatePlayersList();
+        ServerDrawCardsForPlayers(state);
+        ServerDrawIdeasCard(state);
     }
 
     [Server]
-    public void RemovePlayer(int playerNumber)
+    private void ServerDrawCardsForPlayers(RoomGameState state)
     {
-        if (!players.ContainsKey(playerNumber))
-            return;
-
-        bool wasHost = (playerNumber == hostPlayerNumber);
-
-        players.Remove(playerNumber);
-        playersOrder.Remove(playerNumber);
-
-        Debug.Log($"»„ÓÍ {playerNumber} ÓÚÍÎ˛˜ËÎÒˇ. ŒÒÚ‡ÎÓÒ¸: {players.Count}");
-
-        if (wasHost && playersOrder.Count > 0)
+        foreach (var gp in state.GamePlayers)
         {
-            MigrateHost();
-        }
-
-        UpdatePlayersList();
-    }
-    [Server]
-    private void MigrateHost()
-    {
-        if (playersOrder.Count == 0)
-        {
-            Debug.LogWarning("ÕÂÚ Ë„ÓÍÓ‚ ‰Îˇ ÔÂÂ‰‡˜Ë ıÓÒÚ‡");
-            return;
-        }
-
-        int oldHostIndex = playersOrder.IndexOf(hostPlayerNumber);
-        int newHostIndex = (oldHostIndex + 1) % playersOrder.Count;
-        
-        if (oldHostIndex < 0)
-            newHostIndex = 0;
-
-        hostPlayerNumber = playersOrder[newHostIndex];
-
-        foreach (var kvp in players)
-        {
-            kvp.Value.isHost = (kvp.Key == hostPlayerNumber);
-        }
-
-        Debug.Log($"’ÓÒÚ ÔÂÂ‰‡Ì Ë„ÓÍÛ {hostPlayerNumber}");
-        RpcHostMigrated(hostPlayerNumber);
-    }
-
-    [ClientRpc]
-    private void RpcHostMigrated(int newHostNumber)
-    {
-        NetworkChat.Instance.AddSystemMessage($"’ÓÒÚ ÔÂÂ‰‡Ì Ë„ÓÍÛ {newHostNumber}");
-        LobbyManager.Instance.OnHostMigrated(newHostNumber);
-    }
-
-    [Server]
-    private void UpdatePlayersList()
-    {
-        List<PlayerData> playerDataList = new();
-        foreach (var player in players.Values)
-        {
-            playerDataList.Add(new PlayerData(player.playerCountry));
-        }
-        RpcUpdatePlayersList(playerDataList.ToArray());
-    }
-
-    [ClientRpc]
-    private void RpcUpdatePlayersList(PlayerData[] playerDataArray)
-    {
-        List<Player> playersList = new();
-        foreach (var data in playerDataArray)
-        {
-            playersList.Add(new(data));
-        }
-        playersList = playersList.OrderBy(p => p.Number).ToList();
-
-        PlayerListUI.Instance.UpdatePlayerList(playersList);
-        LobbyManager.Instance.UpdatePlayerListFromNetwork(playersList);
-    }
-
-    [Server]
-    public void StartNetworkGame()
-    {
-        if (players.Count < minPlayers)
-        {
-            RpcShowMessage($"ÕÂ‰ÓÒÚ‡ÚÓ˜ÌÓ Ë„ÓÍÓ‚. ÕÛÊÌÓ ÏËÌËÏÛÏ {minPlayers}.");
-            return;
-        }
-
-        if (currentPhase != GamePhase.Lobby)
-        {
-            RpcShowMessage("»„‡ ÛÊÂ Ë‰∏Ú!");
-            return;
-        }
-
-        int dannyIndex = Random.Range(0, playersOrder.Count);
-        dannyPlayerNumber = playersOrder[dannyIndex];
-
-        foreach (var kvp in players)
-        {
-            NetworkPlayer player = kvp.Value;
-            player.isDanny = (kvp.Key == dannyPlayerNumber);
-
-            TargetSendRole(player.connectionToClient, player.isDanny);
-        }
-
-        currentPhase = GamePhase.RoleDistribution;
-        StartNextTurn();
-    }
-
-    [TargetRpc]
-    private void TargetSendRole(NetworkConnection conn, bool isDanny)
-    {
-        if (isDanny)
-        {
-            NetworkChat.Instance.AddSystemMessage("¬˚ - ƒ˝ÌË! ÃÂ¯‡ÈÚÂ ‰Û„ËÏ Û„‡‰˚‚‡Ú¸ ÒÎÓ‚Ó.");
-        }
-        else
-        {
-            NetworkChat.Instance.AddSystemMessage("¬˚ - ÎË˜ÌÓÒÚ¸! œÓÏÓ„‡ÈÚÂ Û„‡‰˚‚‡Ú¸ ÒÎÓ‚Ó.");
-        }
-    }
-
-    [Server]
-    private void StartNextTurn()
-    {
-        if (playersOrder.Count == 0) return;
-
-        int currentIndex = playersOrder.IndexOf(currentPlayerNumber);
-
-        if (currentIndex < 0)
-        {
-            currentPlayerNumber = playersOrder[0];
-            currentIndex = 0;
-        }
-        else
-        {
-            int nextIndex = (currentIndex + 1) % playersOrder.Count;
-            currentPlayerNumber = playersOrder[nextIndex];
-        }
-        SetTurnRoles(currentPlayerNumber);
-        currentPhase = GamePhase.TurnInProgress;
-        DrawCardsForPlayer(currentPlayerNumber);
-        DrawIdeasCard();
-    }
-
-    [Server]
-    private void SetTurnRoles(int activePlayerNumber)
-    {
-        int activeIndex = playersOrder.IndexOf(activePlayerNumber);
-        int decisiveIndex = (activeIndex - 1 + playersOrder.Count) % playersOrder.Count;
-        int decisivePlayerNumber = playersOrder[decisiveIndex];
-
-        foreach (var kvp in players)
-        {
-            NetworkPlayer player = kvp.Value;
-
-            if (kvp.Key == activePlayerNumber)
+            if (gp.Role == Role.Waiting) continue;
+            gp.HandCardNetIds.Clear();
+            for (int i = 0; i < 7; i++)
             {
-                player.role = Role.Active;
+                Sprite pic = PicturesDeck.Instance.DrawCard();
+                if (pic == null) { ServerCheckGameEnd(state); return; }
+
+                GameObject cardObj = PlayingCardsTable.Instance.SpawnCardInHand();
+                NetworkServer.Spawn(cardObj);
+                NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
+                netCard.Initialize(pic, gp.netId);
+                gp.HandCardNetIds.Add(netCard.netId);
+                gp.TargetAddCardToHand(gp.connectionToClient, netCard.netId);
             }
-            else if (kvp.Key == decisivePlayerNumber)
-            {
-                player.role = Role.Decisive;
-            }
+        }
+    }
+
+    [Server]
+    private void ServerDrawIdeasCard(RoomGameState state)
+    {
+        state.CurrentIdeasCard = IdeasDeck.Instance.DrawCard();
+        if (state.CurrentIdeasCard == null) { ServerCheckGameEnd(state); return; }
+        state.SecretWordIndex = state.CurrentIdeasCard.GetRandomWord();
+
+        foreach (var gp in state.GamePlayers)
+        {
+            if (gp.Role == Role.Active)
+                gp.TargetShowActiveView(gp.connectionToClient, state.CurrentIdeasCard, state.SecretWordIndex);
             else
-            {
-                player.role = Role.Waiting;
-            }
+                gp.TargetShowOthersView(gp.connectionToClient, state.CurrentIdeasCard);
         }
     }
+    #endregion
 
+    #region –ò–≥—Ä–æ–≤—ã–µ —Å–æ–±—ã—Ç–∏—è
     [Server]
-    private void DrawCardsForPlayer(int playerNumber)
+    public void ServerOnPlayerFinishedTurn(GamePlayer gp)
     {
-        if (!players.TryGetValue(playerNumber, out NetworkPlayer player))
-            return;
+        string roomCode = FindRoomCode(gp);
+        if (roomCode == null || !_states.TryGetValue(roomCode, out var state)) return;
+        if (gp.RoomIndex != state.CurrentIndex) return;
 
-        player.handCardNetIds.Clear();
-
-        for (int i = 0; i < 7; i++)
+        state.Room.Phase = GamePhase.Discussion;
+        RpcStartDiscussion(roomCode);
+        StartCoroutine(DelayedAction(discussionTime, roomCode, () =>
         {
-            CreateCardForPlayer(playerNumber);
+            if (_states.TryGetValue(roomCode, out var s) && s.Room.Phase == GamePhase.Discussion)
+                ServerEndDiscussion(s);
+        }));
+    }
+
+    [Server]
+    private void ServerEndDiscussion(RoomGameState state)
+    {
+        GamePlayer decisiveGp = state.GamePlayers.Find(p => p.RoomIndex == state.DecisiveIndex);
+        decisiveGp?.TargetShowGuessPanel(decisiveGp.connectionToClient, state.CurrentIdeasCard);
+    }
+
+    [Server]
+    public void ServerOnWordGuessed(GamePlayer gp, int wordIndex)
+    {
+        string roomCode = FindRoomCode(gp);
+        if (roomCode == null || !_states.TryGetValue(roomCode, out var state)) return;
+        if (gp.RoomIndex != state.DecisiveIndex) return;
+
+        if (wordIndex == state.SecretWordIndex)
+        {
+            state.Room.PersonalitiesScore++;
+            RpcShowMessage(roomCode, "–ü—Ä–∞–≤–∏–ª—å–Ω–æ! –õ–∏—á–Ω–æ—Å—Ç–∏ –ø–æ–ª—É—á–∞—é—Ç –æ—á–∫–æ.");
+        }
+        else
+        {
+            state.Room.DannyScore++;
+            RpcShowMessage(roomCode, "–ù–µ–ø—Ä–∞–≤–∏–ª—å–Ω–æ! –î—ç–Ω–Ω–∏ –ø–æ–ª—É—á–∞–µ—Ç –æ—á–∫–æ.");
+        }
+
+        if (!ServerCheckGameEnd(state))
+            ServerStartNextTurn(roomCode);
+    }
+
+    [Server]
+    public void ServerOnVoteReceived(NetworkPlayer voter, int suspectedIndex)
+    {
+        if (string.IsNullOrEmpty(voter.CurrentRoomCode)) return;
+        if (!_states.TryGetValue(voter.CurrentRoomCode, out var state)) return;
+        state.Votes[voter.Number] = suspectedIndex;
+
+        if (state.Votes.Count >= state.GamePlayers.Count)
+            ServerResolveVotes(state);
+    }
+
+    [Server]
+    private void ServerResolveVotes(RoomGameState state)
+    {
+        var tally = new Dictionary<int, int>();
+        foreach (int suspect in state.Votes.Values)
+        {
+            if (!tally.ContainsKey(suspect)) tally[suspect] = 0;
+            tally[suspect]++;
+        }
+
+        int maxVotes = 0;
+        foreach (int cnt in tally.Values) if (cnt > maxVotes) maxVotes = cnt;
+
+        var topVoted = new List<int>();
+        foreach (var kvp in tally) if (kvp.Value == maxVotes) topVoted.Add(kvp.Key);
+
+        if (topVoted.Count == 1)
+        {
+            bool dannyFound = topVoted[0] == state.DanyIndex;
+            NetworkFinalRoundManager.Instance.RpcShowVoteResult(topVoted[0], dannyFound);
+            ServerEndGame(state, dannyWins: !dannyFound);
+        }
+        else
+        {
+            // –ù–∏—á—å—è ‚Äî –ø–æ–∫–∞–∑—ã–≤–∞–µ–º –≤—Ç–æ—Ä–æ–π —Ä–∞—É–Ω–¥
+            NetworkFinalRoundManager.Instance.RpcHandleTie(state.DanyIndex, topVoted);
+            // –°–±—Ä–∞—Å—ã–≤–∞–µ–º –≥–æ–ª–æ—Å–∞ –¥–ª—è –≤–æ–∑–º–æ–∂–Ω–æ–≥–æ –≤—Ç–æ—Ä–æ–≥–æ —Ä–∞—É–Ω–¥–∞
+            state.Votes.Clear();
         }
     }
 
     [Server]
-    private void CreateCardForPlayer(int playerNumber)
+    public void ServerEndGame(RoomGameState state, bool dannyWins)
     {
-        if (!players.TryGetValue(playerNumber, out NetworkPlayer player))
-            return;
-
-        Sprite pic = PicturesDeck.Instance.DrawCard();
-        if (pic == null) CheckGameEndConditions();
-
-        GameObject cardObj = PlayingCardsTable.Instance.SpawnCardInHand();
-        NetworkServer.Spawn(cardObj);
-
-        NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
-        netCard.Initialize(pic, (uint)playerNumber);
-
-        player.handCardNetIds.Add(netCard.netId);
-
-        TargetAddCardToHand(player.connectionToClient, netCard.netId);
+        state.Room.Phase = GamePhase.GameEnd;
+        RpcGameEnded(state.Room.RoomCode, dannyWins);
     }
+
+    [Server]
+    public void ServerEndGameByVote(string roomCode, bool dannyWins)
+    {
+        if (_states.TryGetValue(roomCode, out var state))
+            ServerEndGame(state, dannyWins);
+    }
+
+    [Server]
+    private bool ServerCheckGameEnd(RoomGameState state)
+    {
+        if (state.Room.PersonalitiesScore >= 6)
+        {
+            state.Room.Phase = GamePhase.GameEnd;
+            RpcGameEnded(state.Room.RoomCode, false);
+            return true;
+        }
+        if (state.Room.DannyScore >= 3 || !PicturesDeck.Instance.EnoughCardsToDraw())
+        {
+            state.Room.Phase = GamePhase.FinalRound;
+            RpcStartFinalRound(state.Room.RoomCode, state.DanyIndex);
+            return true;
+        }
+        return false;
+    }
+
+    [Server]
+    private void ServerReturnToLobby(string roomCode)
+    {
+        if (!_states.TryGetValue(roomCode, out var state)) return;
+        foreach (var gp in state.GamePlayers)
+            if (gp != null) NetworkServer.Destroy(gp.gameObject);
+        _states.Remove(roomCode);
+
+        if (_rooms.TryGetValue(roomCode, out var room))
+        {
+            room.IsInProgress = false;
+            room.Phase = GamePhase.Lobby;
+            room.PersonalitiesScore = 0;
+            room.DannyScore = 0;
+        }
+        RpcReturnToLobby(roomCode);
+    }
+    #endregion
+
+    #region –í—Å–ø–æ–º–æ–≥–∞—Ç–µ–ª—å–Ω—ã–µ –º–µ—Ç–æ–¥—ã
+    public List<int> GetPlayersNumbers(string roomCode)
+    {
+        if (_states.TryGetValue(roomCode, out var state))
+            return state.GamePlayers.ConvertAll(gp => gp.RoomIndex);
+        return new List<int>();
+    }
+
+    public RoomGameState GetState(string roomCode)
+    {
+        _states.TryGetValue(roomCode, out var state);
+        return state;
+    }
+
+    [Server]
+    private string FindRoomCode(GamePlayer gp)
+    {
+        if (NetworkServer.spawned.TryGetValue(gp.OwnerNetId, out NetworkIdentity id))
+            return id.GetComponent<NetworkPlayer>().CurrentRoomCode;
+        return null;
+    }
+
+    [Server]
+    private string GenerateCode()
+    {
+        string code;
+        do { code = Random.Range(10000, 99999).ToString(); }
+        while (_rooms.ContainsKey(code));
+        return code;
+    }
+
+    private IEnumerator DelayedAction(float delay, string roomCode, System.Action action)
+    {
+        yield return new WaitForSeconds(delay);
+        if (_rooms.ContainsKey(roomCode)) // –∫–æ–º–Ω–∞—Ç–∞ –µ—â—ë —Å—É—â–µ—Å—Ç–≤—É–µ—Ç
+            action?.Invoke();
+    }
+    #endregion
+
+    #region –û—Ç–≤–µ—Ç—ã –∫–æ–Ω–∫—Ä–µ—Ç–Ω—ã–º –∫–ª–∏–µ–Ω—Ç–∞–º
 
     [TargetRpc]
-    private void TargetAddCardToHand(NetworkConnection conn, uint cardNetId)
-    {
-        if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
-        {
-            Card card = identity.GetComponent<Card>();
-            PlayingCardsTable.Instance.ReturnCardToHand(card);
-        }
-    }
-
-    [Server]
-    private void DrawIdeasCard()
-    {
-        currentIdeasCard = IdeasDeck.Instance.DrawCard();
-        if (currentIdeasCard == null) CheckGameEndConditions();
-
-        secretWordIndex = currentIdeasCard.GetRandomWord();
-
-        foreach (var kvp in players)
-        {
-            NetworkPlayer player = kvp.Value;
-
-            if (kvp.Key == currentPlayerNumber)
-            {
-                TargetShowActiveRoleView(player.connectionToClient, currentIdeasCard, secretWordIndex);
-            }
-            else
-            {
-                TargetShowOthersView(player.connectionToClient, currentIdeasCard);
-            }
-        }
-    }
+    private void TargetRoomCreated(NetworkConnectionToClient conn, string code)
+        => LobbyManager.Instance.OnRoomCreated(code);
 
     [TargetRpc]
-    private void TargetShowActiveRoleView(NetworkConnection conn, IdeasCard card, int wordIndex)
-    {
-        IdeasCardUI.Instance.ShowForActiveRole(card, wordIndex);
-    }
+    private void TargetJoinedRoom(NetworkConnectionToClient conn, string code)
+        => LobbyManager.Instance.OnJoinedRoom(code);
 
     [TargetRpc]
-    private void TargetShowOthersView(NetworkConnection conn, IdeasCard card)
-    {
-        IdeasCardUI.Instance.ShowForOthers(card);
-    }
+    private void TargetRoomError(NetworkConnectionToClient conn, string error)
+        => LobbyManager.Instance.OnRoomError(error);
 
-    [Server]
-    public void OnPlayerFinishedTurn(int playerNumber)
-    {
-        if (playerNumber != currentPlayerNumber) return;
+    #endregion
 
-        currentPhase = GamePhase.Discussion;
-        RpcStartDiscussion();
-
-        Invoke(nameof(EndDiscussion), discussionTime);
-    }
+    #region –°–æ–±—ã—Ç–∏—è –¥–ª—è –≤—Å–µ—Ö –∫–ª–∏–µ–Ω—Ç–æ–≤
 
     [ClientRpc]
-    private void RpcStartDiscussion()
+    private void RpcRoomUpdated(string code)
+        => LobbyManager.Instance.RefreshRoomPanel();
+
+    [ClientRpc]
+    private void RpcGameStarted(string code)
+        => LobbyManager.Instance.OnGameStarted();
+
+    [ClientRpc]
+    private void RpcStartDiscussion(string code)
     {
         NetworkChat.Instance.EnableDiscussionMode();
-        TimerUI.Instance.StartTimer(30f, null);
-    }
-
-    [Server]
-    private void EndDiscussion()
-    {
-        int activeIndex = playersOrder.IndexOf(currentPlayerNumber);
-        int decisiveIndex = (activeIndex - 1 + playersOrder.Count) % playersOrder.Count;
-        int decisivePlayerNumber = playersOrder[decisiveIndex];
-
-        RpcShowGuessPanel(decisivePlayerNumber);
+        TimerUI.Instance.StartTimer(60f, null);
     }
 
     [ClientRpc]
-    private void RpcShowGuessPanel(int decisivePlayerNumber)
-    {
-        if (players.TryGetValue(decisivePlayerNumber, out NetworkPlayer player) && player.isLocalPlayer)
-        {
-            IdeasCardUI.Instance.ShowGuessPanel(currentIdeasCard);
-        }
-        else
-        {
-            NetworkChat.Instance.AddSystemMessage($"»„ÓÍ {decisivePlayerNumber} Û„‡‰˚‚‡ÂÚ ÒÎÓ‚Ó...");
-        }
-    }
-
-    [Server]
-    public void OnWordGuessed(int playerNumber, int guessedWordIndex)
-    {
-        int activeIndex = playersOrder.IndexOf(currentPlayerNumber);
-        int decisiveIndex = (activeIndex - 1 + playersOrder.Count) % playersOrder.Count;
-        int decisivePlayerNumber = playersOrder[decisiveIndex];
-
-        if (playerNumber != decisivePlayerNumber) return;
-
-        bool isCorrect = (guessedWordIndex == secretWordIndex);
-
-        if (isCorrect)
-        {
-            personalitiesScore++;
-            RpcShowMessage($"»„ÓÍ {playerNumber} Û„‡‰‡Î! Œ˜ÍÓ ÎË˜ÌÓÒÚˇÏ.");
-        }
-        else
-        {
-            dannyScore++;
-            RpcShowMessage($"»„ÓÍ {playerNumber} ÌÂ Û„‡‰‡Î! Œ˜ÍÓ ƒ˝ÌÌË.");
-        }
-
-        CheckGameEndConditions();
-
-        if (currentPhase != GamePhase.GameEnd && currentPhase != GamePhase.FinalRound)
-        {
-            StartNextTurn();
-        }
-    }
+    private void RpcShowMessage(string code, string msg)
+        => NetworkChat.Instance.AddSystemMessage(msg);
 
     [ClientRpc]
-    private void RpcShowMessage(string message)
-    {
-        NetworkChat.Instance.AddSystemMessage(message);
-    }
-
-    [Server]
-    private void CheckGameEndConditions()
-    {
-        if (personalitiesScore >= 6)
-        {
-            EndGame(false);
-        }
-        else if (dannyScore >= 3 || !PicturesDeck.Instance.EnoughCardsToDraw())
-        {
-            currentPhase = GamePhase.FinalRound;
-            RpcStartFinalRound();
-        }
-    }
+    private void RpcStartFinalRound(string code, int dannyIndex)
+        => NetworkFinalRoundManager.Instance.StartFinalRound(dannyIndex, code);
 
     [ClientRpc]
-    private void RpcStartFinalRound()
-    {
-        FinalRoundManager.Instance.StartFinalRound();
-    }
-
-    [Server]
-    public void EndGame(bool dannyWins)
-    {
-        currentPhase = GamePhase.GameEnd;
-        RpcGameEnded(dannyWins);
-    }
+    private void RpcGameEnded(string code, bool dannyWins)
+        => LobbyManager.Instance.ShowGameEndScreen(dannyWins);
 
     [ClientRpc]
-    private void RpcGameEnded(bool dannyWins)
-    {
-        LobbyManager.Instance.ShowGameEndScreen(dannyWins);
-    }
-
-    [Server]
-    public void ProcessVote(int voterNumber, int suspectedNumber)
-    {
-        //FinalRoundManager.Instance.OnVoteReceived(voterNumber, suspectedNumber);
-    }
-
-    [Server]
-    public void ReturnToLobby()
-    {
-        currentPhase = GamePhase.Lobby;
-        personalitiesScore = 0;
-        dannyScore = 0;
-        currentPlayerNumber = 0;
-        dannyPlayerNumber = 0;
-        playersOrder.Clear();
-        
-        RpcReturnToLobby();
-    }
-
-    [ClientRpc]
-    private void RpcReturnToLobby()
+    private void RpcReturnToLobby(string code)
     {
         PlayingCardsTable.Instance.ClearTable();
         PlayingCardsTable.Instance.ClearHand();
         ScoreUI.Instance.ResetScore();
         LobbyManager.Instance.ShowLobby();
     }
+    #endregion
+}
 
-    private void OnPhaseChanged(GamePhase oldPhase, GamePhase newPhase)
-    {
-        Debug.Log($"‘‡Á‡ ËÁÏÂÌÂÌ‡: {oldPhase} -> {newPhase}");
-    }
-    
-    [Server]
-    public bool IsHost(int playerNumber)
-    {
-        return playerNumber == hostPlayerNumber;
-    }
+public class RoomGameState
+{
+    public GameRoom Room;
+    public int CurrentIndex = -1;
+    public int DecisiveIndex = -1;
+    public int DanyIndex;
+    public List<GamePlayer> GamePlayers = new();
+    public IdeasCard CurrentIdeasCard;
+    public int SecretWordIndex;
+    public Dictionary<int, int> Votes = new(); // (voterNumber, suspectedIndex)
+
+    public RoomGameState(GameRoom room) => Room = room;
 }

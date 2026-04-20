@@ -79,7 +79,7 @@ public class IdeasCardUI : MonoBehaviour
     {
         ShowForOthers(card);
 
-        NetworkChat.Instance.AddSystemMessage($"Решающая личность ({GameManager.Instance.Players.FirstOrDefault(p => p.Role == Role.Decisive)}) должна угадать слово!");
+        NetworkChat.Instance.AddSystemMessage($"Решающая личность должна угадать слово!");
     }
 
     public void HideCard()

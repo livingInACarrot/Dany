@@ -83,6 +83,42 @@ MonoBehaviour:
     m_Key: settings.micBind
     m_Metadata:
       m_Items: []
+  - m_Id: 22818554070904832
+    m_Key: gameUI.personalityTitle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818946406100992
+    m_Key: gameUI.danyTitle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819080120512512
+    m_Key: gameUI.personalityTask
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819145887199232
+    m_Key: gameUI.danyTask
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22932733339578368
+    m_Key: gameUI.chat.input.disabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23220011731464192
+    m_Key: roomsList.players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23242873792094208
+    m_Key: gameUI.voteHint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457660659326976
+    m_Key: gameUI.end.danyWon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457903660523520
+    m_Key: gameUI.end.personalitiesWon
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

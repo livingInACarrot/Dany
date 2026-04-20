@@ -75,4 +75,9 @@ public class LocalizationManager : MonoBehaviour
             LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[localeIndex];
         }
     }
+
+    public string GetStringLocale()
+    {
+        return LocalizationSettings.SelectedLocale.name;
+    }
 }

@@ -1,7 +1,8 @@
+using Mirror;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
 
 public class PlayerListUI : MonoBehaviour
 {
@@ -13,82 +14,90 @@ public class PlayerListUI : MonoBehaviour
     [SerializeField] private Color currentPlayerColor = Color.green;
     [SerializeField] private Color decisivePlayerColor = Color.yellow;
 
-    private Dictionary<Player, GameObject> playerEntries = new();
+    private Dictionary<NetworkPlayer, GameObject> playerEntries = new();
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
+        if (Instance == null) Instance = this;
     }
 
-    public void UpdatePlayerList(List<Player> players)
+    public void UpdatePlayerList(List<NetworkPlayer> players)
     {
         ClearPlayerList();
-
         foreach (var player in players)
-        {
-            if (player != null)
-            {
-                CreatePlayerEntry(player);
-            }
-        }
+            if (player != null) CreatePlayerEntry(player);
     }
 
-    private void CreatePlayerEntry(Player player)
+    /// <summary>
+    /// Перерисовать список с учётом игровых данных из GamePlayer
+    /// (роли, IsDanny). Вызывается после спавна GamePlayer.
+    /// </summary>
+    public void RefreshForGame()
     {
-        if (player == null)
-            return;
+        var keys = new List<NetworkPlayer>(playerEntries.Keys);
+        UpdatePlayerList(keys);
+    }
+
+    private void CreatePlayerEntry(NetworkPlayer player)
+    {
         GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
         playerEntries[player] = entry;
 
         TextMeshProUGUI nameText = entry.GetComponentInChildren<TextMeshProUGUI>();
+        nameText.text = Loc.Nick(player.Number);
 
-        string playerName = LocalizationManager.Instance.GetText("voice");
-
-        nameText.text = $"{playerName} {player.Number} ({player.Data.Country})";
-
-        if (player.Role == Role.Active)
+        // Пытаемся получить игровые данные из GamePlayer
+        GamePlayer gp = GetGamePlayer(player);
+        if (gp != null)
         {
-            nameText.color = currentPlayerColor;
-        }
-        else if (player.Role == Role.Decisive)
-        {
-            nameText.color = decisivePlayerColor;
-        }
-
-        if (player.IsDanny)
-        {
-            //nameText.text += " (�����)";
-            nameText.color = dannyColor;
+            if (gp.IsDanny)
+                nameText.color = dannyColor;
+            else if (gp.Role == Role.Active)
+                nameText.color = currentPlayerColor;
+            else if (gp.Role == Role.Decisive)
+                nameText.color = decisivePlayerColor;
         }
 
         Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
-        readyToggle.gameObject.SetActive(true);
-        readyToggle.isOn = player.IsReady;
-        readyToggle.interactable = false;
+        if (readyToggle != null)
+        {
+            // Готовность показываем только в фазе лобби
+            bool inLobby = gp == null;
+            readyToggle.gameObject.SetActive(inLobby);
+            if (inLobby)
+            {
+                readyToggle.isOn = player.IsReady;
+                readyToggle.interactable = false;
+            }
+        }
     }
 
     private void ClearPlayerList()
     {
         foreach (var entry in playerEntries.Values)
-        {
-            if (entry != null)
-                Destroy(entry);
-        }
+            if (entry != null) Destroy(entry);
         playerEntries.Clear();
     }
 
-    public void HighlightDannyReveal(Player suspectedDanny)
+    public void HighlightDannyReveal(NetworkPlayer suspectedDanny)
     {
         foreach (var kvp in playerEntries)
         {
             if (kvp.Key == suspectedDanny)
             {
                 Image bg = kvp.Value.GetComponent<Image>();
-                if (bg != null)
-                    bg.color = dannyColor;
+                if (bg != null) bg.color = dannyColor;
                 break;
             }
         }
+    }
+
+    /// <summary>Найти GamePlayer по GamePlayerNetId из NetworkPlayer.</summary>
+    private static GamePlayer GetGamePlayer(NetworkPlayer np)
+    {
+        if (np.GamePlayerNetId == 0) return null;
+        if (NetworkClient.spawned.TryGetValue(np.GamePlayerNetId, out NetworkIdentity id))
+            return id?.GetComponent<GamePlayer>();
+        return null;
     }
 }

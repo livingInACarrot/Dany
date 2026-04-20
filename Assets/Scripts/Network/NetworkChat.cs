@@ -1,8 +1,8 @@
 using Mirror;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
 
 
 public class NetworkChat : NetworkBehaviour
@@ -37,21 +37,29 @@ public class NetworkChat : NetworkBehaviour
 
     private void Start()
     {
+        SetupUI();
         if (isLocalPlayer)
         {
+            Debug.Log("local player");
             SetupUI();
+        }
+        else
+        {
+            Debug.Log("not local player");
         }
     }
 
     private void SetupUI()
     {
-        messageInput.onSubmit.AddListener((text) => OnSendMessage());
+        messageInput.onSubmit.AddListener(OnSendMessage);
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdSendMessage(string sender, string message, NetworkConnectionToClient senderConn = null)
+    public void CmdSendMessage(string message, NetworkConnectionToClient senderConn = null)
     {
+        var sender = senderConn.identity.GetComponent<NetworkPlayer>().Number.ToString();
         RpcReceiveMessage(sender, message);
+
     }
 
     [ClientRpc]
@@ -65,32 +73,16 @@ public class NetworkChat : NetworkBehaviour
         if (string.IsNullOrWhiteSpace(message))
             return;
 
-        string playerName = PlayerPrefs.GetString("PlayerName", "Игрок");
-
-        if (isServer)
-        {
-            RpcReceiveMessage(playerName, message);
-        }
-        else if (isClient)
-        {
-            CmdSendMessage(playerName, message);
-        }
+        CmdSendMessage(message);
     }
 
     private void AddMessageToUI(string sender, string message)
     {
-        if (messageContainer == null || messagePrefab == null)
-            return;
-
         GameObject msgObj = Instantiate(messagePrefab, messageContainer);
         messages.Add(msgObj);
 
-        TextMeshProUGUI[] texts = msgObj.GetComponentsInChildren<TextMeshProUGUI>();
-        if (texts.Length >= 2)
-        {
-            texts[0].text = sender;
-            texts[1].text = message;
-        }
+        TextMeshProUGUI text = msgObj.GetComponentInChildren<TextMeshProUGUI>();
+        text.text = sender + ": " + message;
 
         Canvas.ForceUpdateCanvases();
 
@@ -116,12 +108,14 @@ public class NetworkChat : NetworkBehaviour
         messageInput.interactable = active;
     }
 
-    private void OnSendMessage()
+    private void OnSendMessage(string input)
     {
-        if (string.IsNullOrWhiteSpace(messageInput.text))
+        //if (string.IsNullOrWhiteSpace(messageInput.text))
+        //    return;
+        if (string.IsNullOrWhiteSpace(input))
             return;
 
-        SendChatMessage(messageInput.text);
+        SendChatMessage(input);
 
         messageInput.text = "";
         messageInput.ActivateInputField();

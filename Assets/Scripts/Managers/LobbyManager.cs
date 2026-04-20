@@ -1,10 +1,12 @@
-﻿using Mirror;
+using Mirror;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static System.Net.Mime.MediaTypeNames;
 
+/// <summary>
+/// Главный UI-контроллер
+/// </summary>
 public class LobbyManager : MonoBehaviour
 {
     public static LobbyManager Instance { get; private set; }
@@ -17,12 +19,7 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private GameObject openRoomsPanel;
     [SerializeField] private GameObject rolePanel;
     [SerializeField] private GameObject gameEndPanel;
-
-    [Header("Several-scenes objects")]
     [SerializeField] private GameObject chatPanel;
-    [SerializeField] private Button rulesButton;
-    [SerializeField] private Button settingsButton;
-    [SerializeField] private Button exitButton;
 
     [Header("Main Menu")]
     [SerializeField] private TMP_InputField roomCodeInput;
@@ -37,56 +34,52 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Dropdown languageDropdown;
     [SerializeField] private Slider voiceVolumeSlider;
     [SerializeField] private Slider micVolumeSlider;
-    [SerializeField] private Button bindPushToTalkButton;
 
-    [Header("Rules")]
-    [SerializeField] private Scrollbar rulesScrollbar;
-    [SerializeField] private UnityEngine.UI.Image rulesImage;
+    private string _roomCode;
+    private bool _isHost;
 
-    [Header("Game End")]
-    [SerializeField] private TextMeshProUGUI winnerText;
+    private bool _pendingCreateRoom;
+    private string _pendingJoinCode;
 
-    private string currentRoomCode = "";
-    private bool isHost = false;
-    private List<Player> playersList = new();
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     private void Start()
     {
-        Debug.Log("Lobby Manager started");
         SetupUI();
         SubscribeToEvents();
         ShowMainMenu();
     }
 
+    private void OnDestroy()
+    {
+        NetworkPlayer.OnPlayerAdded -= OnNetworkPlayerAdded;
+        NetworkPlayer.OnPlayerRemoved -= OnNetworkPlayerRemoved;
+        GameRoom.OnRoomListChanged -= OnRoomListChanged;
+        GamePlayer.OnSpawned -= OnGamePlayerSpawned;
+    }
+
     private void SetupUI()
     {
         languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
-        //voiceVolumeSlider.onValueChanged.AddListener(VoiceChatManager.Instance.SetVoiceVolume);
-        //micVolumeSlider.onValueChanged.AddListener(VoiceChatManager.Instance.SetMicVolume);
-
         startGameButton.onClick.AddListener(OnStartGameClick);
         readyToggle.onValueChanged.AddListener(OnReadyToggleChanged);
-        privateRoomToggle.onValueChanged.AddListener(OnPrivateRoomToggleChanged);
-
-        rulesButton.onClick.AddListener(ShowRules);
-        settingsButton.onClick.AddListener(ShowSettings);
-        exitButton.onClick.AddListener(OnExitClick);
+        privateRoomToggle.onValueChanged.AddListener(_ => { /* добавить приватность комнаты */ });
     }
 
     private void SubscribeToEvents()
     {
-        NetworkPlayer.OnPlayerAdded += OnPlayerAdded;
-        NetworkPlayer.OnPlayerRemoved += OnPlayerRemoved;
+        NetworkPlayer.OnPlayerAdded += OnNetworkPlayerAdded;
+        NetworkPlayer.OnPlayerRemoved += OnNetworkPlayerRemoved;
+        GameRoom.OnRoomListChanged += OnRoomListChanged;
+        GamePlayer.OnSpawned += OnGamePlayerSpawned;
     }
 
+    #region Управление панелями
 
     public void ShowMainMenu()
     {
@@ -98,56 +91,27 @@ public class LobbyManager : MonoBehaviour
     {
         HideAllPanels();
         lobbyPanel.SetActive(true);
+        chatPanel.SetActive(true);
+        RefreshRoomPanel();
     }
 
-    public void ShowSettings()
-    {
-        settingsPanel.SetActive(true);
-    }
+    public void ShowSettings() => settingsPanel.SetActive(true);
+    public void ShowRules() => rulesPanel.SetActive(true);
+    public void ShowOpenRooms() => openRoomsPanel.SetActive(true);
 
-    public void ShowRules()
+    public void ShowRolePanel(bool isDany)
     {
-        rulesPanel.SetActive(true);
-    }
-
-    public void ShowOpenRooms()
-    {
-        HideAllPanels();
-        if (openRoomsPanel != null)
-            openRoomsPanel.SetActive(true);
-    }
-
-    public void ShowRolePanel(bool isDanny)
-    {
-        HideAllPanels();
-        if (rolePanel != null)
-        {
-            rolePanel.SetActive(true);
-            TextMeshProUGUI text = rolePanel.GetComponentInChildren<TextMeshProUGUI>();
-            if (text != null)
-            {
-                text.text = isDanny ? "Вы - Дэнни!" : "Вы - личность!";
-            }
-        }
+        rolePanel.GetComponent<RolePanelUI>().SetTexts(isDany);
+        rolePanel.SetActive(true);
         Invoke(nameof(HideRolePanel), 5f);
     }
+    private void HideRolePanel() => rolePanel.SetActive(false);
 
-    private void HideRolePanel()
-    {
-        rolePanel.SetActive(false);
-    }
-
-    public void ShowGameEndScreen(bool dannyWins)
+    public void ShowGameEndScreen(bool danyWins)
     {
         HideAllPanels();
-        if (gameEndPanel != null)
-        {
-            gameEndPanel.SetActive(true);
-            if (winnerText != null)
-            {
-                winnerText.text = dannyWins ? "Дэнни победил!" : "Личности победили!";
-            }
-        }
+        gameEndPanel.GetComponent<GameEndPanelUI>().SetText(danyWins);
+        gameEndPanel.SetActive(true);
     }
 
     private void HideAllPanels()
@@ -159,154 +123,203 @@ public class LobbyManager : MonoBehaviour
         openRoomsPanel.SetActive(false);
         rolePanel.SetActive(false);
         gameEndPanel.SetActive(false);
+        chatPanel.SetActive(false);
     }
+
+    #endregion
+
+    #region Обработка кнопок
 
     public void OnCreateRoomClick()
     {
-        NetworkManager.singleton.StartHost();
-        isHost = true;
-
-        //Invoke(nameof(GenerateRoomCode), 0.5f);
-        GenerateRoomCode();
-        ShowLobby();
-    }
-
-    private void GenerateRoomCode()
-    {
-        currentRoomCode = Random.Range(10000, 99999).ToString();
-        roomCodeText.text = currentRoomCode;
-        Debug.Log($"Создана комната с кодом: {currentRoomCode}");
+        _pendingCreateRoom = true;
+        _pendingJoinCode = null;
+        NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
+        NetworkManager.singleton.StartClient();
     }
 
     public void OnJoinByCodeClick()
     {
-        if (string.IsNullOrWhiteSpace(roomCodeInput.text))
-        {
-            return;
-        }
-        
-        // Добавить проверку кода комнаты
-        NetworkManager.singleton.networkAddress = "localhost";
+        string code = roomCodeInput.text?.Trim();
+        if (string.IsNullOrWhiteSpace(code) || code.Length != 5) return;
+        _pendingJoinCode = code;
+        _pendingCreateRoom = false;
+        NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
         NetworkManager.singleton.StartClient();
-
-        ShowLobby();
     }
 
-    public void OnOpenRoomsClick()
-    {
-        ShowOpenRooms();
-    }
-
-    public void OnSettingsClick()
-    {
-        ShowSettings();
-    }
-
-    public void OnRulesClick()
-    {
-        ShowRules();
-    }
-
-    public void OnExitClick()
-    {
-        UnityEngine.Application.Quit();
-    }
+    public void OnOpenRoomsClick() => ShowOpenRooms();
+    public void OnSettingsClick() => ShowSettings();
+    public void OnRulesClick() => ShowRules();
+    public void OnExitClick() => Application.Quit();
 
     public void OnRoomCodeButtonClick()
     {
-        GUIUtility.systemCopyBuffer = roomCodeText.text;
-
+        GUIUtility.systemCopyBuffer = _roomCode;
+        Debug.Log($"Код скопирован: {_roomCode}");
     }
 
     public void OnBackToMainMenuClick()
     {
-        if (NetworkServer.active || NetworkClient.active)
+        if (NetworkClient.active)
         {
-            NetworkManager.singleton.StopHost();
+            if (!string.IsNullOrEmpty(_roomCode))
+                NetworkGameManager.Instance.CmdLeaveRoom();
+            NetworkManager.singleton.StopClient();
         }
+        _roomCode = string.Empty;
+        _isHost = false;
         ShowMainMenu();
+    }
+
+    public void OnReturnToLobbyClick()
+    {
+        if (_isHost) NetworkGameManager.Instance.CmdReturnToLobby();
     }
 
     private void OnStartGameClick()
     {
-        NetworkPlayer localPlayer = NetworkClient.localPlayer.GetComponent<NetworkPlayer>();
-        if (localPlayer != null)
-        {
-            localPlayer.CmdStartGame();
-        }
+        if (_isHost) NetworkGameManager.Instance.CmdStartGame();
     }
 
     private void OnReadyToggleChanged(bool isReady)
     {
-        NetworkPlayer localPlayer = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
-        if (localPlayer != null)
+        NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdSetReady(isReady);
+        UpdateStartButton();
+    }
+    #endregion
+
+    #region Сетевые команды
+    public void OnRoomCreated(string code)
+    {
+        _roomCode = code;
+        _isHost = true;
+        roomCodeText.text = code;
+        ShowLobby();
+    }
+
+    public void OnJoinedRoom(string code)
+    {
+        _roomCode = code;
+        _isHost = false;
+        roomCodeText.text = code;
+        ShowLobby();
+    }
+
+    public void OnRoomError(string error)
+    {
+        NetworkChat.Instance.AddSystemMessage($"Ошибка: {error}");
+    }
+
+    public void OnHostMigrated(uint newHostNetId)
+    {
+        if (NetworkClient.spawned.TryGetValue(newHostNetId, out NetworkIdentity id))
         {
-            localPlayer.CmdSetReady(isReady);
+            NetworkPlayer np = id.GetComponent<NetworkPlayer>();
+            if (np != null && np.isLocalPlayer)
+            {
+                _isHost = true;
+                UpdateStartButton();
+            }
         }
+        NetworkChat.Instance.AddSystemMessage("Хост комнаты изменился.");
     }
 
-    private void OnPrivateRoomToggleChanged(bool isPrivate)
+    public void OnGameStarted()
     {
-        // Добавить логику приватности комнаты
-        Debug.Log($"Приватность комнаты изменена: {isPrivate}");
+        // Переход в игровой режим: UI обновится когда придут GamePlayer
     }
 
-    public void CopyRoomCode()
+    public void OnRoleAssigned(bool isDanny)
     {
-        if (!string.IsNullOrEmpty(currentRoomCode))
+        ShowRolePanel(isDanny);
+    }
+
+    public void OnDisconnected()
+    {
+        _roomCode = string.Empty;
+        _isHost = false;
+        ShowMainMenu();
+    }
+
+    public void RefreshRoomPanel()
+    {
+        UpdateStartButton();
+        RefreshPlayerList();
+    }
+    #endregion
+
+    #region Внутренние обработчики
+    private void OnNetworkPlayerAdded(NetworkPlayer player)
+    {
+        if (player.isLocalPlayer)
         {
-            GUIUtility.systemCopyBuffer = currentRoomCode;
-            NetworkChat.Instance.AddSystemMessage("Код комнаты скопирован!");
+            if (_pendingCreateRoom)
+            {
+                _pendingCreateRoom = false;
+                NetworkGameManager.Instance?.CmdCreateRoom();
+            }
+            else if (!string.IsNullOrEmpty(_pendingJoinCode))
+            {
+                string code = _pendingJoinCode;
+                _pendingJoinCode = null;
+                NetworkGameManager.Instance?.CmdJoinRoom(code);
+            }
         }
+        RefreshPlayerList();
     }
 
-    public void UpdatePlayerListFromNetwork(List<Player> players)
+    private void OnNetworkPlayerRemoved(NetworkPlayer _) => RefreshPlayerList();
+
+    private void OnRoomListChanged() => RoomsListUI.Instance?.RefreshRoomList();
+
+    private void OnGamePlayerSpawned(GamePlayer gp)
     {
-        playersList = players;
-        UpdateStartGameButton();
+        if (gp.isOwned)
+            PlayerListUI.Instance.RefreshForGame();
     }
 
-    private void UpdateStartGameButton()
-    {
-        if (startGameButton == null) return;
+    #endregion
 
-        if (!isHost)
+    #region Вспомогательное
+    private void UpdateStartButton()
+    {
+        if (!_isHost || string.IsNullOrEmpty(_roomCode))
         {
             startGameButton.interactable = false;
             return;
         }
 
-        int readyCount = 0;
-        foreach (var player in playersList)
+        GameRoom room = GameRoom.All.Find(r => r.RoomCode == _roomCode);
+        if (room == null || !room.CanStart) { startGameButton.interactable = false; return; }
+
+        bool allReady = true;
+        foreach (NetworkIdentity id in NetworkClient.spawned.Values)
         {
-            if (player.IsReady) readyCount++;
+            NetworkPlayer np = id?.GetComponent<NetworkPlayer>();
+            if (np != null && np.CurrentRoomCode == _roomCode && !np.IsReady)
+            { allReady = false; break; }
         }
-
-        startGameButton.interactable = readyCount >= playersList.Count && playersList.Count >= 3;
+        startGameButton.interactable = allReady;
     }
 
-    private void OnPlayerAdded(NetworkPlayer player)
+    private void RefreshPlayerList()
     {
-        Debug.Log($"Игрок добавлен: {player.playerNumber}");
-    }
-
-    private void OnPlayerRemoved(NetworkPlayer player)
-    {
-        Debug.Log($"Игрок удалён: {player.playerNumber}");
-    }
-
-    public void OnHostMigrated(int newHostNumber)
-    {
-        NetworkChat.Instance.AddSystemMessage($"Хост передан игроку {newHostNumber}");
+        if (string.IsNullOrEmpty(_roomCode)) return;
+        var players = new List<NetworkPlayer>();
+        foreach (NetworkIdentity id in NetworkClient.spawned.Values)
+        {
+            NetworkPlayer np = id.GetComponent<NetworkPlayer>();
+            if (np != null && np.CurrentRoomCode == _roomCode)
+                players.Add(np);
+        }
+        PlayerListUI.Instance.UpdatePlayerList(players);
     }
 
     private void OnLanguageChanged(int index)
     {
-        string[] languages = { "ru", "en", "fr", "es", "de", "ch" };
-        if (index >= 0 && index < languages.Length)
-        {
-            PlayerPrefs.SetString("Language", languages[index]);
-            LocalizationManager.Instance.SetLocale(index);
-        }
+        LocalizationManager.Instance.SetLocale(index);
+        PlayerPrefs.SetString("Language", LocalizationManager.Instance.GetStringLocale());
     }
+    #endregion
 }

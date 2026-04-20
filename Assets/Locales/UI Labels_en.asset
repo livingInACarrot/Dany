@@ -86,6 +86,44 @@ MonoBehaviour:
     m_Localized: Push to talk
     m_Metadata:
       m_Items: []
+  - m_Id: 22818554070904832
+    m_Localized: ALTERNATE PERSONALITY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818946406100992
+    m_Localized: DANY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819080120512512
+    m_Localized: Your task is to figure out Dani and accurately guess what the others
+      are trying to show with their cards.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819145887199232
+    m_Localized: Your task is to do everything possible to prevent others from guessing
+      correctly and under no circumstances to give yourself away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22932733339578368
+    m_Localized: Disabled during your turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23220011731464192
+    m_Localized: players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23242873792094208
+    m_Localized: Vote for the one who is Dany in your opinion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457660659326976
+    m_Localized: Dany won!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457903660523520
+    m_Localized: Personalities won!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

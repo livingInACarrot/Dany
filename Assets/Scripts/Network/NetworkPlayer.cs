@@ -1,118 +1,54 @@
 using Mirror;
 using UnityEngine;
-using System.Collections.Generic;
 
+/// <summary>
+/// Сетевой экземпляр игрока. Существует на протяжении всего подключения —
+/// от входа на сервер до дисконнекта. Содержит только лобби/транспортные данные.
+/// Игровые поля (роль, IsDanny, карты) вынесены в GamePlayer.
+/// </summary>
 public class NetworkPlayer : NetworkBehaviour
 {
-    [SyncVar(hook = nameof(OnPlayerNumberChanged))]
-    public int playerNumber;
+    /// <summary>Уникальный номер — connectionId, назначается сервером.</summary>
+    [SyncVar(hook = nameof(OnNumberChanged))]
+    public int Number;
 
-    [SyncVar(hook = nameof(OnPlayerCountryChanged))]
-    public string playerCountry;
+    [SyncVar(hook = nameof(OnCountryChanged))]
+    public string Country;
 
-    [SyncVar(hook = nameof(OnIsReadyChanged))]
-    public bool isReady;
-
-    [SyncVar(hook = nameof(OnIsDannyChanged))]
-    public bool isDanny;
-
-    [SyncVar(hook = nameof(OnRoleChanged))]
-    public Role role;
+    [SyncVar(hook = nameof(OnReadyChanged))]
+    public bool IsReady;
 
     [SyncVar]
-    public bool isHost;
+    public bool IsHost;
 
-    public readonly SyncList<uint> handCardNetIds = new SyncList<uint>();
+    /// <summary>Код комнаты, в которой находится игрок (пусто — в главном лобби).</summary>
+    [SyncVar]
+    public string CurrentRoomCode;
 
-    public System.Action<int, string, bool, bool, Role> OnPlayerDataChanged;
+    /// <summary>netId соответствующего GamePlayer (0 — вне игры).</summary>
+    [SyncVar]
+    public uint GamePlayerNetId;
+
+    public event System.Action OnDataChanged;
+
     public static event System.Action<NetworkPlayer> OnPlayerAdded;
     public static event System.Action<NetworkPlayer> OnPlayerRemoved;
 
+    // =====================================================
+    // Lifecycle
+    // =====================================================
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        Number = connectionToClient.connectionId;
+    }
+
     private void Start()
     {
-        if (isLocalPlayer)
-        {
-            string country = PlayerPrefs.GetString("PlayerCountry", "������");
-            CmdUpdatePlayerData(country);
-        }
-    }
-
-    [Command]
-    private void CmdUpdatePlayerData(string country)
-    {
-        playerCountry = country;
-        playerNumber = connectionToClient.connectionId;
-    }
-
-    [Command]
-    public void CmdSetReady(bool ready)
-    {
-        isReady = ready;
-    }
-
-    [Command]
-    public void CmdStartGame()
-    {
-        if (isServer)
-        {
-            NetworkGameManager.Instance.StartNetworkGame();
-        }
-    }
-
-    [Command]
-    public void CmdPlaceCard(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
-    {
-        if (!isOwned) return;
-        RpcUpdateCardPosition(cardNetId, position, rotation, scale);
-    }
-
-    [ClientRpc]
-    private void RpcUpdateCardPosition(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
-    {
-        if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
-        {
-            Card card = identity.GetComponent<Card>();
-            if (card != null)
-            {
-                card.ChangePosition(position, rotation, scale);
-            }
-        }
-    }
-
-    [Command]
-    public void CmdSendChatMessage(string message)
-    {
-        if (string.IsNullOrWhiteSpace(message)) return;
-
-        string playerName = $"����� {playerNumber}";
-        RpcReceiveChatMessage(playerName, message);
-    }
-
-    [ClientRpc]
-    private void RpcReceiveChatMessage(string sender, string message)
-    {
-        if (NetworkChat.Instance != null)
-        {
-            NetworkChat.Instance.AddMessage(sender, message);
-        }
-    }
-
-    [Command]
-    public void CmdVote(int suspectedPlayerNumber)
-    {
-        NetworkGameManager.Instance.ProcessVote(playerNumber, suspectedPlayerNumber);
-    }
-
-    [Command]
-    public void CmdFinishTurn()
-    {
-        NetworkGameManager.Instance.OnPlayerFinishedTurn(playerNumber);
-    }
-
-    [Command]
-    public void CmdWordGuessed(int wordIndex)
-    {
-        NetworkGameManager.Instance.OnWordGuessed(playerNumber, wordIndex);
+        if (!isLocalPlayer) return;
+        string country = PlayerPrefs.GetString("PlayerCountry", "Unknown");
+        CmdUpdateCountry(country);
     }
 
     public override void OnStartClient()
@@ -121,35 +57,61 @@ public class NetworkPlayer : NetworkBehaviour
         OnPlayerAdded?.Invoke(this);
     }
 
-    private void OnDestroy()
+    public override void OnStopClient()
     {
-        if (isClientOnly || isServer)
-        {
-            OnPlayerRemoved?.Invoke(this);
-        }
-    }
-    private void OnPlayerNumberChanged(int oldValue, int newValue)
-    {
-        OnPlayerDataChanged?.Invoke(newValue, playerCountry, isReady, isDanny, role);
+        base.OnStopClient();
+        OnPlayerRemoved?.Invoke(this);
     }
 
-    private void OnPlayerCountryChanged(string oldValue, string newValue)
+    // =====================================================
+    // Commands
+    // =====================================================
+
+    [Command]
+    public void CmdUpdateCountry(string country) => Country = country;
+
+    [Command]
+    public void CmdSetReady(bool ready) => IsReady = ready;
+
+    [Command]
+    public void CmdPlaceCard(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
     {
-        OnPlayerDataChanged?.Invoke(playerNumber, newValue, isReady, isDanny, role);
+        RpcUpdateCardPosition(cardNetId, position, rotation, scale);
     }
 
-    private void OnIsReadyChanged(bool oldValue, bool newValue)
+    [ClientRpc]
+    private void RpcUpdateCardPosition(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
     {
-        OnPlayerDataChanged?.Invoke(playerNumber, playerCountry, newValue, isDanny, role);
+        if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
+            identity?.GetComponent<Card>()?.ChangePosition(position, rotation, scale);
     }
 
-    private void OnIsDannyChanged(bool oldValue, bool newValue)
+    [Command]
+    public void CmdSendChatMessage(string message, int num)
     {
-        OnPlayerDataChanged?.Invoke(playerNumber, playerCountry, isReady, newValue, role);
+        if (string.IsNullOrWhiteSpace(message)) return;
+        RpcReceiveChatMessage(Loc.Nick(num), message);
     }
 
-    private void OnRoleChanged(Role oldValue, Role newValue)
+    [ClientRpc]
+    private void RpcReceiveChatMessage(string sender, string message)
+        => NetworkChat.Instance?.AddMessage(sender, message);
+
+    /// <summary>
+    /// Голосование финального раунда. suspectedIndex — RoomIndex подозреваемого.
+    /// Делегируется NetworkGameManager, который знает контекст комнаты.
+    /// </summary>
+    [Command]
+    public void CmdVote(int suspectedRoomIndex)
     {
-        OnPlayerDataChanged?.Invoke(playerNumber, playerCountry, isReady, isDanny, newValue);
+        NetworkGameManager.Instance?.ServerOnVoteReceived(this, suspectedRoomIndex);
     }
+
+    // =====================================================
+    // SyncVar hooks
+    // =====================================================
+
+    private void OnNumberChanged(int _, int __)  => OnDataChanged?.Invoke();
+    private void OnCountryChanged(string _, string __) => OnDataChanged?.Invoke();
+    private void OnReadyChanged(bool _, bool __)  => OnDataChanged?.Invoke();
 }
