@@ -2,13 +2,12 @@ using Mirror;
 using UnityEngine;
 
 /// <summary>
-/// Отвечает исключительно за транспортный уровень: подключения/отключения
-/// игроков, спавн сетевого экземпляра игрока. Никакой игровой логики здесь нет.
-/// Dedicated Server — клиенты подключаются к SERVER_ADDRESS.
+/// Отвечает исключительно за транспортный уровень
 /// </summary>
 public class MirrorNetworkManager : NetworkManager
 {
-    public const string SERVER_ADDRESS = "46.138.156.199";
+    //public const string SERVER_ADDRESS = "46.138.156.199";
+    public const string SERVER_ADDRESS = "localhost";
 
     public override void Awake()
     {
@@ -16,9 +15,19 @@ public class MirrorNetworkManager : NetworkManager
         networkAddress = SERVER_ADDRESS;
     }
 
-    // =====================================================
-    // Серверные события
-    // =====================================================
+    public override void Start()
+    {
+#if UNITY_SERVER
+        StartServer();
+#elif UNITY_EDITOR
+        if (ParrelSync.ClonesManager.IsClone() &&
+            ParrelSync.ClonesManager.GetArgument() == "server")
+        {
+            networkAddress = "localhost";
+            StartServer();
+        }
+#endif
+    }
 
     public override void OnStartServer()
     {
@@ -32,10 +41,6 @@ public class MirrorNetworkManager : NetworkManager
         Debug.Log("[Server] Stopped");
     }
 
-    /// <summary>
-    /// Спавним NetworkPlayer для каждого входящего подключения.
-    /// playerPrefab задаётся в инспекторе NetworkManager.
-    /// </summary>
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
         GameObject playerObj = Instantiate(playerPrefab);
@@ -43,24 +48,17 @@ public class MirrorNetworkManager : NetworkManager
         Debug.Log($"[Server] Player connected: connId={conn.connectionId}");
     }
 
-    /// <summary>
-    /// При отключении уведомляем NetworkGameManager, чтобы удалить игрока из комнаты.
-    /// </summary>
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
     {
         if (conn.identity != null)
         {
             NetworkPlayer player = conn.identity.GetComponent<NetworkPlayer>();
             if (player != null)
-                NetworkGameManager.Instance?.OnPlayerDisconnected(player);
+                NetworkGameManager.Instance.OnPlayerDisconnected(player);
         }
         base.OnServerDisconnect(conn);
         Debug.Log($"[Server] Player disconnected: connId={conn.connectionId}");
     }
-
-    // =====================================================
-    // Клиентские события
-    // =====================================================
 
     public override void OnStartClient()
     {
@@ -71,6 +69,6 @@ public class MirrorNetworkManager : NetworkManager
     public override void OnClientDisconnect()
     {
         base.OnClientDisconnect();
-        LobbyManager.Instance?.OnDisconnected();
+        LobbyManager.Instance.OnDisconnected();
     }
 }

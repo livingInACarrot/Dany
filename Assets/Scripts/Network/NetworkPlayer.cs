@@ -2,13 +2,13 @@ using Mirror;
 using UnityEngine;
 
 /// <summary>
-/// Сетевой экземпляр игрока. Существует на протяжении всего подключения —
-/// от входа на сервер до дисконнекта. Содержит только лобби/транспортные данные.
-/// Игровые поля (роль, IsDanny, карты) вынесены в GamePlayer.
+/// Сетевой экземпляр игрока. Существует на протяжении всего подключения.
+/// Содержит только лобби/транспортные данные; игровые поля — в GamePlayer.
+/// Все Commands и TargetRpc проходят через этот объект, у которого есть
+/// корректный netId и authority, в отличие от scene-объекта NetworkGameManager.
 /// </summary>
 public class NetworkPlayer : NetworkBehaviour
 {
-    /// <summary>Уникальный номер — connectionId, назначается сервером.</summary>
     [SyncVar(hook = nameof(OnNumberChanged))]
     public int Number;
 
@@ -21,11 +21,9 @@ public class NetworkPlayer : NetworkBehaviour
     [SyncVar]
     public bool IsHost;
 
-    /// <summary>Код комнаты, в которой находится игрок (пусто — в главном лобби).</summary>
     [SyncVar]
     public string CurrentRoomCode;
 
-    /// <summary>netId соответствующего GamePlayer (0 — вне игры).</summary>
     [SyncVar]
     public uint GamePlayerNetId;
 
@@ -44,17 +42,23 @@ public class NetworkPlayer : NetworkBehaviour
         Number = connectionToClient.connectionId;
     }
 
-    private void Start()
-    {
-        if (!isLocalPlayer) return;
-        string country = PlayerPrefs.GetString("PlayerCountry", "Unknown");
-        CmdUpdateCountry(country);
-    }
-
     public override void OnStartClient()
     {
         base.OnStartClient();
         OnPlayerAdded?.Invoke(this);
+    }
+
+    /// <summary>
+    /// Гарантированно вызывается только для локального игрока и только после
+    /// того как Mirror полностью настроил объект (isLocalPlayer = true, netId задан).
+    /// </summary>
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        string country = PlayerPrefs.GetString("PlayerCountry", "Unknown");
+        CmdUpdateCountry(country);
+        // Уведомляем LobbyManager — время отправить отложенный запрос создания/входа в комнату
+        LobbyManager.Instance?.OnLocalPlayerSpawned();
     }
 
     public override void OnStopClient()
@@ -64,7 +68,34 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     // =====================================================
-    // Commands
+    // Commands — управление комнатой
+    // Команды на NetworkPlayer, а не на NetworkGameManager, потому что
+    // NetworkPlayer имеет корректный netId и authority; scene-объект
+    // NetworkGameManager требует NetworkIdentity для Commands.
+    // =====================================================
+
+    [Command]
+    public void CmdCreateRoom()
+        => NetworkGameManager.Instance?.ServerCreateRoom(this);
+
+    [Command]
+    public void CmdJoinRoom(string code)
+        => NetworkGameManager.Instance?.ServerJoinRoom(code, this);
+
+    [Command]
+    public void CmdLeaveRoom()
+        => NetworkGameManager.Instance?.ServerLeaveRoom(this);
+
+    [Command]
+    public void CmdStartGame()
+        => NetworkGameManager.Instance?.ServerRequestStartGame(this);
+
+    [Command]
+    public void CmdReturnToLobby()
+        => NetworkGameManager.Instance?.ServerRequestReturnToLobby(this);
+
+    // =====================================================
+    // Commands — состояние игрока
     // =====================================================
 
     [Command]
@@ -75,9 +106,7 @@ public class NetworkPlayer : NetworkBehaviour
 
     [Command]
     public void CmdPlaceCard(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
-    {
-        RpcUpdateCardPosition(cardNetId, position, rotation, scale);
-    }
+        => RpcUpdateCardPosition(cardNetId, position, rotation, scale);
 
     [ClientRpc]
     private void RpcUpdateCardPosition(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
@@ -97,21 +126,31 @@ public class NetworkPlayer : NetworkBehaviour
     private void RpcReceiveChatMessage(string sender, string message)
         => NetworkChat.Instance?.AddMessage(sender, message);
 
-    /// <summary>
-    /// Голосование финального раунда. suspectedIndex — RoomIndex подозреваемого.
-    /// Делегируется NetworkGameManager, который знает контекст комнаты.
-    /// </summary>
     [Command]
     public void CmdVote(int suspectedRoomIndex)
-    {
-        NetworkGameManager.Instance?.ServerOnVoteReceived(this, suspectedRoomIndex);
-    }
+        => NetworkGameManager.Instance?.ServerOnVoteReceived(this, suspectedRoomIndex);
+
+    // =====================================================
+    // TargetRpc — ответы сервера конкретному игроку
+    // =====================================================
+
+    [TargetRpc]
+    public void TargetRoomCreated(NetworkConnectionToClient conn, string code)
+        => LobbyManager.Instance?.OnRoomCreated(code);
+
+    [TargetRpc]
+    public void TargetJoinedRoom(NetworkConnectionToClient conn, string code)
+        => LobbyManager.Instance?.OnJoinedRoom(code);
+
+    [TargetRpc]
+    public void TargetRoomError(NetworkConnectionToClient conn, string error)
+        => LobbyManager.Instance?.OnRoomError(error);
 
     // =====================================================
     // SyncVar hooks
     // =====================================================
 
-    private void OnNumberChanged(int _, int __)  => OnDataChanged?.Invoke();
+    private void OnNumberChanged(int _, int __)    => OnDataChanged?.Invoke();
     private void OnCountryChanged(string _, string __) => OnDataChanged?.Invoke();
-    private void OnReadyChanged(bool _, bool __)  => OnDataChanged?.Invoke();
+    private void OnReadyChanged(bool _, bool __)   => OnDataChanged?.Invoke();
 }

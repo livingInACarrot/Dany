@@ -136,6 +136,7 @@ public class LobbyManager : MonoBehaviour
         _pendingJoinCode = null;
         NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
         NetworkManager.singleton.StartClient();
+        // ShowLobby() вызовется из OnRoomCreated() после ответа сервера
     }
 
     public void OnJoinByCodeClick()
@@ -146,6 +147,7 @@ public class LobbyManager : MonoBehaviour
         _pendingCreateRoom = false;
         NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
         NetworkManager.singleton.StartClient();
+        // ShowLobby() вызовется из OnJoinedRoom() после ответа сервера
     }
 
     public void OnOpenRoomsClick() => ShowOpenRooms();
@@ -164,7 +166,7 @@ public class LobbyManager : MonoBehaviour
         if (NetworkClient.active)
         {
             if (!string.IsNullOrEmpty(_roomCode))
-                NetworkGameManager.Instance.CmdLeaveRoom();
+                NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdLeaveRoom();
             NetworkManager.singleton.StopClient();
         }
         _roomCode = string.Empty;
@@ -174,12 +176,12 @@ public class LobbyManager : MonoBehaviour
 
     public void OnReturnToLobbyClick()
     {
-        if (_isHost) NetworkGameManager.Instance.CmdReturnToLobby();
+        if (_isHost) NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdReturnToLobby();
     }
 
     private void OnStartGameClick()
     {
-        if (_isHost) NetworkGameManager.Instance.CmdStartGame();
+        if (_isHost) NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdStartGame();
     }
 
     private void OnReadyToggleChanged(bool isReady)
@@ -250,24 +252,22 @@ public class LobbyManager : MonoBehaviour
     #endregion
 
     #region Внутренние обработчики
-    private void OnNetworkPlayerAdded(NetworkPlayer player)
+    public void OnLocalPlayerSpawned()
     {
-        if (player.isLocalPlayer)
+        if (_pendingCreateRoom)
         {
-            if (_pendingCreateRoom)
-            {
-                _pendingCreateRoom = false;
-                NetworkGameManager.Instance?.CmdCreateRoom();
-            }
-            else if (!string.IsNullOrEmpty(_pendingJoinCode))
-            {
-                string code = _pendingJoinCode;
-                _pendingJoinCode = null;
-                NetworkGameManager.Instance?.CmdJoinRoom(code);
-            }
+            _pendingCreateRoom = false;
+            NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdCreateRoom();
         }
-        RefreshPlayerList();
+        else if (!string.IsNullOrEmpty(_pendingJoinCode))
+        {
+            string code = _pendingJoinCode;
+            _pendingJoinCode = null;
+            NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdJoinRoom(code);
+        }
     }
+
+    private void OnNetworkPlayerAdded(NetworkPlayer player) => RefreshPlayerList();
 
     private void OnNetworkPlayerRemoved(NetworkPlayer _) => RefreshPlayerList();
 

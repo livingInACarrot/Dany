@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6347639736203770167}
   - component: {fileID: 1004699379911799489}
   - component: {fileID: 8951987029861161274}
+  - component: {fileID: 8851802117786980507}
   m_Layer: 5
   m_Name: PictureCardPrefab
   m_TagString: Untagged
@@ -135,3 +136,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Card
   sprite: {fileID: -5487552658228197518, guid: 917ff715e731b9f4c84d8884dfa4705a, type: 3}
   InHand: 1
+--- !u!114 &8851802117786980507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2065935206011427666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
+  sceneId: 0
+  _assetId: 785493703
+  serverOnly: 0
+  visibility: 0
+  hasSpawned: 0

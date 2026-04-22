@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Показывает список открытых комнат, полученных из GameRoom.All.
+/// Показывает список всех открытых комнат, полученных из GameRoom.All.
 /// Список обновляется автоматически через событие GameRoom.OnRoomListChanged.
 /// </summary>
 public class RoomsListUI : MonoBehaviour
@@ -41,7 +41,6 @@ public class RoomsListUI : MonoBehaviour
     {
         GameObject entry = Instantiate(roomEntryPrefab, roomsContainer);
 
-        // Ожидаемая структура prefab-а: два TMP-текста (код и счётчик), кнопка Join
         TextMeshProUGUI[] texts = entry.GetComponentsInChildren<TextMeshProUGUI>();
         if (texts.Length >= 1) texts[0].text = room.RoomCode;
         if (texts.Length >= 2) texts[1].text = $"{room.PlayerCount}/{room.MaxPlayers}";
@@ -52,8 +51,8 @@ public class RoomsListUI : MonoBehaviour
             string code = room.RoomCode;
             joinBtn.onClick.AddListener(() =>
             {
-                LobbyManager.Instance?.ShowMainMenu(); // закрываем панель
-                NetworkGameManager.Instance?.CmdJoinRoom(code);
+                LobbyManager.Instance.ShowMainMenu();
+                NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdJoinRoom(code);
             });
         }
     }

@@ -27,12 +27,11 @@ public class NetworkGameManager : NetworkBehaviour
         Instance = this;
     }
 
-    #region Управление комнатами (Commands)
+    #region Управление комнатами (Server)
 
-    [Command(requiresAuthority = false)]
-    public void CmdCreateRoom(NetworkConnectionToClient sender = null)
+    [Server]
+    public void ServerCreateRoom(NetworkPlayer player)
     {
-        NetworkPlayer player = sender.identity.GetComponent<NetworkPlayer>();
         if (player == null || !string.IsNullOrEmpty(player.CurrentRoomCode)) return;
 
         string code = GenerateCode();
@@ -43,51 +42,42 @@ public class NetworkGameManager : NetworkBehaviour
 
         room.TryAddPlayer(player);
         player.CurrentRoomCode = code;
-        TargetRoomCreated(sender, code);
-        Debug.Log($"[Server] Room {code} created by conn {sender?.connectionId}");
+        player.IsHost = true;
+        player.TargetRoomCreated(player.connectionToClient, code);
+        Debug.Log($"[Server] Room {code} created by conn {player.connectionToClient?.connectionId}");
     }
 
-    [Command(requiresAuthority = false)]
-    public void CmdJoinRoom(string code, NetworkConnectionToClient sender = null)
+    [Server]
+    public void ServerJoinRoom(string code, NetworkPlayer player)
     {
-        NetworkPlayer player = sender.identity.GetComponent<NetworkPlayer>();
         if (player == null) return;
 
         if (!_rooms.TryGetValue(code, out GameRoom room))
         {
-            TargetRoomError(sender, "Комната не найдена");
+            player.TargetRoomError(player.connectionToClient, "Комната не найдена");
             return;
         }
         if (!room.TryAddPlayer(player))
         {
-            TargetRoomError(sender, "Комната заполнена или игра уже идёт");
+            player.TargetRoomError(player.connectionToClient, "Комната заполнена или игра уже идёт");
             return;
         }
         player.CurrentRoomCode = code;
-        TargetJoinedRoom(sender, code);
+        player.TargetJoinedRoom(player.connectionToClient, code);
         RpcRoomUpdated(code);
     }
 
-    [Command(requiresAuthority = false)]
-    public void CmdLeaveRoom(NetworkConnectionToClient sender = null)
+    [Server]
+    public void ServerRequestStartGame(NetworkPlayer player)
     {
-        NetworkPlayer player = sender?.identity?.GetComponent<NetworkPlayer>();
-        if (player != null) ServerLeaveRoom(player);
-    }
-
-    [Command(requiresAuthority = false)]
-    public void CmdStartGame(NetworkConnectionToClient sender = null)
-    {
-        NetworkPlayer player = sender?.identity?.GetComponent<NetworkPlayer>();
         if (player == null || !player.IsHost) return;
         if (!_rooms.TryGetValue(player.CurrentRoomCode, out GameRoom room) || !room.CanStart) return;
         ServerStartGame(room);
     }
 
-    [Command(requiresAuthority = false)]
-    public void CmdReturnToLobby(NetworkConnectionToClient sender = null)
+    [Server]
+    public void ServerRequestReturnToLobby(NetworkPlayer player)
     {
-        NetworkPlayer player = sender?.identity?.GetComponent<NetworkPlayer>();
         if (player == null || !player.IsHost) return;
         ServerReturnToLobby(player.CurrentRoomCode);
     }
@@ -102,7 +92,7 @@ public class NetworkGameManager : NetworkBehaviour
     }
 
     [Server]
-    private void ServerLeaveRoom(NetworkPlayer player)
+    public void ServerLeaveRoom(NetworkPlayer player)
     {
         string code = player.CurrentRoomCode;
         if (string.IsNullOrEmpty(code) || !_rooms.TryGetValue(code, out GameRoom room)) return;
@@ -405,22 +395,6 @@ public class NetworkGameManager : NetworkBehaviour
         if (_rooms.ContainsKey(roomCode)) // комната ещё существует
             action?.Invoke();
     }
-    #endregion
-
-    #region Ответы конкретным клиентам
-
-    [TargetRpc]
-    private void TargetRoomCreated(NetworkConnectionToClient conn, string code)
-        => LobbyManager.Instance.OnRoomCreated(code);
-
-    [TargetRpc]
-    private void TargetJoinedRoom(NetworkConnectionToClient conn, string code)
-        => LobbyManager.Instance.OnJoinedRoom(code);
-
-    [TargetRpc]
-    private void TargetRoomError(NetworkConnectionToClient conn, string error)
-        => LobbyManager.Instance.OnRoomError(error);
-
     #endregion
 
     #region События для всех клиентов
