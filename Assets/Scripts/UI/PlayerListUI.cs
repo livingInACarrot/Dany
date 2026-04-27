@@ -13,6 +13,7 @@ public class PlayerListUI : MonoBehaviour
     [SerializeField] private Color dannyColor = Color.red;
     [SerializeField] private Color currentPlayerColor = Color.green;
     [SerializeField] private Color decisivePlayerColor = Color.yellow;
+    [SerializeField] private Color localPlayerColor = new(0.9f, 1, 0.9f);
 
     private readonly Dictionary<NetworkPlayer, GameObject> _entries = new();
     private readonly Dictionary<NetworkPlayer, System.Action> _readyHandlers = new();
@@ -35,6 +36,20 @@ public class PlayerListUI : MonoBehaviour
         UpdatePlayerList(keys);
     }
 
+    public void RemovePlayer(NetworkPlayer player)
+    {
+        if (_entries.TryGetValue(player, out GameObject entry))
+        {
+            if (entry != null) Destroy(entry);
+            _entries.Remove(player);
+        }
+        if (_readyHandlers.TryGetValue(player, out System.Action h))
+        {
+            player.OnDataChanged -= h;
+            _readyHandlers.Remove(player);
+        }
+    }
+
     private void CreatePlayerEntry(NetworkPlayer player)
     {
         GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
@@ -53,6 +68,14 @@ public class PlayerListUI : MonoBehaviour
             else if (gp.Role == Role.Decisive)
                 nameText.color = decisivePlayerColor;
         }
+        else if (player.isLocalPlayer)
+        {
+            var back = entry.GetComponentInChildren<Image>();
+            // На случай, если PlayerEntry будет кнопочкой
+            //ColorBlock colors = back.colors;
+            //colors.normalColor = localPlayerColor;
+            back.color = localPlayerColor;
+        }
 
         Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
         if (readyToggle != null)
@@ -64,7 +87,6 @@ public class PlayerListUI : MonoBehaviour
                 readyToggle.isOn = player.IsReady;
                 readyToggle.interactable = false;
 
-                // Обновляем toggle без пересборки списка
                 void OnDataChanged() { if (readyToggle != null) readyToggle.isOn = player.IsReady; }
                 player.OnDataChanged += OnDataChanged;
                 _readyHandlers[player] = OnDataChanged;
@@ -97,7 +119,6 @@ public class PlayerListUI : MonoBehaviour
         }
     }
 
-    /// <summary>Найти GamePlayer по GamePlayerNetId из NetworkPlayer.</summary>
     private static GamePlayer GetGamePlayer(NetworkPlayer np)
     {
         if (np.GamePlayerNetId == 0) return null;

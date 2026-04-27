@@ -14,6 +14,7 @@ public class LobbyManager : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject lobbyPanel;
+    [SerializeField] private GameObject gameplayPanel;
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private GameObject rulesPanel;
     [SerializeField] private GameObject openRoomsPanel;
@@ -120,6 +121,7 @@ public class LobbyManager : MonoBehaviour
     {
         mainMenuPanel.SetActive(false);
         lobbyPanel.SetActive(false);
+        gameplayPanel.SetActive(false);
         settingsPanel.SetActive(false);
         rulesPanel.SetActive(false);
         openRoomsPanel.SetActive(false);
@@ -152,7 +154,6 @@ public class LobbyManager : MonoBehaviour
         JoinRoom(code);
     }
 
-    /// <summary>Присоединиться к комнате по коду — используется из RoomsListUI и других мест.</summary>
     public void JoinRoom(string code)
     {
         NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
@@ -170,7 +171,6 @@ public class LobbyManager : MonoBehaviour
     {
         _reconnecting = true;
         if (NetworkClient.active) NetworkManager.singleton.StopClient();
-        // StopClient вызывает OnClientDisconnect синхронно — флаг _reconnecting защищает pending-данные
         _reconnecting = false;
         NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
         NetworkManager.singleton.StartClient();
@@ -203,15 +203,6 @@ public class LobbyManager : MonoBehaviour
         _roomCode = string.Empty;
         _isHost = false;
         ShowMainMenu();
-    }
-
-    /// <summary>
-    /// Любой игрок может вернуться в лобби из игрового экрана.
-    /// На сервере это отправляет всех в лобби.
-    /// </summary>
-    public void OnReturnToLobbyClick()
-    {
-        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdReturnToLobby();
     }
 
     private void OnStartGameClick()
@@ -275,7 +266,9 @@ public class LobbyManager : MonoBehaviour
 
     public void OnGameStarted()
     {
-        // UI обновится когда придут GamePlayer
+        HideAllPanels();
+        gameplayPanel.SetActive(true);
+        chatPanel.SetActive(true);
     }
 
     public void OnRoleAssigned(bool isDanny)
@@ -320,7 +313,11 @@ public class LobbyManager : MonoBehaviour
 
     private void OnNetworkPlayerAdded(NetworkPlayer player) => RefreshPlayerList();
 
-    private void OnNetworkPlayerRemoved(NetworkPlayer _) => RefreshPlayerList();
+    private void OnNetworkPlayerRemoved(NetworkPlayer removed)
+    {
+        PlayerListUI.Instance?.RemovePlayer(removed);
+        UpdateStartButton();
+    }
 
     private void OnRoomListChanged() => RoomsListUI.Instance?.RefreshRoomList();
 
@@ -343,7 +340,6 @@ public class LobbyManager : MonoBehaviour
         }
 
         GameRoom room = GameRoom.All.Find(r => r.RoomCode == _roomCode);
-        // Хост может быть в приватной комнате, которой нет в All; ищем через spawned
         if (room == null)
         {
             foreach (var id in NetworkClient.spawned.Values)
@@ -374,7 +370,7 @@ public class LobbyManager : MonoBehaviour
             if (np != null && np.CurrentRoomCode == _roomCode)
                 players.Add(np);
         }
-        PlayerListUI.Instance?.UpdatePlayerList(players);
+        PlayerListUI.Instance.UpdatePlayerList(players);
     }
 
     private void OnLanguageChanged(int index)

@@ -119,6 +119,14 @@ MonoBehaviour:
     m_Key: gameUI.end.personalitiesWon
     m_Metadata:
       m_Items: []
+  - m_Id: 29138085500411904
+    m_Key: lobby.private
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29139615637037056
+    m_Key: lobby.noOpenRooms
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

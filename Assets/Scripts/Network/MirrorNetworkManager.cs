@@ -7,28 +7,32 @@ using UnityEngine;
 /// </summary>
 public class MirrorNetworkManager : NetworkManager
 {
+   // LocalHost
+    private readonly string editorAddress = "127.0.0.1";
     // Внешний IP 
-    //public const string SERVER_ADDRESS = "46.138.156.199";
+    private readonly string buildAddress = "46.138.156.199";
 
-    // LocalHost
-    public const string SERVER_ADDRESS = "127.0.0.1";
+    public static string SERVER_ADDRESS = "46.138.156.199";
 
     public override void Awake()
     {
         base.Awake();
-        //networkAddress = SERVER_ADDRESS;
-#if UNITY_SERVER
-        return;
-#endif
 
-#if UNITY_EDITOR
-        if (!ParrelSync.ClonesManager.IsClone() ||
-            ParrelSync.ClonesManager.GetArgument() != "server")
-        {
-            networkAddress = SERVER_ADDRESS;
+        #if UNITY_SERVER
             return;
-        }
-#endif
+        #endif
+
+        #if UNITY_EDITOR
+            if (!ParrelSync.ClonesManager.IsClone() ||
+                ParrelSync.ClonesManager.GetArgument() != "server")
+            {
+                SERVER_ADDRESS = editorAddress;
+            }
+        #else
+            SERVER_ADDRESS = buildAddress;
+        #endif
+
+        networkAddress = SERVER_ADDRESS;
     }
 
     public override void Start()

@@ -13,6 +13,7 @@ public class NetworkGameManager : NetworkBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameRoom gameRoomPrefab;
     [SerializeField] private GamePlayer gamePlayerPrefab;
+    [SerializeField] private GameObject networkCardPrefab;
 
     [Header("Game Settings")]
     [SerializeField] private float discussionTime = 60f;
@@ -203,10 +204,20 @@ public class NetworkGameManager : NetworkBehaviour
                 Sprite pic = PicturesDeck.Instance.DrawCard();
                 if (pic == null) { ServerCheckGameEnd(state); return; }
 
-                GameObject cardObj = PlayingCardsTable.Instance.SpawnCardInHand();
-                NetworkServer.Spawn(cardObj);
+                int spriteIdx = CardsStorage.PictureCardsSprites.IndexOf(pic);
+
+                GameObject cardObj = Instantiate(networkCardPrefab);
                 NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
-                netCard.Initialize(pic, gp.netId);
+                if (netCard == null)
+                {
+                    Debug.LogError($"[Server] networkCardPrefab '{networkCardPrefab?.name}' не содержит NetworkCard!");
+                    Destroy(cardObj);
+                    return;
+                }
+                // Инициализируем до Spawn — клиент получит правильный spriteIndex в первом сообщении
+                netCard.Initialize(spriteIdx, gp.netId);
+                NetworkServer.Spawn(cardObj);
+
                 gp.HandCardNetIds.Add(netCard.netId);
                 gp.TargetAddCardToHand(gp.connectionToClient, netCard.netId);
             }

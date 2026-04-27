@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class NetworkCard : NetworkBehaviour
 {
+    // Индекс в CardsStorage.PictureCardsSprites — синхронизируется к клиентам
+    [SyncVar(hook = nameof(OnSpriteIndexChanged))]
+    public int spriteIndex = -1;
+
     [SyncVar(hook = nameof(OnPositionChanged))]
     public Vector2 position;
 
@@ -27,47 +31,50 @@ public class NetworkCard : NetworkBehaviour
         rectTransform = GetComponent<RectTransform>();
     }
 
-    public void Initialize(Sprite sprite, uint ownerId)
+    // Вызывается на сервере до NetworkServer.Spawn
+    public void Initialize(int index, uint ownerId)
     {
-        card.SetSprite(sprite);
-        ownerNetId = ownerId;
-        position = rectTransform.anchoredPosition;
-        rotation = 0f;
-        scale = rectTransform.localScale;
-        isFlipped = false;
+        spriteIndex = index;
+        ownerNetId  = ownerId;
+        position    = rectTransform != null ? rectTransform.anchoredPosition : Vector2.zero;
+        rotation    = 0f;
+        scale       = rectTransform != null ? rectTransform.localScale : Vector3.one;
+        isFlipped   = false;
+    }
+
+    private void OnSpriteIndexChanged(int _, int newIndex)
+    {
+        if (newIndex < 0 || card == null) return;
+        var sprites = CardsStorage.PictureCardsSprites;
+        if (sprites != null && newIndex < sprites.Count)
+            card.SetSprite(sprites[newIndex]);
     }
 
     public bool IsOwnedByLocalPlayer()
-    {
-        return NetworkClient.localPlayer.netId == ownerNetId;
-    }
+        => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
 
     [Command(requiresAuthority = false)]
     public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped)
     {
-        position = newPosition;
-        rotation = newRotation;
-        scale = newScale;
+        position  = newPosition;
+        rotation  = newRotation;
+        scale     = newScale;
         isFlipped = flipped;
     }
 
-    private void OnPositionChanged(Vector2 oldValue, Vector2 newValue)
+    private void OnPositionChanged(Vector2 _, Vector2 newValue)
     {
-        rectTransform.anchoredPosition = newValue;
+        if (rectTransform != null) rectTransform.anchoredPosition = newValue;
     }
 
-    private void OnRotationChanged(float oldValue, float newValue)
+    private void OnRotationChanged(float _, float newValue)
+        => transform.rotation = Quaternion.Euler(0, 0, newValue);
+
+    private void OnScaleChanged(Vector3 _, Vector3 newValue)
     {
-        transform.rotation = Quaternion.Euler(0, 0, newValue);
+        if (rectTransform != null) rectTransform.localScale = newValue;
     }
 
-    private void OnScaleChanged(Vector3 oldValue, Vector3 newValue)
-    {
-        rectTransform.localScale = newValue;
-    }
-
-    private void OnFlippedChanged(bool oldValue, bool newValue)
-    {
-        card.FlipCard(newValue);
-    }
+    private void OnFlippedChanged(bool _, bool newValue)
+        => card?.FlipCard(newValue);
 }
