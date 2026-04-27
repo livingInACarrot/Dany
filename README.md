@@ -1,2 +1,2 @@
-# Danny
-Digital version of a board game "Danny: voices in the head"
+# Dany
+Реализация настольной карточной игры "Дэни: голоса в голове" в рамках ВКР
