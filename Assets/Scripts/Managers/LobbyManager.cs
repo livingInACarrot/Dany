@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Главный UI-контроллер
+/// Главный UI-контроллер лобби и главного меню.
 /// </summary>
 public class LobbyManager : MonoBehaviour
 {
@@ -40,12 +40,12 @@ public class LobbyManager : MonoBehaviour
 
     private bool _pendingCreateRoom;
     private string _pendingJoinCode;
-
+    private bool _reconnecting;
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        else { Destroy(this); return; } // Уничтожаем только компонент, не GameObject (лобби-панель)
     }
 
     private void Start()
@@ -68,7 +68,9 @@ public class LobbyManager : MonoBehaviour
         languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
         startGameButton.onClick.AddListener(OnStartGameClick);
         readyToggle.onValueChanged.AddListener(OnReadyToggleChanged);
-        privateRoomToggle.onValueChanged.AddListener(_ => { /* добавить приватность комнаты */ });
+        privateRoomToggle.onValueChanged.AddListener(OnPrivacyToggleChanged);
+        //voiceVolumeSlider.onValueChanged.AddListener(v => VoiceChat.Instance?.SetOutputVolume(v));
+        //micVolumeSlider.onValueChanged.AddListener(v => VoiceChat.Instance?.SetMicVolume(v));
     }
 
     private void SubscribeToEvents()
@@ -132,25 +134,53 @@ public class LobbyManager : MonoBehaviour
 
     public void OnCreateRoomClick()
     {
+        NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
+        if (np != null)
+        {
+            np.CmdCreateRoom();
+            return;
+        }
         _pendingCreateRoom = true;
         _pendingJoinCode = null;
-        NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
-        NetworkManager.singleton.StartClient();
-        // ShowLobby() вызовется из OnRoomCreated() после ответа сервера
+        Reconnect();
     }
 
     public void OnJoinByCodeClick()
     {
         string code = roomCodeInput.text?.Trim();
         if (string.IsNullOrWhiteSpace(code) || code.Length != 5) return;
-        _pendingJoinCode = code;
-        _pendingCreateRoom = false;
-        NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
-        NetworkManager.singleton.StartClient();
-        // ShowLobby() вызовется из OnJoinedRoom() после ответа сервера
+        JoinRoom(code);
     }
 
-    public void OnOpenRoomsClick() => ShowOpenRooms();
+    /// <summary>Присоединиться к комнате по коду — используется из RoomsListUI и других мест.</summary>
+    public void JoinRoom(string code)
+    {
+        NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
+        if (np != null)
+        {
+            np.CmdJoinRoom(code);
+            return;
+        }
+        _pendingJoinCode = code;
+        _pendingCreateRoom = false;
+        Reconnect();
+    }
+
+    private void Reconnect()
+    {
+        _reconnecting = true;
+        if (NetworkClient.active) NetworkManager.singleton.StopClient();
+        // StopClient вызывает OnClientDisconnect синхронно — флаг _reconnecting защищает pending-данные
+        _reconnecting = false;
+        NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
+        NetworkManager.singleton.StartClient();
+    }
+
+    public void OnOpenRoomsClick()
+    {
+        if (!NetworkClient.isConnected) Reconnect();
+        ShowOpenRooms();
+    }
     public void OnSettingsClick() => ShowSettings();
     public void OnRulesClick() => ShowRules();
     public void OnExitClick() => Application.Quit();
@@ -165,8 +195,9 @@ public class LobbyManager : MonoBehaviour
     {
         if (NetworkClient.active)
         {
-            if (!string.IsNullOrEmpty(_roomCode))
-                NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdLeaveRoom();
+            NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
+            if (np != null && !string.IsNullOrEmpty(_roomCode))
+                np.CmdLeaveRoom();
             NetworkManager.singleton.StopClient();
         }
         _roomCode = string.Empty;
@@ -174,9 +205,13 @@ public class LobbyManager : MonoBehaviour
         ShowMainMenu();
     }
 
+    /// <summary>
+    /// Любой игрок может вернуться в лобби из игрового экрана.
+    /// На сервере это отправляет всех в лобби.
+    /// </summary>
     public void OnReturnToLobbyClick()
     {
-        if (_isHost) NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdReturnToLobby();
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdReturnToLobby();
     }
 
     private void OnStartGameClick()
@@ -186,17 +221,26 @@ public class LobbyManager : MonoBehaviour
 
     private void OnReadyToggleChanged(bool isReady)
     {
-        NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdSetReady(isReady);
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdSetReady(isReady);
         UpdateStartButton();
     }
+
+    private void OnPrivacyToggleChanged(bool isPrivate)
+    {
+        if (_isHost)
+            NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdSetRoomPrivacy(isPrivate);
+    }
+
     #endregion
 
-    #region Сетевые команды
+    #region Сетевые обратные вызовы
+
     public void OnRoomCreated(string code)
     {
         _roomCode = code;
         _isHost = true;
         roomCodeText.text = code;
+        privateRoomToggle.interactable = true;
         ShowLobby();
     }
 
@@ -205,12 +249,13 @@ public class LobbyManager : MonoBehaviour
         _roomCode = code;
         _isHost = false;
         roomCodeText.text = code;
+        privateRoomToggle.interactable = false;
         ShowLobby();
     }
 
     public void OnRoomError(string error)
     {
-        NetworkChat.Instance.AddSystemMessage($"Ошибка: {error}");
+        NetworkChat.Instance?.AddSystemMessage($"Ошибка: {error}");
     }
 
     public void OnHostMigrated(uint newHostNetId)
@@ -221,15 +266,16 @@ public class LobbyManager : MonoBehaviour
             if (np != null && np.isLocalPlayer)
             {
                 _isHost = true;
+                privateRoomToggle.interactable = true;
                 UpdateStartButton();
             }
         }
-        NetworkChat.Instance.AddSystemMessage("Хост комнаты изменился.");
+        NetworkChat.Instance?.AddSystemMessage("Хост комнаты изменился.");
     }
 
     public void OnGameStarted()
     {
-        // Переход в игровой режим: UI обновится когда придут GamePlayer
+        // UI обновится когда придут GamePlayer
     }
 
     public void OnRoleAssigned(bool isDanny)
@@ -239,8 +285,11 @@ public class LobbyManager : MonoBehaviour
 
     public void OnDisconnected()
     {
+        if (_reconnecting) return; // StopClient внутри Reconnect — не трогаем состояние
         _roomCode = string.Empty;
         _isHost = false;
+        _pendingCreateRoom = false;
+        _pendingJoinCode = null;
         ShowMainMenu();
     }
 
@@ -249,9 +298,11 @@ public class LobbyManager : MonoBehaviour
         UpdateStartButton();
         RefreshPlayerList();
     }
+
     #endregion
 
     #region Внутренние обработчики
+
     public void OnLocalPlayerSpawned()
     {
         if (_pendingCreateRoom)
@@ -276,12 +327,13 @@ public class LobbyManager : MonoBehaviour
     private void OnGamePlayerSpawned(GamePlayer gp)
     {
         if (gp.isOwned)
-            PlayerListUI.Instance.RefreshForGame();
+            PlayerListUI.Instance?.RefreshForGame();
     }
 
     #endregion
 
     #region Вспомогательное
+
     private void UpdateStartButton()
     {
         if (!_isHost || string.IsNullOrEmpty(_roomCode))
@@ -291,6 +343,15 @@ public class LobbyManager : MonoBehaviour
         }
 
         GameRoom room = GameRoom.All.Find(r => r.RoomCode == _roomCode);
+        // Хост может быть в приватной комнате, которой нет в All; ищем через spawned
+        if (room == null)
+        {
+            foreach (var id in NetworkClient.spawned.Values)
+            {
+                GameRoom gr = id?.GetComponent<GameRoom>();
+                if (gr != null && gr.RoomCode == _roomCode) { room = gr; break; }
+            }
+        }
         if (room == null || !room.CanStart) { startGameButton.interactable = false; return; }
 
         bool allReady = true;
@@ -309,11 +370,11 @@ public class LobbyManager : MonoBehaviour
         var players = new List<NetworkPlayer>();
         foreach (NetworkIdentity id in NetworkClient.spawned.Values)
         {
-            NetworkPlayer np = id.GetComponent<NetworkPlayer>();
+            NetworkPlayer np = id?.GetComponent<NetworkPlayer>();
             if (np != null && np.CurrentRoomCode == _roomCode)
                 players.Add(np);
         }
-        PlayerListUI.Instance.UpdatePlayerList(players);
+        PlayerListUI.Instance?.UpdatePlayerList(players);
     }
 
     private void OnLanguageChanged(int index)
@@ -321,5 +382,6 @@ public class LobbyManager : MonoBehaviour
         LocalizationManager.Instance.SetLocale(index);
         PlayerPrefs.SetString("Language", LocalizationManager.Instance.GetStringLocale());
     }
+
     #endregion
 }

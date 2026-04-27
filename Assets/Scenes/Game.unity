@@ -2900,7 +2900,7 @@ GameObject:
   m_Component:
   - component: {fileID: 346134475}
   - component: {fileID: 346134477}
-  - component: {fileID: 346134476}
+  - component: {fileID: 346134478}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -2923,35 +2923,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1128746375}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &346134476
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 346134474}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Mirror.Transports::kcp2k.KcpTransport
-  port: 7777
-  DualMode: 1
-  NoDelay: 1
-  Interval: 10
-  Timeout: 10000
-  RecvBufferSize: 7361536
-  SendBufferSize: 7361536
-  FastResend: 2
-  ReceiveWindowSize: 4096
-  SendWindowSize: 4096
-  MaxRetransmit: 40
-  MaximizeSocketBuffers: 1
-  ReliableMaxMessageSize: 297433
-  UnreliableMaxMessageSize: 1194
-  debugLog: 0
-  statisticsGUI: 0
-  statisticsLog: 0
 --- !u!114 &346134477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2972,8 +2943,8 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   offlineSceneLoadDelay: 0
-  transport: {fileID: 346134476}
-  networkAddress: localhost
+  transport: {fileID: 346134478}
+  networkAddress: 
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
@@ -2981,7 +2952,10 @@ MonoBehaviour:
   playerPrefab: {fileID: 4978427928756556682, guid: b4cc05fed4f886e44baa8eb4787e0174, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 98053949258610976, guid: 5d30eff097bbd114ca5bb3d3126d0460, type: 3}
+  - {fileID: 2275166020689534651, guid: bd5bf9250bb7ec14c90cd27e694abe8f, type: 3}
+  - {fileID: 2065935206011427666, guid: 97131a8f2aa382d42a96c6f4c108d0cf, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -2997,6 +2971,30 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
+--- !u!114 &346134478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346134474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7424c1070fad4ba2a7a96b02fbeb4bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mirror.Transports::Mirror.TelepathyTransport
+  port: 7777
+  NoDelay: 1
+  SendTimeout: 5000
+  ReceiveTimeout: 30000
+  serverMaxMessageSize: 16384
+  serverMaxReceivesPerTick: 10000
+  serverSendQueueLimitPerConnection: 10000
+  serverReceiveQueueLimitPerConnection: 10000
+  clientMaxMessageSize: 16384
+  clientMaxReceivesPerTick: 1000
+  clientSendQueueLimit: 10000
+  clientReceiveQueueLimit: 10000
 --- !u!1 &353129381
 GameObject:
   m_ObjectHideFlags: 0
@@ -4619,7 +4617,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &478528903
 GameObject:
   m_ObjectHideFlags: 0
@@ -7326,7 +7324,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 700519323}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4edbc0de219689e4db84c6ad1e73b298, type: 3}
   m_Name: 
@@ -11804,6 +11802,7 @@ GameObject:
   - component: {fileID: 1128746368}
   - component: {fileID: 1128746389}
   - component: {fileID: 1128746388}
+  - component: {fileID: 1128746390}
   m_Layer: 0
   m_Name: ___MANAGERS___
   m_TagString: Untagged
@@ -11988,6 +11987,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e1933b63e88294abb8d2df8f8582d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PicturesDeck
+--- !u!114 &1128746390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1128746366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457c2acaa5162e34c8937590b97ccdf0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoiceChat
 --- !u!1 &1214351429
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,7 +14,8 @@ public class PlayerListUI : MonoBehaviour
     [SerializeField] private Color currentPlayerColor = Color.green;
     [SerializeField] private Color decisivePlayerColor = Color.yellow;
 
-    private Dictionary<NetworkPlayer, GameObject> playerEntries = new();
+    private readonly Dictionary<NetworkPlayer, GameObject> _entries = new();
+    private readonly Dictionary<NetworkPlayer, System.Action> _readyHandlers = new();
 
     private void Awake()
     {
@@ -28,25 +29,20 @@ public class PlayerListUI : MonoBehaviour
             if (player != null) CreatePlayerEntry(player);
     }
 
-    /// <summary>
-    /// Перерисовать список с учётом игровых данных из GamePlayer
-    /// (роли, IsDanny). Вызывается после спавна GamePlayer.
-    /// </summary>
     public void RefreshForGame()
     {
-        var keys = new List<NetworkPlayer>(playerEntries.Keys);
+        var keys = new List<NetworkPlayer>(_entries.Keys);
         UpdatePlayerList(keys);
     }
 
     private void CreatePlayerEntry(NetworkPlayer player)
     {
         GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
-        playerEntries[player] = entry;
+        _entries[player] = entry;
 
         TextMeshProUGUI nameText = entry.GetComponentInChildren<TextMeshProUGUI>();
         nameText.text = Loc.Nick(player.Number);
 
-        // Пытаемся получить игровые данные из GamePlayer
         GamePlayer gp = GetGamePlayer(player);
         if (gp != null)
         {
@@ -61,27 +57,36 @@ public class PlayerListUI : MonoBehaviour
         Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
         if (readyToggle != null)
         {
-            // Готовность показываем только в фазе лобби
             bool inLobby = gp == null;
             readyToggle.gameObject.SetActive(inLobby);
             if (inLobby)
             {
                 readyToggle.isOn = player.IsReady;
                 readyToggle.interactable = false;
+
+                // Обновляем toggle без пересборки списка
+                void OnDataChanged() { if (readyToggle != null) readyToggle.isOn = player.IsReady; }
+                player.OnDataChanged += OnDataChanged;
+                _readyHandlers[player] = OnDataChanged;
             }
         }
     }
 
     private void ClearPlayerList()
     {
-        foreach (var entry in playerEntries.Values)
-            if (entry != null) Destroy(entry);
-        playerEntries.Clear();
+        foreach (var kvp in _entries)
+        {
+            if (kvp.Value != null) Destroy(kvp.Value);
+            if (_readyHandlers.TryGetValue(kvp.Key, out System.Action h))
+                kvp.Key.OnDataChanged -= h;
+        }
+        _entries.Clear();
+        _readyHandlers.Clear();
     }
 
     public void HighlightDannyReveal(NetworkPlayer suspectedDanny)
     {
-        foreach (var kvp in playerEntries)
+        foreach (var kvp in _entries)
         {
             if (kvp.Key == suspectedDanny)
             {

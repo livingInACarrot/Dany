@@ -2,12 +2,15 @@ using Mirror;
 using UnityEngine;
 
 /// <summary>
-/// Игровой экземпляр игрока. Спавнится при старте игры и cодержит всё, что нужно только во время игры.
+/// Игровой экземпляр игрока. Спавнится при старте игры и содержит всё, что нужно только во время игры.
 /// </summary>
 public class GamePlayer : NetworkBehaviour
 {
-    // Индекс игрока внутри комнаты
+    // индекс игрока внутри списка GamePlayers в RoomGameState
     [SyncVar] public int RoomIndex;
+
+    // Лобби-номер NetworkPlayer (для ника)
+    [SyncVar] public int LobbyNumber;
 
     [SyncVar] public bool IsDanny;
 
@@ -16,7 +19,7 @@ public class GamePlayer : NetworkBehaviour
 
     [SyncVar] public bool HasFinishedTurn;
 
-    // netId соответствующего NetworkPlayer
+    // netId NetworkPlayer
     [SyncVar] public uint OwnerNetId;
 
     public readonly SyncList<uint> HandCardNetIds = new();
@@ -27,13 +30,13 @@ public class GamePlayer : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        OnSpawned.Invoke(this);
+        OnSpawned?.Invoke(this);
     }
 
     public override void OnStopClient()
     {
         base.OnStopClient();
-        OnDespawned.Invoke(this);
+        OnDespawned?.Invoke(this);
     }
 
     [Command]

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Показывает список всех открытых комнат, полученных из GameRoom.All.
+/// Показывает список открытых (не приватных) комнат из GameRoom.All.
 /// Список обновляется автоматически через событие GameRoom.OnRoomListChanged.
 /// </summary>
 public class RoomsListUI : MonoBehaviour
@@ -32,7 +32,8 @@ public class RoomsListUI : MonoBehaviour
 
         foreach (GameRoom room in GameRoom.All)
         {
-            if (room.IsInProgress) continue;
+            // Показываем только незакрытые и незапущенные комнаты
+            if (room.IsPrivate || room.IsInProgress) continue;
             CreateRoomEntry(room);
         }
     }
@@ -51,8 +52,9 @@ public class RoomsListUI : MonoBehaviour
             string code = room.RoomCode;
             joinBtn.onClick.AddListener(() =>
             {
+                // Скрываем панель; переход в лобби произойдёт через TargetJoinedRoom → ShowLobby
                 LobbyManager.Instance.ShowMainMenu();
-                NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdJoinRoom(code);
+                LobbyManager.Instance.JoinRoom(code);
             });
         }
     }

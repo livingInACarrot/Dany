@@ -7,6 +7,7 @@ using UnityEngine.UI;
 /// UI и координация финального раунда голосования.
 /// Игровая логика разрешения голосов — в NetworkGameManager.ServerResolveVotes.
 /// Этот класс только показывает интерфейс и пересылает голоса через CmdVote.
+/// Голосование использует лобби-номера игроков (1-based, Loc.Nick).
 /// </summary>
 public class NetworkFinalRoundManager : NetworkBehaviour
 {
@@ -27,26 +28,16 @@ public class NetworkFinalRoundManager : NetworkBehaviour
     }
 
     // =====================================================
-    // Запуск финального раунда (вызывается через RpcStartFinalRound)
+    // Запуск финального раунда
+    // Вызывается через RpcStartFinalRound на всех клиентах.
+    // dannyLobbyNumber передаётся только для возможного использования на клиенте;
+    // итоговое раскрытие идёт через RpcShowVoteResult.
     // =====================================================
 
-    /// <summary>
-    /// dannyIndex — RoomIndex Дэнни (нужен только для подсветки кнопок, логика на сервере).
-    /// roomCode — для маршрутизации голосов.
-    /// </summary>
-    public void StartFinalRound(int dannyIndex, string roomCode)
-    {
-        if (!isServer) return;
-        _currentRoomCode = roomCode;
-        _votingActive = true;
-        RpcShowFinalRoundUI(roomCode);
-    }
-
-    [ClientRpc]
-    private void RpcShowFinalRoundUI(string roomCode)
+    public void StartFinalRound(int dannyLobbyNumber, string roomCode)
     {
         _currentRoomCode = roomCode;
-        _votingActive = false; // кнопки неактивны до конца обсуждения
+        _votingActive = false;
 
         finalRoundPanel.SetActive(true);
         BuildVotingButtons(roomCode);
@@ -59,17 +50,18 @@ public class NetworkFinalRoundManager : NetworkBehaviour
         foreach (Transform child in votingButtonsContainer)
             Destroy(child.gameObject);
 
-        List<int> indices = NetworkGameManager.Instance?.GetPlayersNumbers(roomCode) ?? new List<int>();
-        foreach (int idx in indices)
+        // GetPlayersNumbers возвращает лобби-номера (1-based)
+        List<int> lobbyNumbers = NetworkGameManager.Instance?.GetPlayersNumbers(roomCode) ?? new List<int>();
+        foreach (int lobbyNum in lobbyNumbers)
         {
             GameObject btnObj = Instantiate(voteButtonPrefab, votingButtonsContainer);
             TMPro.TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             Button btn = btnObj.GetComponent<Button>();
 
-            btnText.text = Loc.Nick(idx);
+            btnText.text = Loc.Nick(lobbyNum);
             btn.interactable = false; // до конца обсуждения
 
-            int captured = idx;
+            int captured = lobbyNum;
             btn.onClick.AddListener(() => OnVoteButtonClick(captured, btn));
         }
     }
@@ -83,13 +75,13 @@ public class NetworkFinalRoundManager : NetworkBehaviour
         NetworkChat.Instance?.AddSystemMessage("Время вышло! Голосуйте за того, кто является Дэнни.");
     }
 
-    public void OnVoteButtonClick(int suspectedRoomIndex, Button btn)
+    public void OnVoteButtonClick(int suspectedLobbyNumber, Button btn)
     {
         if (!_votingActive) return;
         NetworkPlayer localPlayer = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
-        localPlayer?.CmdVote(suspectedRoomIndex);
+        localPlayer?.CmdVote(suspectedLobbyNumber);
         btn.interactable = false;
-        _votingActive = false; // один голос
+        _votingActive = false;
     }
 
     // =====================================================
@@ -97,38 +89,38 @@ public class NetworkFinalRoundManager : NetworkBehaviour
     // =====================================================
 
     [ClientRpc]
-    public void RpcShowVoteResult(int suspectedIndex, bool wasDanny)
+    public void RpcShowVoteResult(int suspectedLobbyNumber, bool wasDanny)
     {
         string result = wasDanny
-            ? $"Игрок {Loc.Nick(suspectedIndex)} — это Дэнни! Личности победили!"
-            : $"Игрок {Loc.Nick(suspectedIndex)} — не Дэнни. Дэнни победил!";
+            ? $"{Loc.Nick(suspectedLobbyNumber)} — это Дэнни! Личности победили!"
+            : $"{Loc.Nick(suspectedLobbyNumber)} — не Дэнни. Дэнни победил!";
         NetworkChat.Instance?.AddSystemMessage(result);
         finalRoundPanel.SetActive(false);
     }
 
     [ClientRpc]
-    public void RpcHandleTie(int dannyIndex, List<int> tiedPlayers)
+    public void RpcHandleTie(int dannyLobbyNumber, List<int> tiedLobbyNumbers)
     {
         NetworkChat.Instance?.AddSystemMessage("Ничья в голосовании! Повторное голосование среди равных.");
-        RebuildButtonsForTie(tiedPlayers);
+        RebuildButtonsForTie(tiedLobbyNumbers);
         _votingActive = true;
     }
 
-    private void RebuildButtonsForTie(List<int> tiedPlayers)
+    private void RebuildButtonsForTie(List<int> tiedLobbyNumbers)
     {
         foreach (Transform child in votingButtonsContainer)
             Destroy(child.gameObject);
 
-        foreach (int idx in tiedPlayers)
+        foreach (int lobbyNum in tiedLobbyNumbers)
         {
             GameObject btnObj = Instantiate(voteButtonPrefab, votingButtonsContainer);
             TMPro.TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             Button btn = btnObj.GetComponent<Button>();
 
-            btnText.text = Loc.Nick(idx);
+            btnText.text = Loc.Nick(lobbyNum);
             btn.interactable = true;
 
-            int captured = idx;
+            int captured = lobbyNum;
             btn.onClick.AddListener(() => OnVoteButtonClick(captured, btn));
         }
     }

@@ -11,7 +11,7 @@ public class GameRoom : NetworkBehaviour
     public const int DefaultMaxPlayers = 8;
 
     [SyncVar] public string RoomCode;
-    [SyncVar] public bool IsPrivate;
+    [SyncVar(hook = nameof(OnPrivacyChanged))] public bool IsPrivate;
     [SyncVar] public int PlayerCount;
     [SyncVar] public int MaxPlayers = DefaultMaxPlayers;
     [SyncVar] public bool IsInProgress;
@@ -20,7 +20,7 @@ public class GameRoom : NetworkBehaviour
     [SyncVar] public int PersonalitiesScore;
     [SyncVar] public int DannyScore;
 
-    // Список всех лобби, видимых локальному клиенту
+    // Список всех открытых лобби, видимых локальному клиенту
     public static readonly List<GameRoom> All = new();
     public static event Action OnRoomListChanged;
 
@@ -34,7 +34,7 @@ public class GameRoom : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        if (!IsPrivate) All.Add(this);
+        if (!IsPrivate && !All.Contains(this)) All.Add(this);
         OnRoomListChanged?.Invoke();
     }
 
@@ -45,12 +45,23 @@ public class GameRoom : NetworkBehaviour
         OnRoomListChanged?.Invoke();
     }
 
+    private void OnPrivacyChanged(bool _, bool isNowPrivate)
+    {
+        if (isNowPrivate)
+            All.Remove(this);
+        else if (!All.Contains(this))
+            All.Add(this);
+        OnRoomListChanged?.Invoke();
+    }
+
     [Server]
     public bool TryAddPlayer(NetworkPlayer player)
     {
         if (PlayerCount >= MaxPlayers || IsInProgress) return false;
         _players.Add(player);
         PlayerCount = _players.Count;
+        // Присваиваем уникальный порядковый номер внутри этого лобби (начиная с 1)
+        player.Number = PlayerCount;
         if (_hostConnectionId == -1)
         {
             _hostConnectionId = player.connectionToClient.connectionId;
@@ -64,6 +75,7 @@ public class GameRoom : NetworkBehaviour
     {
         bool wasHost = player.connectionToClient.connectionId == _hostConnectionId;
         _players.Remove(player);
+        player.Number = 0; // Сброс номера при выходе из комнаты
         PlayerCount = _players.Count;
         if (wasHost) MigrateHost();
     }

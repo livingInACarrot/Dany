@@ -2,29 +2,48 @@ using Mirror;
 using UnityEngine;
 
 /// <summary>
-/// Отвечает исключительно за транспортный уровень
+/// Отвечает исключительно за транспортный уровень.
+/// Клиент подключается к серверу только по команде пользователя (кнопки меню).
 /// </summary>
 public class MirrorNetworkManager : NetworkManager
 {
+    // Внешний IP 
     //public const string SERVER_ADDRESS = "46.138.156.199";
-    public const string SERVER_ADDRESS = "localhost";
+
+    // LocalHost
+    public const string SERVER_ADDRESS = "127.0.0.1";
 
     public override void Awake()
     {
         base.Awake();
-        networkAddress = SERVER_ADDRESS;
+        //networkAddress = SERVER_ADDRESS;
+#if UNITY_SERVER
+        return;
+#endif
+
+#if UNITY_EDITOR
+        if (!ParrelSync.ClonesManager.IsClone() ||
+            ParrelSync.ClonesManager.GetArgument() != "server")
+        {
+            networkAddress = SERVER_ADDRESS;
+            return;
+        }
+#endif
     }
 
     public override void Start()
     {
 #if UNITY_SERVER
         StartServer();
-#elif UNITY_EDITOR
+        return;
+#endif
+
+#if UNITY_EDITOR
         if (ParrelSync.ClonesManager.IsClone() &&
             ParrelSync.ClonesManager.GetArgument() == "server")
         {
-            networkAddress = "localhost";
             StartServer();
+            return;
         }
 #endif
     }
@@ -64,6 +83,12 @@ public class MirrorNetworkManager : NetworkManager
     {
         base.OnStartClient();
         Debug.Log($"[Client] Connecting to {networkAddress}");
+    }
+
+    public override void OnClientConnect()
+    {
+        base.OnClientConnect();
+        Debug.Log("[Client] Connected to server");
     }
 
     public override void OnClientDisconnect()
