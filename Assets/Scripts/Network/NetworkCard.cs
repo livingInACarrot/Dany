@@ -37,17 +37,17 @@ public class NetworkCard : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        if (PlayingCardsTable.Instance != null && card != null)
-            PlayingCardsTable.Instance.StageCard(card);
+        //if (PlayingCardsTable.Instance != null && card != null)
+        //    PlayingCardsTable.Instance.StageCard(card);
 
         bool isLocalOwner = NetworkClient.localPlayer != null
                             && NetworkClient.localPlayer.netId == ownerNetId;
         if (!isLocalOwner)
         {
             Image img = GetComponent<Image>();
-            if (img != null) img.raycastTarget = false;
-            Button btn = GetComponent<Button>();
-            if (btn != null) btn.interactable = false;
+            img.raycastTarget = false;
+            //Button btn = GetComponent<Button>();
+            //if (btn != null) btn.interactable = false;
         }
     }
 
@@ -55,9 +55,9 @@ public class NetworkCard : NetworkBehaviour
     {
         spriteIndex = index;
         ownerNetId  = ownerId;
-        position    = rectTransform != null ? rectTransform.anchoredPosition : Vector2.zero;
+        position    = rectTransform.anchoredPosition;
         rotation    = 0f;
-        scale       = rectTransform != null ? rectTransform.localScale : Vector3.one;
+        scale       = rectTransform.localScale;
         isFlipped   = false;
         isOnTable   = false;
     }
@@ -98,7 +98,6 @@ public class NetworkCard : NetworkBehaviour
     private void OnIsOnTableChanged(bool _, bool newValue)
     {
         if (isOwned) return;
-        if (card == null) return;
         if (newValue)
             PlayingCardsTable.Instance.ShowOnTable(card);
         else
@@ -107,7 +106,7 @@ public class NetworkCard : NetworkBehaviour
 
     private void OnPositionChanged(Vector2 _, Vector2 newValue)
     {
-        if (rectTransform != null) rectTransform.anchoredPosition = newValue;
+        rectTransform.anchoredPosition = newValue;
     }
 
     private void OnRotationChanged(float _, float newValue)
@@ -115,9 +114,9 @@ public class NetworkCard : NetworkBehaviour
 
     private void OnScaleChanged(Vector3 _, Vector3 newValue)
     {
-        if (rectTransform != null) rectTransform.localScale = newValue;
+        rectTransform.localScale = newValue;
     }
 
     private void OnFlippedChanged(bool _, bool newValue)
-        => card?.FlipCard(newValue);
+        => card.FlipCard(newValue);
 }

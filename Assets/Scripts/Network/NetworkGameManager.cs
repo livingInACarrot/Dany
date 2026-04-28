@@ -16,6 +16,7 @@ public class NetworkGameManager : NetworkBehaviour
     [SerializeField] private GameObject networkCardPrefab;
 
     [Header("Game Settings")]
+    [SerializeField] private float turnTime = 90f;
     [SerializeField] private float discussionTime = 60f;
 
     private readonly Dictionary<string, RoomGameState> _rooms = new();
@@ -183,11 +184,13 @@ public class NetworkGameManager : NetworkBehaviour
         foreach (var gp in state.GamePlayers)
         {
             gp.HasFinishedTurn = false;
-            if      (gp.RoomIndex == state.CurrentIndex)   gp.Role = Role.Active;
+            if (gp.RoomIndex == state.CurrentIndex) gp.Role = Role.Active;
             else if (gp.RoomIndex == state.DecisiveIndex)  gp.Role = Role.Decisive;
-            else                                           gp.Role = Role.Waiting;
+            else gp.Role = Role.Waiting;
         }
 
+        // Убрать потом
+        //PlayerListGameUI.Instance.RefreshList();
         ServerDrawCardsForPlayers(state);
         ServerDrawIdeasCard(state);
         RpcStartTurn(roomCode);
@@ -196,22 +199,14 @@ public class NetworkGameManager : NetworkBehaviour
     [ClientRpc]
     private void RpcStartTurn(string roomCode)
     {
-        TimerUI.Instance?.StartTimer(30f, () => OnTurnTimerEnded(roomCode));
-    }
-
-    [Command]
-    private void CmdTurnTimerEnded(string roomCode)
-    {
-        if (!_rooms.TryGetValue(roomCode, out var state)) return;
-        if (state.Room.Phase != GamePhase.TurnInProgress) return;
-        ServerOnPlayerFinishedTurn(state.GamePlayers.Find(p => p.RoomIndex == state.CurrentIndex));
+        TimerUI.Instance.StartTimer(turnTime, () => OnTurnTimerEnded(roomCode));
     }
 
     private void OnTurnTimerEnded(string roomCode)
     {
         if (NetworkClient.localPlayer != null)
         {
-            NetworkClient.localPlayer.GetComponent<NetworkPlayer>()?.CmdTurnTimerEnded(roomCode);
+            NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdTurnTimerEnded(roomCode);
         }
     }
 
@@ -220,7 +215,7 @@ public class NetworkGameManager : NetworkBehaviour
     {
         foreach (var gp in state.GamePlayers)
         {
-            if (gp.Role == Role.Waiting) continue;
+            if (gp.Role != Role.Active) continue;
             gp.HandCardNetIds.Clear();
             for (int i = 0; i < 7; i++)
             {
@@ -238,7 +233,7 @@ public class NetworkGameManager : NetworkBehaviour
                     return;
                 }
                 netCard.Initialize(spriteIdx, gp.OwnerNetId);
-                NetworkServer.Spawn(cardObj);
+                NetworkServer.Spawn(cardObj, gp.connectionToClient);
 
                 gp.HandCardNetIds.Add(netCard.netId);
                 bool canInteract = gp.Role == Role.Active;
@@ -297,7 +292,7 @@ public class NetworkGameManager : NetworkBehaviour
     private void ServerEndDiscussion(RoomGameState state)
     {
         GamePlayer decisiveGp = state.GamePlayers.Find(p => p.RoomIndex == state.DecisiveIndex);
-        decisiveGp?.TargetShowGuessPanel(decisiveGp.connectionToClient, state.CurrentIdeasCard);
+        decisiveGp.TargetShowGuessPanel(decisiveGp.connectionToClient, state.CurrentIdeasCard);
     }
 
     [Server]
