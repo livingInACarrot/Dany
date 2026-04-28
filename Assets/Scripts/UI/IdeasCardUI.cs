@@ -1,3 +1,4 @@
+using Mirror;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,10 +51,19 @@ public class IdeasCardUI : MonoBehaviour
         }
         ToggleInteractable(false);
     }
+
     public void ShowGuessPanel(IdeasCard card)
     {
-        ShowForOthers(card);
-        NetworkChat.Instance.AddSystemMessage($"Решающая личность должна угадать слово!");
+        ToggleInteractable(true);
+        NetworkChat.Instance.AddSystemMessage($"Р РµС€Р°СЋС‰Р°СЏ Р»РёС‡РЅРѕСЃС‚СЊ РґРѕР»Р¶РЅР° СѓРіР°РґР°С‚СЊ СЃР»РѕРІРѕ!");
+    }
+
+    public void OnWordButtonClicked(int wordIndex)
+    {
+        if (NetworkClient.localPlayer == null) return;
+        GamePlayer localGamePlayer = NetworkClient.localPlayer.GetComponent<GamePlayer>();
+        if (localGamePlayer == null) return;
+        localGamePlayer.CmdWordGuessed(wordIndex);
     }
 
     public void HideCard()

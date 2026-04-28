@@ -84,6 +84,12 @@ public class NetworkCard : NetworkBehaviour
         isFlipped = flipped;
     }
 
+    [Command(requiresAuthority = false)]
+    public void CmdToggleCardInteraction(bool interactable)
+    {
+        Image img = GetComponent<Image>();
+        img.raycastTarget = interactable;
+    }
     public bool IsOwnedByLocalPlayer()
         => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
 

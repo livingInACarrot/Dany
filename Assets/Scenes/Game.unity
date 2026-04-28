@@ -520,9 +520,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2567940139124540708, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3989135821638685413, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
       propertyPath: m_Name
       value: IdeasCardWord (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1096558381}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnWordButtonClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: IdeasCardUI, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1925,9 +1953,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2567940139124540708, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3989135821638685413, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
       propertyPath: m_Name
       value: IdeasCardWord (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1096558381}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnWordButtonClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: IdeasCardUI, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -13872,9 +13928,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2567940139124540708, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3989135821638685413, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
       propertyPath: m_Name
       value: IdeasCardWord (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1096558381}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnWordButtonClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: IdeasCardUI, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15201,9 +15285,33 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2567940139124540708, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3989135821638685413, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
       propertyPath: m_Name
       value: IdeasCardWord
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1096558381}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnWordButtonClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: IdeasCardUI, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -16262,9 +16370,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2567940139124540708, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3989135821638685413, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
       propertyPath: m_Name
       value: IdeasCardWord (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1096558381}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnWordButtonClicked
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: IdeasCardUI, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4066405769264828710, guid: 7624799bdddb3ba46848d9f062cce3c2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -16368,7 +16504,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1896657497
 RectTransform:
   m_ObjectHideFlags: 0
@@ -17015,7 +17151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.28235295}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.08627451}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

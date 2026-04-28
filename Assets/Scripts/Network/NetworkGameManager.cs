@@ -272,7 +272,12 @@ public class NetworkGameManager : NetworkBehaviour
         if (gp.RoomIndex != state.CurrentIndex) return;
 
         state.Room.Phase = GamePhase.Discussion;
+
+        ServerToggleCardsInteraction(state, false);
+
         RpcStartDiscussion(roomCode);
+        ServerEnableWordsForDecisive(state);
+
         StartCoroutine(DelayedAction(discussionTime, roomCode, () =>
         {
             if (_rooms.TryGetValue(roomCode, out var s) && s.Room.Phase == GamePhase.Discussion)
@@ -288,6 +293,39 @@ public class NetworkGameManager : NetworkBehaviour
         if (player == null || !player.IsHost) return;
         GamePlayer gp = state.GamePlayers.Find(p => p.RoomIndex == state.CurrentIndex);
         if (gp != null) ServerOnPlayerFinishedTurn(gp);
+    }
+
+    [Server]
+    private void ServerEnableWordsForDecisive(RoomGameState state)
+    {
+        GamePlayer decisiveGp = state.GamePlayers.Find(p => p.RoomIndex == state.DecisiveIndex);
+        if (decisiveGp == null) return;
+        decisiveGp.TargetShowGuessPanel(decisiveGp.connectionToClient, state.CurrentIdeasCard);
+    }
+
+    [Server]
+    private void ServerToggleCardsInteraction(RoomGameState state, bool interactable)
+    {
+        GamePlayer activePlayer = state.GamePlayers.Find(p => p.RoomIndex == state.CurrentIndex);
+        if (activePlayer == null) return;
+
+        if (!interactable)
+        {
+            foreach (uint cardNetId in activePlayer.HandCardNetIds)
+            {
+                if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
+                {
+                    NetworkServer.Destroy(identity.gameObject);
+                }
+            }
+            activePlayer.HandCardNetIds.Clear();
+        }
+
+        NetworkCard[] cardsOnTable = PlayingCardsTable.Instance.GetComponentsInChildren<NetworkCard>();
+        foreach (NetworkCard card in cardsOnTable)
+        {
+            card.CmdToggleCardInteraction(interactable);
+        }
     }
 
     [Server]
