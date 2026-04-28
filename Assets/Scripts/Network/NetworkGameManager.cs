@@ -149,6 +149,8 @@ public class NetworkGameManager : NetworkBehaviour
             state.GamePlayers.Add(gp);
         }
 
+        state.CurrentIndex = state.GamePlayers.Count - 1;
+
         RpcGameStarted(state.Room.RoomCode);
         StartCoroutine(DelayedAction(0.5f, state.Room.RoomCode,
             () => ServerDistributeRoles(state.Room.RoomCode)));
@@ -292,6 +294,7 @@ public class NetworkGameManager : NetworkBehaviour
     private void ServerEndDiscussion(RoomGameState state)
     {
         GamePlayer decisiveGp = state.GamePlayers.Find(p => p.RoomIndex == state.DecisiveIndex);
+        if (decisiveGp == null) return;
         decisiveGp.TargetShowGuessPanel(decisiveGp.connectionToClient, state.CurrentIdeasCard);
     }
 
