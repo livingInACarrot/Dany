@@ -81,17 +81,6 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdSetReady(bool ready) => IsReady = ready;
 
     [Command]
-    public void CmdPlaceCard(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
-        => RpcUpdateCardPosition(cardNetId, position, rotation, scale);
-
-    [ClientRpc]
-    private void RpcUpdateCardPosition(uint cardNetId, Vector2 position, Quaternion rotation, Vector3 scale)
-    {
-        if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
-            identity?.GetComponent<Card>()?.ChangePosition(position, rotation, scale);
-    }
-
-    [Command]
     public void CmdSendChatMessage(string message, int num)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
@@ -105,6 +94,10 @@ public class NetworkPlayer : NetworkBehaviour
     [Command]
     public void CmdVote(int suspectedLobbyNumber)
         => NetworkGameManager.Instance?.ServerOnVoteReceived(this, suspectedLobbyNumber);
+
+    [Command]
+    public void CmdTurnTimerEnded(string roomCode)
+        => NetworkGameManager.Instance?.ServerOnTurnTimerEnded(this, roomCode);
 
 
     [Command]
@@ -134,7 +127,11 @@ public class NetworkPlayer : NetworkBehaviour
 
     private void OnNumberChanged(int _, int __)        => OnDataChanged?.Invoke();
     private void OnCountryChanged(string _, string __)  => OnDataChanged?.Invoke();
-    private void OnReadyChanged(bool _, bool __)        => OnDataChanged?.Invoke();
+    private void OnReadyChanged(bool _, bool __)
+    {
+        OnDataChanged?.Invoke();
+        LobbyManager.Instance?.RefreshRoomPanel();
+    }
     private void OnIsHostChanged(bool _, bool __)       => LobbyManager.Instance?.RefreshRoomPanel();
     private void OnCurrentRoomCodeChanged(string _, string __) => LobbyManager.Instance?.RefreshRoomPanel();
 }

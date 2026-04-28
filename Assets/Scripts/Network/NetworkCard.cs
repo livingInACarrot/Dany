@@ -1,9 +1,9 @@
 using Mirror;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NetworkCard : NetworkBehaviour
 {
-    // Индекс в CardsStorage.PictureCardsSprites — синхронизируется к клиентам
     [SyncVar(hook = nameof(OnSpriteIndexChanged))]
     public int spriteIndex = -1;
 
@@ -19,6 +19,9 @@ public class NetworkCard : NetworkBehaviour
     [SyncVar(hook = nameof(OnFlippedChanged))]
     public bool isFlipped;
 
+    [SyncVar(hook = nameof(OnIsOnTableChanged))]
+    public bool isOnTable;
+
     [SyncVar]
     public uint ownerNetId;
 
@@ -31,7 +34,23 @@ public class NetworkCard : NetworkBehaviour
         rectTransform = GetComponent<RectTransform>();
     }
 
-    // Вызывается на сервере до NetworkServer.Spawn
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (PlayingCardsTable.Instance != null && card != null)
+            PlayingCardsTable.Instance.StageCard(card);
+
+        bool isLocalOwner = NetworkClient.localPlayer != null
+                            && NetworkClient.localPlayer.netId == ownerNetId;
+        if (!isLocalOwner)
+        {
+            Image img = GetComponent<Image>();
+            if (img != null) img.raycastTarget = false;
+            Button btn = GetComponent<Button>();
+            if (btn != null) btn.interactable = false;
+        }
+    }
+
     public void Initialize(int index, uint ownerId)
     {
         spriteIndex = index;
@@ -40,7 +59,33 @@ public class NetworkCard : NetworkBehaviour
         rotation    = 0f;
         scale       = rectTransform != null ? rectTransform.localScale : Vector3.one;
         isFlipped   = false;
+        isOnTable   = false;
     }
+
+    [Command(requiresAuthority = false)]
+    public void CmdPlaceOnTable(Vector2 pos, float rot, Vector3 sc, bool flipped)
+    {
+        position  = pos;
+        rotation  = rot;
+        scale     = sc;
+        isFlipped = flipped;
+        isOnTable = true;
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdReturnFromTable() => isOnTable = false;
+
+    [Command(requiresAuthority = false)]
+    public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped)
+    {
+        position  = newPosition;
+        rotation  = newRotation;
+        scale     = newScale;
+        isFlipped = flipped;
+    }
+
+    public bool IsOwnedByLocalPlayer()
+        => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
 
     private void OnSpriteIndexChanged(int _, int newIndex)
     {
@@ -50,16 +95,14 @@ public class NetworkCard : NetworkBehaviour
             card.SetSprite(sprites[newIndex]);
     }
 
-    public bool IsOwnedByLocalPlayer()
-        => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
-
-    [Command(requiresAuthority = false)]
-    public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped)
+    private void OnIsOnTableChanged(bool _, bool newValue)
     {
-        position  = newPosition;
-        rotation  = newRotation;
-        scale     = newScale;
-        isFlipped = flipped;
+        if (isOwned) return;
+        if (card == null) return;
+        if (newValue)
+            PlayingCardsTable.Instance.ShowOnTable(card);
+        else
+            PlayingCardsTable.Instance.StageCard(card);
     }
 
     private void OnPositionChanged(Vector2 _, Vector2 newValue)

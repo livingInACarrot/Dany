@@ -62,6 +62,8 @@ public class LobbyManager : MonoBehaviour
         NetworkPlayer.OnPlayerRemoved -= OnNetworkPlayerRemoved;
         GameRoom.OnRoomListChanged -= OnRoomListChanged;
         GamePlayer.OnSpawned -= OnGamePlayerSpawned;
+        GamePlayer.OnDespawned -= OnGamePlayerDespawned;
+        GamePlayer.OnRoleChanged -= OnGamePlayerRoleChanged;
     }
 
     private void SetupUI()
@@ -80,6 +82,8 @@ public class LobbyManager : MonoBehaviour
         NetworkPlayer.OnPlayerRemoved += OnNetworkPlayerRemoved;
         GameRoom.OnRoomListChanged += OnRoomListChanged;
         GamePlayer.OnSpawned += OnGamePlayerSpawned;
+        GamePlayer.OnDespawned += OnGamePlayerDespawned;
+        GamePlayer.OnRoleChanged += OnGamePlayerRoleChanged;
     }
 
     #region Управление панелями
@@ -269,6 +273,7 @@ public class LobbyManager : MonoBehaviour
         HideAllPanels();
         gameplayPanel.SetActive(true);
         chatPanel.SetActive(true);
+        PlayerListGameUI.Instance?.RefreshList();
     }
 
     public void OnRoleAssigned(bool isDanny)
@@ -315,7 +320,7 @@ public class LobbyManager : MonoBehaviour
 
     private void OnNetworkPlayerRemoved(NetworkPlayer removed)
     {
-        PlayerListUI.Instance?.RemovePlayer(removed);
+        PlayerListLobbyUI.Instance?.RemovePlayer(removed);
         UpdateStartButton();
     }
 
@@ -323,8 +328,18 @@ public class LobbyManager : MonoBehaviour
 
     private void OnGamePlayerSpawned(GamePlayer gp)
     {
-        if (gp.isOwned)
-            PlayerListUI.Instance?.RefreshForGame();
+        // Обновляем список для всех игроков при спавне нового GamePlayer
+        PlayerListGameUI.Instance?.RefreshList();
+    }
+
+    private void OnGamePlayerDespawned(GamePlayer gp)
+    {
+        PlayerListGameUI.Instance?.RefreshList();
+    }
+
+    private void OnGamePlayerRoleChanged(GamePlayer gp)
+    {
+        PlayerListGameUI.Instance?.RefreshList();
     }
 
     #endregion
@@ -351,13 +366,17 @@ public class LobbyManager : MonoBehaviour
         if (room == null || !room.CanStart) { startGameButton.interactable = false; return; }
 
         bool allReady = true;
+        bool foundAny = false;
         foreach (NetworkIdentity id in NetworkClient.spawned.Values)
         {
             NetworkPlayer np = id?.GetComponent<NetworkPlayer>();
-            if (np != null && np.CurrentRoomCode == _roomCode && !np.IsReady)
-            { allReady = false; break; }
+            if (np != null && np.CurrentRoomCode == _roomCode)
+            {
+                foundAny = true;
+                if (!np.IsReady) { allReady = false; break; }
+            }
         }
-        startGameButton.interactable = allReady;
+        startGameButton.interactable = allReady && foundAny;
     }
 
     private void RefreshPlayerList()
@@ -370,7 +389,7 @@ public class LobbyManager : MonoBehaviour
             if (np != null && np.CurrentRoomCode == _roomCode)
                 players.Add(np);
         }
-        PlayerListUI.Instance.UpdatePlayerList(players);
+        PlayerListLobbyUI.Instance.UpdatePlayerList(players);
     }
 
     private void OnLanguageChanged(int index)

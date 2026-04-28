@@ -132,6 +132,10 @@ MonoBehaviour:
     m_Localized: No avaliable rooms
     m_Metadata:
       m_Items: []
+  - m_Id: 29213294622400512
+    m_Localized: Navigation hints
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -1,4 +1,5 @@
 using System.Collections;
+using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -9,11 +10,11 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
     [SerializeField] private Sprite sprite;
 
     public bool InHand = false;
-    public float Width => GetComponent<RectTransform>().rect.width;
-    public float Height => GetComponent<RectTransform>().rect.height;
 
     private RectTransform rectTransform;
     private Image image;
+    private NetworkCard networkCard;
+    private Sprite faceSprite;
     private bool isDragging = false;
     private bool isFlipped = false;
     private Vector2 offset;
@@ -22,8 +23,8 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
     {
         rectTransform = GetComponent<RectTransform>();
         image = GetComponent<Image>();
+        networkCard = GetComponent<NetworkCard>();
         image.sprite = sprite;
-
         image.raycastTarget = true;
     }
 
@@ -37,9 +38,9 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             }
             else
             {
-                if (isFlipped)
-                    StartCoroutine(PlayFlipAnimation());
+                if (isFlipped) StartCoroutine(PlayFlipAnimation());
                 PlayingCardsTable.Instance.ReturnCardToHand(this);
+                networkCard.CmdReturnFromTable();
             }
         }
     }
@@ -71,11 +72,20 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
                 if (PlayingCardsTable.Instance.IsOverTableArea(eventData.position))
                 {
                     PlayingCardsTable.Instance.PlaceCardFromHandOnTable(this);
+                    networkCard?.CmdPlaceOnTable(
+                        rectTransform.anchoredPosition,
+                        transform.eulerAngles.z,
+                        transform.localScale,
+                        isFlipped);
                 }
                 else
                 {
                     PlayingCardsTable.Instance.ReturnCardToHand(this);
                 }
+            }
+            else
+            {
+                SendNetworkUpdate();
             }
         }
     }
@@ -85,6 +95,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         if (isDragging && eventData.button == PointerEventData.InputButton.Left)
         {
             FollowPointer(eventData);
+            if (!InHand) SendNetworkUpdate();
         }
     }
 
@@ -93,13 +104,11 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         float scrollDelta = eventData.scrollDelta.y;
 
         if (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed)
-        {
             ScaleCard(scrollDelta);
-        }
         else
-        {
             RotateCard(scrollDelta);
-        }
+
+        if (!InHand) SendNetworkUpdate();
     }
 
     public void ChangePosition(Vector2 newPos, Quaternion newRot, Vector3 newScale)
@@ -108,6 +117,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         rectTransform.rotation = newRot;
         rectTransform.localScale = newScale;
     }
+
     public void ReturnToHand()
     {
         rectTransform.rotation = Quaternion.Euler(0f, 0f, 0f);
@@ -117,24 +127,32 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
 
     public void SetSprite(Sprite newSprite)
     {
+        faceSprite = newSprite;
         sprite = newSprite;
-        image.sprite = newSprite;
+        if (!isFlipped)
+            image.sprite = newSprite;
     }
+
     public void FlipCard(bool newIsFlipped)
     {
         isFlipped = newIsFlipped;
-        if (isFlipped)
-            SetSprite(CardsStorage.PictureCardBackSprite);
-        else
-            SetSprite(sprite);
+        image.sprite = isFlipped ? CardsStorage.PictureCardBackSprite : (faceSprite ?? sprite);
     }
+
     private void FlipCard()
     {
         isFlipped = !isFlipped;
-        if (isFlipped)
-            SetSprite(CardsStorage.PictureCardBackSprite);
-        else
-            SetSprite(sprite);
+        image.sprite = isFlipped ? CardsStorage.PictureCardBackSprite : (faceSprite ?? sprite);
+    }
+
+    private void SendNetworkUpdate()
+    {
+        if (!networkCard.isOwned) return;
+        networkCard.CmdUpdateCard(
+            rectTransform.anchoredPosition,
+            transform.eulerAngles.z,
+            transform.localScale,
+            isFlipped);
     }
 
     private void RotateCard(float delta)
@@ -192,5 +210,6 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             rectTransform.sizeDelta = new Vector2(currentWidth, rectTransform.sizeDelta.y);
             yield return null;
         }
+        if (!InHand) SendNetworkUpdate();
     }
 }

@@ -9,12 +9,12 @@ public class GamePlayer : NetworkBehaviour
     // индекс игрока внутри списка GamePlayers в RoomGameState
     [SyncVar] public int RoomIndex;
 
-    // Лобби-номер NetworkPlayer (для ника)
+    // Лобби-номер игрока (для ника)
     [SyncVar] public int LobbyNumber;
 
     [SyncVar] public bool IsDanny;
 
-    [SyncVar(hook = nameof(OnRoleChanged))]
+    [SyncVar(hook = nameof(OnChangedRole))]
     public Role Role = Role.Waiting;
 
     [SyncVar] public bool HasFinishedTurn;
@@ -26,6 +26,7 @@ public class GamePlayer : NetworkBehaviour
 
     public static event System.Action<GamePlayer> OnSpawned;
     public static event System.Action<GamePlayer> OnDespawned;
+    public static event System.Action<GamePlayer> OnRoleChanged;
 
     public override void OnStartClient()
     {
@@ -70,13 +71,16 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetAddCardToHand(NetworkConnectionToClient conn, uint cardNetId)
+    public void TargetAddCardToHand(NetworkConnectionToClient conn, uint cardNetId, bool canInteract)
     {
-        if (NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity))
-        {
-            Card card = identity.GetComponent<Card>();
-            if (card != null) PlayingCardsTable.Instance.ReturnCardToHand(card);
-        }
+        if (!NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity)) return;
+        Card card = identity.GetComponent<Card>();
+        if (card == null) return;
+        PlayingCardsTable.Instance.ReturnCardToHand(card);
+        var img = identity.GetComponent<UnityEngine.UI.Image>();
+        if (img != null) img.raycastTarget = canInteract;
+        var btn = identity.GetComponent<UnityEngine.UI.Button>();
+        if (btn != null) btn.interactable = canInteract;
     }
 
     [TargetRpc]
@@ -85,8 +89,9 @@ public class GamePlayer : NetworkBehaviour
         IdeasCardUI.Instance.ShowGuessPanel(card);
     }
 
-    private void OnRoleChanged(Role _, Role newRole)
+    private void OnChangedRole(Role _, Role newRole)
     {
+        OnRoleChanged.Invoke(this);
         if (isLocalPlayer)
             LobbyManager.Instance.RefreshRoomPanel();
     }

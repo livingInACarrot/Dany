@@ -190,6 +190,29 @@ public class NetworkGameManager : NetworkBehaviour
 
         ServerDrawCardsForPlayers(state);
         ServerDrawIdeasCard(state);
+        RpcStartTurn(roomCode);
+    }
+
+    [ClientRpc]
+    private void RpcStartTurn(string roomCode)
+    {
+        TimerUI.Instance?.StartTimer(30f, () => OnTurnTimerEnded(roomCode));
+    }
+
+    [Command]
+    private void CmdTurnTimerEnded(string roomCode)
+    {
+        if (!_rooms.TryGetValue(roomCode, out var state)) return;
+        if (state.Room.Phase != GamePhase.TurnInProgress) return;
+        ServerOnPlayerFinishedTurn(state.GamePlayers.Find(p => p.RoomIndex == state.CurrentIndex));
+    }
+
+    private void OnTurnTimerEnded(string roomCode)
+    {
+        if (NetworkClient.localPlayer != null)
+        {
+            NetworkClient.localPlayer.GetComponent<NetworkPlayer>()?.CmdTurnTimerEnded(roomCode);
+        }
     }
 
     [Server]
@@ -214,12 +237,12 @@ public class NetworkGameManager : NetworkBehaviour
                     Destroy(cardObj);
                     return;
                 }
-                // Инициализируем до Spawn — клиент получит правильный spriteIndex в первом сообщении
-                netCard.Initialize(spriteIdx, gp.netId);
+                netCard.Initialize(spriteIdx, gp.OwnerNetId);
                 NetworkServer.Spawn(cardObj);
 
                 gp.HandCardNetIds.Add(netCard.netId);
-                gp.TargetAddCardToHand(gp.connectionToClient, netCard.netId);
+                bool canInteract = gp.Role == Role.Active;
+                gp.TargetAddCardToHand(gp.connectionToClient, netCard.netId, canInteract);
             }
         }
     }
@@ -258,6 +281,16 @@ public class NetworkGameManager : NetworkBehaviour
             if (_rooms.TryGetValue(roomCode, out var s) && s.Room.Phase == GamePhase.Discussion)
                 ServerEndDiscussion(s);
         }));
+    }
+
+    [Server]
+    public void ServerOnTurnTimerEnded(NetworkPlayer player, string roomCode)
+    {
+        if (!_rooms.TryGetValue(roomCode, out var state)) return;
+        if (state.Room.Phase != GamePhase.TurnInProgress) return;
+        if (player == null || !player.IsHost) return;
+        GamePlayer gp = state.GamePlayers.Find(p => p.RoomIndex == state.CurrentIndex);
+        if (gp != null) ServerOnPlayerFinishedTurn(gp);
     }
 
     [Server]

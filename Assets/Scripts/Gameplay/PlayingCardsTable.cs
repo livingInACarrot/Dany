@@ -15,35 +15,36 @@ public class PlayingCardsTable : MonoBehaviour
         Instance = this;
     }
 
-    public GameObject SpawnCardInHand()
+    public void StageCard(Card card)
     {
-        return Instantiate(cardPrefab, tableArea);
+        card.transform.SetParent(tableArea, false);
+        card.gameObject.SetActive(false);
+    }
+
+    public void ShowOnTable(Card card)
+    {
+        card.InHand = false;
+        card.transform.SetParent(tableArea, false);
+        card.gameObject.SetActive(true);
     }
 
     public void PlaceCardFromHandOnTable(Card card)
     {
         card.InHand = false;
-        card.transform.SetParent(Instance.tableArea);
+        card.transform.SetParent(tableArea);
     }
 
     public void ReturnCardToHand(Card card)
     {
         card.ReturnToHand();
-        card.transform.SetParent(Instance.handArea);
+        card.transform.SetParent(handArea);
+        card.gameObject.SetActive(true);
     }
 
     public bool IsOverTableArea(Vector2 screenPosition)
     {
         return RectTransformUtility.RectangleContainsScreenPoint(
             tableArea,
-            screenPosition,
-            null);
-    }
-
-    public bool IsOverHandArea(Vector2 screenPosition)
-    {
-        return RectTransformUtility.RectangleContainsScreenPoint(
-            handArea,
             screenPosition,
             null);
     }

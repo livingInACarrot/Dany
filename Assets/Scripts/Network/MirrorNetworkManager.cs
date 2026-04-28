@@ -2,8 +2,7 @@ using Mirror;
 using UnityEngine;
 
 /// <summary>
-/// Отвечает исключительно за транспортный уровень.
-/// Клиент подключается к серверу только по команде пользователя (кнопки меню).
+/// Отвечает соединение игроков
 /// </summary>
 public class MirrorNetworkManager : NetworkManager
 {
@@ -12,27 +11,23 @@ public class MirrorNetworkManager : NetworkManager
     // Внешний IP 
     private readonly string buildAddress = "46.138.156.199";
 
-    public static string SERVER_ADDRESS = "46.138.156.199";
+    public static string SERVER_ADDRESS = "127.0.0.1";
 
     public override void Awake()
     {
         base.Awake();
 
-        #if UNITY_SERVER
+#if UNITY_SERVER
+        return;
+#endif
+
+#if UNITY_EDITOR
+        if (ParrelSync.ClonesManager.IsClone() && ParrelSync.ClonesManager.GetArgument() == "server")
             return;
-        #endif
-
-        #if UNITY_EDITOR
-            if (!ParrelSync.ClonesManager.IsClone() ||
-                ParrelSync.ClonesManager.GetArgument() != "server")
-            {
-                SERVER_ADDRESS = editorAddress;
-            }
-        #else
-            SERVER_ADDRESS = buildAddress;
-        #endif
-
-        networkAddress = SERVER_ADDRESS;
+        networkAddress = editorAddress;
+#else
+        networkAddress = buildAddress;
+#endif
     }
 
     public override void Start()

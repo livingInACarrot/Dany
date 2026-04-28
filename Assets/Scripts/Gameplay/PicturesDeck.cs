@@ -19,20 +19,17 @@ public class PicturesDeck : MonoBehaviour
 
     private void InitializeDeck()
     {
-        List<Sprite> cards = CardsStorage.PictureCardsSprites;
+        List<Sprite> cards = new List<Sprite>(CardsStorage.PictureCardsSprites);
         deck.Clear();
         Shuffle(cards);
         foreach (var card in cards)
-        {
             deck.Enqueue(card);
-        }
     }
 
     public Sprite DrawCard()
     {
         if (deck.Count == 0)
         {
-            Debug.LogError("Закончились карты воспоминаний!");
             return null;
         }
 
