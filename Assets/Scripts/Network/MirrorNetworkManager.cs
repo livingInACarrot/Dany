@@ -1,9 +1,7 @@
+
 using Mirror;
 using UnityEngine;
 
-/// <summary>
-/// Отвечает соединение игроков
-/// </summary>
 public class MirrorNetworkManager : NetworkManager
 {
    // LocalHost
@@ -16,6 +14,8 @@ public class MirrorNetworkManager : NetworkManager
     public override void Awake()
     {
         base.Awake();
+
+        _ = buildAddress;
 
 #if UNITY_SERVER
         return;

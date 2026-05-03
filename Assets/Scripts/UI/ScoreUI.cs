@@ -7,9 +7,9 @@ public class ScoreUI : MonoBehaviour
     public static ScoreUI Instance { get; private set; }
 
     [SerializeField] private TextMeshProUGUI personalitiesScoreText;
-    [SerializeField] private TextMeshProUGUI dannyScoreText;
+    [SerializeField] private TextMeshProUGUI danyScoreText;
     [SerializeField] private int maxPersonalitiesScore = 6;
-    [SerializeField] private int maxDannyScore = 3;
+    [SerializeField] private int maxDanyScore = 3;
 
     private void Awake()
     {
@@ -19,10 +19,10 @@ public class ScoreUI : MonoBehaviour
             Destroy(gameObject);
     }
 
-    public void UpdateScore(int personalitiesScore, int dannyScore)
+    public void UpdateScore(int personalitiesScore, int danyScore)
     {
         personalitiesScoreText.text = $"{personalitiesScore}/{maxPersonalitiesScore}";
-        dannyScoreText.text = $"{dannyScore}/{maxDannyScore}";
+        danyScoreText.text = $"{danyScore}/{maxDanyScore}";
     }
 
     public void ResetScore()

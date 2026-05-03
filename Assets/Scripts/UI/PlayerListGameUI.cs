@@ -24,13 +24,6 @@ public class PlayerListGameUI : MonoBehaviour
         if (Instance == null) Instance = this;
     }
 
-    public void UpdatePlayerList(List<GamePlayer> players)
-    {
-        ClearPlayerList();
-        foreach (var player in players)
-            if (player != null) CreatePlayerEntry(player);
-    }
-
     public void RefreshList()
     {
         var players = new List<GamePlayer>();
@@ -42,13 +35,25 @@ public class PlayerListGameUI : MonoBehaviour
         UpdatePlayerList(players);
     }
 
+    private void UpdatePlayerList(List<GamePlayer> players)
+    {
+        ClearPlayerList();
+        foreach (var player in players)
+            if (player != null) CreatePlayerEntry(player);
+    }
+
     private void CreatePlayerEntry(GamePlayer gp)
     {
         GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
         _entries[gp] = entry;
 
-        TextMeshProUGUI nameText = entry.GetComponentInChildren<TextMeshProUGUI>();
-        nameText.text = Loc.Nick(gp.LobbyNumber);
+        var texts = entry.GetComponentInChildren<HorizontalLayoutGroup>().GetComponentsInChildren<TMP_Text>();
+        // Voice number me host
+        //   0      1    2   3
+
+        texts[1].text = gp.LobbyNumber.ToString();
+        texts[2].gameObject.SetActive(gp.isLocalPlayer);
+        texts[3].gameObject.SetActive(false);
 
         Image back = entry.GetComponent<Image>();
         if (gp.Role == Role.Active)
@@ -58,9 +63,7 @@ public class PlayerListGameUI : MonoBehaviour
         else
             back.color = waitingPlayerColor;
 
-        Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
-        if (readyToggle != null)
-            readyToggle.gameObject.SetActive(false);
+        entry.GetComponentInChildren<Toggle>().gameObject.SetActive(false);
     }
 
     private void ClearPlayerList()
