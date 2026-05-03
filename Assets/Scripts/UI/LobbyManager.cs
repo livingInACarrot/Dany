@@ -21,6 +21,8 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private GameObject rolePanel;
     [SerializeField] private GameObject gameEndPanel;
     [SerializeField] private GameObject chatPanel;
+    [SerializeField] private GameObject abortionPanel;
+    [SerializeField] private TextMeshProUGUI abortionText;
 
     [Header("Main Menu")]
     [SerializeField] private TMP_InputField roomCodeInput;
@@ -46,7 +48,7 @@ public class LobbyManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else { Destroy(this); return; } // Уничтожаем только компонент, не GameObject (лобби-панель)
+        else { Destroy(this); return; }
     }
 
     private void Start()
@@ -121,6 +123,13 @@ public class LobbyManager : MonoBehaviour
         gameEndPanel.SetActive(true);
     }
 
+    public void ShowAbortionScreen(string message)
+    {
+        HideAllPanels();
+        abortionText.text = message;
+        abortionPanel.SetActive(true);
+    }
+
     private void HideAllPanels()
     {
         mainMenuPanel.SetActive(false);
@@ -132,6 +141,7 @@ public class LobbyManager : MonoBehaviour
         rolePanel.SetActive(false);
         gameEndPanel.SetActive(false);
         chatPanel.SetActive(false);
+        abortionPanel.SetActive(false);
     }
 
     #endregion
@@ -250,7 +260,7 @@ public class LobbyManager : MonoBehaviour
 
     public void OnRoomError(string error)
     {
-        NetworkChat.Instance?.AddSystemMessage($"Ошибка: {error}");
+        NetworkChat.Instance.AddSystemMessage($"Ошибка: {error}");
     }
 
     public void OnHostMigrated(uint newHostNetId)
@@ -265,7 +275,7 @@ public class LobbyManager : MonoBehaviour
                 UpdateStartButton();
             }
         }
-        NetworkChat.Instance?.AddSystemMessage("Хост комнаты изменился.");
+        NetworkChat.Instance.AddSystemMessage("Хост комнаты изменился.");
     }
 
     public void OnGameStarted()
@@ -273,17 +283,17 @@ public class LobbyManager : MonoBehaviour
         HideAllPanels();
         gameplayPanel.SetActive(true);
         chatPanel.SetActive(true);
-        PlayerListGameUI.Instance?.RefreshList();
+        PlayerListGameUI.Instance.RefreshList();
     }
 
-    public void OnRoleAssigned(bool isDanny)
+    public void OnRoleAssigned(bool isDany)
     {
-        ShowRolePanel(isDanny);
+        ShowRolePanel(isDany);
     }
 
     public void OnDisconnected()
     {
-        if (_reconnecting) return; // StopClient внутри Reconnect — не трогаем состояние
+        if (_reconnecting) return;
         _roomCode = string.Empty;
         _isHost = false;
         _pendingCreateRoom = false;
@@ -320,7 +330,7 @@ public class LobbyManager : MonoBehaviour
 
     private void OnNetworkPlayerRemoved(NetworkPlayer removed)
     {
-        PlayerListLobbyUI.Instance?.RemovePlayer(removed);
+        PlayerListLobbyUI.Instance.RemovePlayer(removed);
         UpdateStartButton();
     }
 
@@ -328,7 +338,6 @@ public class LobbyManager : MonoBehaviour
 
     private void OnGamePlayerSpawned(GamePlayer gp)
     {
-        // Обновляем список для всех игроков при спавне нового GamePlayer
         PlayerListGameUI.Instance?.RefreshList();
     }
 

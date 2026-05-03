@@ -6,20 +6,16 @@ using static UnityEngine.Rendering.GPUSort;
 
 public class CardsStorage : MonoBehaviour
 {
-    [Header("Cards back")]
     [SerializeField] private Sprite pictureCardBackSprite;
     [SerializeField] private Sprite ideasCardBackSprite;
     [SerializeField] private Sprite personalityCardBackSprite;
     [SerializeField] private Sprite choiceCardBackSprite;
 
-    [Header("Different cards")]
-    [SerializeField] private Sprite dannyCardSprite;
+    [SerializeField] private Sprite danyCardSprite;
     [SerializeField] private Sprite personalityCardSprite;
 
-    [Header("Pictures cards")]
     [SerializeField] private List<Sprite> pictureCardsSprites;
 
-    [Header("Ideas cards")]
     [SerializeField] private string ideasCardsKeyName;
     [SerializeField] private int ideasCardsAmount;
 
@@ -28,7 +24,7 @@ public class CardsStorage : MonoBehaviour
     public static Sprite IdeasCardBackSprite { get; private set; }
     public static Sprite PersonalityCardBackSprite { get; private set; }
     public static Sprite ChoiceCardBackSprite { get; private set; }
-    public static Sprite DannyCardSprite { get; private set; }
+    public static Sprite DanyCardSprite { get; private set; }
     public static Sprite PersonalityCardSprite { get; private set; }
     public static List<Sprite> PictureCardsSprites { get; private set; }
     public static List<IdeasCard> IdeasCards { get; private set; }
@@ -39,7 +35,7 @@ public class CardsStorage : MonoBehaviour
         IdeasCardBackSprite = ideasCardBackSprite;
         PersonalityCardBackSprite = personalityCardBackSprite;
         ChoiceCardBackSprite = choiceCardBackSprite;
-        DannyCardSprite = dannyCardSprite;
+        DanyCardSprite = danyCardSprite;
         PersonalityCardSprite = personalityCardSprite;
         PictureCardsSprites = pictureCardsSprites;
         IdeasCards = ParseIdeasKeys();

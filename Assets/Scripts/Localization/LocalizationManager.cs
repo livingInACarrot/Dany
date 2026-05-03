@@ -51,15 +51,19 @@ public class LocalizationManager : MonoBehaviour
 
     public string GetText(string key, string tableName)
     {
-        return GetTable(tableName).GetEntry(key).GetLocalizedString();
+        var table = GetTable(tableName);
+        if (table == null) return key;
+        var entry = table.GetEntry(key);
+        return entry != null ? entry.GetLocalizedString() : key;
     }
 
     private StringTable GetTable(string tableName)
     {
+        if (mainTable != null && tableName == mainTableName)
+            return mainTable;
         var operation = LocalizationSettings.StringDatabase.GetTableAsync(tableName);
         if (operation.IsDone)
             return operation.Result;
-        Debug.LogError($"LocalizationManager: Table '{tableName}' not found!");
         return null;
     }
 

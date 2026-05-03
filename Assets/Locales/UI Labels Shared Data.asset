@@ -131,6 +131,14 @@ MonoBehaviour:
     m_Key: lobby.toggleHints
     m_Metadata:
       m_Items: []
+  - m_Id: 30155404817195008
+    m_Key: host
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155407031787520
+    m_Key: me
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

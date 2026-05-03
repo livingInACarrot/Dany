@@ -11,12 +11,12 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
 
     public bool InHand = false;
 
-    private RectTransform rectTransform;
+    public RectTransform rectTransform;
     private Image image;
     private NetworkCard networkCard;
     private Sprite faceSprite;
     private bool isDragging = false;
-    private bool isFlipped = false;
+    public bool isFlipped = false;
     private Vector2 offset;
 
     public void Awake()
@@ -71,12 +71,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             {
                 if (PlayingCardsTable.Instance.IsOverTableArea(eventData.position))
                 {
-                    PlayingCardsTable.Instance.PlaceCardFromHandOnTable(this);
-                    networkCard?.CmdPlaceOnTable(
-                        rectTransform.anchoredPosition,
-                        transform.eulerAngles.z,
-                        transform.localScale,
-                        isFlipped);
+                    PlayingCardsTable.Instance.PlaceCardFromHandOnTable(this, networkCard);
                 }
                 else
                 {
@@ -95,12 +90,14 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         if (isDragging && eventData.button == PointerEventData.InputButton.Left)
         {
             FollowPointer(eventData);
-            if (!InHand) SendNetworkUpdate();
+            SendNetworkUpdate();
         }
     }
 
     public void OnScroll(PointerEventData eventData)
     {
+        if (InHand) return;
+
         float scrollDelta = eventData.scrollDelta.y;
 
         if (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed)
@@ -108,7 +105,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         else
             RotateCard(scrollDelta);
 
-        if (!InHand) SendNetworkUpdate();
+        SendNetworkUpdate();
     }
 
     public void ChangePosition(Vector2 newPos, Quaternion newRot, Vector3 newScale)

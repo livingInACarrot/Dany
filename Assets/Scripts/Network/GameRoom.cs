@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using Mirror;
 
-/// <summary>
-/// Сетевой объект комнаты. Спавнится на сервере при создании лобби.
-/// </summary>
 public class GameRoom : NetworkBehaviour
 {
     public const int MinPlayers = 3;
@@ -18,13 +15,11 @@ public class GameRoom : NetworkBehaviour
 
     [SyncVar] public GamePhase Phase = GamePhase.Lobby;
     [SyncVar] public int PersonalitiesScore;
-    [SyncVar] public int DannyScore;
+    [SyncVar] public int DanyScore;
 
-    // Список всех открытых лобби, видимых локальному клиенту
     public static readonly List<GameRoom> All = new();
     public static event Action OnRoomListChanged;
 
-    // Только сервер
     private readonly List<NetworkPlayer> _players = new();
     private int _hostConnectionId = -1;
 
@@ -60,7 +55,6 @@ public class GameRoom : NetworkBehaviour
         if (PlayerCount >= MaxPlayers || IsInProgress) return false;
         _players.Add(player);
         PlayerCount = _players.Count;
-        // Присваиваем уникальный порядковый номер внутри этого лобби (начиная с 1)
         player.Number = PlayerCount;
         if (_hostConnectionId == -1)
         {
@@ -75,7 +69,7 @@ public class GameRoom : NetworkBehaviour
     {
         bool wasHost = player.connectionToClient.connectionId == _hostConnectionId;
         _players.Remove(player);
-        player.Number = 0; // Сброс номера при выходе из комнаты
+        player.Number = 0;
         PlayerCount = _players.Count;
         if (wasHost) MigrateHost();
     }

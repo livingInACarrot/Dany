@@ -136,6 +136,14 @@ MonoBehaviour:
     m_Localized: Navigation hints
     m_Metadata:
       m_Items: []
+  - m_Id: 30155407031787520
+    m_Localized: (me)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155404817195008
+    m_Localized: (host)
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

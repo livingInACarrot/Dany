@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class PlayingCardsTable : MonoBehaviour
@@ -10,6 +8,8 @@ public class PlayingCardsTable : MonoBehaviour
     [SerializeField] private RectTransform handArea;
     [SerializeField] private GameObject cardPrefab;
 
+    private static readonly Vector2 CenterAnchor = new Vector2(0.5f, 0.5f);
+
     private void Awake()
     {
         Instance = this;
@@ -18,6 +18,8 @@ public class PlayingCardsTable : MonoBehaviour
     public void StageCard(Card card)
     {
         card.transform.SetParent(tableArea, false);
+        card.rectTransform.anchorMin = CenterAnchor;
+        card.rectTransform.anchorMax = CenterAnchor;
         card.gameObject.SetActive(false);
     }
 
@@ -25,19 +27,37 @@ public class PlayingCardsTable : MonoBehaviour
     {
         card.InHand = false;
         card.transform.SetParent(tableArea, false);
+        card.rectTransform.anchorMin = CenterAnchor;
+        card.rectTransform.anchorMax = CenterAnchor;
         card.gameObject.SetActive(true);
     }
 
-    public void PlaceCardFromHandOnTable(Card card)
+    public void PlaceCardFromHandOnTable(Card card, NetworkCard networkCard)
     {
         card.InHand = false;
-        card.transform.SetParent(tableArea);
+        Vector3 worldPos = card.rectTransform.position;
+        card.transform.SetParent(tableArea, false);
+        card.rectTransform.anchorMin = CenterAnchor;
+        card.rectTransform.anchorMax = CenterAnchor;
+        card.rectTransform.position = worldPos;
+        if (networkCard != null && networkCard.isOwned)
+        {
+            networkCard.CmdPlaceOnTable(
+                card.rectTransform.anchoredPosition,
+                card.transform.eulerAngles.z,
+                card.transform.localScale,
+                card.isFlipped);
+        }
     }
 
     public void ReturnCardToHand(Card card)
     {
         card.ReturnToHand();
-        card.transform.SetParent(handArea);
+        Vector3 worldPos = card.rectTransform.position;
+        card.transform.SetParent(handArea, false);
+        card.rectTransform.anchorMin = CenterAnchor;
+        card.rectTransform.anchorMax = CenterAnchor;
+        card.rectTransform.position = worldPos;
         card.gameObject.SetActive(true);
     }
 
@@ -52,23 +72,22 @@ public class PlayingCardsTable : MonoBehaviour
     public void ClearTable()
     {
         Card[] cardsOnTable = tableArea.GetComponentsInChildren<Card>();
-        foreach (Card card in cardsOnTable) 
-        {
+        foreach (Card card in cardsOnTable)
             Destroy(card.gameObject);
-        }
     }
+
     public void ClearHand()
     {
         Card[] cardsInHand = handArea.GetComponentsInChildren<Card>();
         foreach (var card in cardsInHand)
-        {
             Destroy(card.gameObject);
-        }
     }
+
     public void HideHand()
     {
         handArea.gameObject.SetActive(false);
     }
+
     public void ShowHand()
     {
         handArea.gameObject.SetActive(true);

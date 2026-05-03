@@ -1,25 +1,19 @@
 using Mirror;
 using UnityEngine;
 
-/// <summary>
-/// Игровой экземпляр игрока. Спавнится при старте игры и содержит всё, что нужно только во время игры.
-/// </summary>
 public class GamePlayer : NetworkBehaviour
 {
-    // индекс игрока внутри списка GamePlayers в RoomGameState
     [SyncVar] public int RoomIndex;
 
-    // Лобби-номер игрока (для ника)
     [SyncVar] public int LobbyNumber;
 
-    [SyncVar] public bool IsDanny;
+    [SyncVar] public bool IsDany;
 
     [SyncVar(hook = nameof(OnChangedRole))]
     public Role Role = Role.Waiting;
 
     [SyncVar] public bool HasFinishedTurn;
 
-    // netId NetworkPlayer
     [SyncVar] public uint OwnerNetId;
 
     public readonly SyncList<uint> HandCardNetIds = new();
@@ -53,9 +47,9 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetSendRole(NetworkConnectionToClient conn, bool isDanny)
+    public void TargetSendRole(NetworkConnectionToClient conn, bool isDany)
     {
-        LobbyManager.Instance.OnRoleAssigned(isDanny);
+        LobbyManager.Instance.OnRoleAssigned(isDany);
     }
 
     [TargetRpc]

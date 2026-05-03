@@ -55,26 +55,22 @@ public class PlayerListLobbyUI : MonoBehaviour
         GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
         _entries[player] = entry;
 
-        TextMeshProUGUI nameText = entry.GetComponentInChildren<TextMeshProUGUI>();
-        nameText.text = Loc.Nick(player.Number);
 
-        if (player.isLocalPlayer)
-        {
-            Image back = entry.GetComponentInChildren<Image>();
-            if (back != null) back.color = localPlayerColor;
-        }
+        var texts = entry.GetComponentInChildren<HorizontalLayoutGroup>().GetComponentsInChildren<TMP_Text>();
+        // Voice number me host
+        //   0      1    2   3
+
+        texts[1].text = player.Number.ToString();
+        //if (player.isLocalPlayer) entry.GetComponent<Image>().color = localPlayerColor;
+        texts[2].gameObject.SetActive(player.isLocalPlayer);
+        texts[3].gameObject.SetActive(player.IsHost);
 
         Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
-        if (readyToggle != null)
-        {
-            readyToggle.gameObject.SetActive(true);
-            readyToggle.isOn = player.IsReady;
-            readyToggle.interactable = false;
+        readyToggle.isOn = player.IsReady;
 
-            void OnDataChanged() { if (readyToggle != null) readyToggle.isOn = player.IsReady; }
-            player.OnDataChanged += OnDataChanged;
-            _readyHandlers[player] = OnDataChanged;
-        }
+        void OnDataChanged() { readyToggle.isOn = player.IsReady; }
+        player.OnDataChanged += OnDataChanged;
+        _readyHandlers[player] = OnDataChanged;
     }
 
     private void ClearPlayerList()

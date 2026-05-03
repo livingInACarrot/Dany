@@ -19,8 +19,8 @@ public class NetworkCard : NetworkBehaviour
     [SyncVar(hook = nameof(OnFlippedChanged))]
     public bool isFlipped;
 
-    [SyncVar(hook = nameof(OnIsOnTableChanged))]
-    public bool isOnTable;
+    [SyncVar(hook = nameof(OnIsInHandChanged))]
+    public bool inHand;
 
     [SyncVar]
     public uint ownerNetId;
@@ -37,43 +37,39 @@ public class NetworkCard : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        //if (PlayingCardsTable.Instance != null && card != null)
-        //    PlayingCardsTable.Instance.StageCard(card);
 
         bool isLocalOwner = NetworkClient.localPlayer != null
                             && NetworkClient.localPlayer.netId == ownerNetId;
         if (!isLocalOwner)
         {
-            Image img = GetComponent<Image>();
-            img.raycastTarget = false;
-            //Button btn = GetComponent<Button>();
-            //if (btn != null) btn.interactable = false;
+            GetComponent<Image>().raycastTarget = false;
+            PlayingCardsTable.Instance.StageCard(card);
         }
     }
 
     public void Initialize(int index, uint ownerId)
     {
         spriteIndex = index;
-        ownerNetId  = ownerId;
-        position    = rectTransform.anchoredPosition;
-        rotation    = 0f;
-        scale       = rectTransform.localScale;
-        isFlipped   = false;
-        isOnTable   = false;
+        ownerNetId = ownerId;
+        position = rectTransform.anchoredPosition;
+        rotation = 0f;
+        scale = rectTransform.localScale;
+        isFlipped = false;
+        inHand = true;
     }
 
     [Command(requiresAuthority = false)]
     public void CmdPlaceOnTable(Vector2 pos, float rot, Vector3 sc, bool flipped)
     {
-        position  = pos;
-        rotation  = rot;
-        scale     = sc;
+        position = pos;
+        rotation = rot;
+        scale = sc;
         isFlipped = flipped;
-        isOnTable = true;
+        inHand = false;
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdReturnFromTable() => isOnTable = false;
+    public void CmdReturnFromTable() => inHand = true;
 
     [Command(requiresAuthority = false)]
     public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped)
@@ -90,8 +86,7 @@ public class NetworkCard : NetworkBehaviour
         Image img = GetComponent<Image>();
         img.raycastTarget = interactable;
     }
-    public bool IsOwnedByLocalPlayer()
-        => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
+    public bool IsOwnedByLocalPlayer() => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
 
     private void OnSpriteIndexChanged(int _, int newIndex)
     {
@@ -101,28 +96,29 @@ public class NetworkCard : NetworkBehaviour
             card.SetSprite(sprites[newIndex]);
     }
 
-    private void OnIsOnTableChanged(bool _, bool newValue)
+    private void OnPositionChanged(Vector2 _, Vector2 newValue) => rectTransform.anchoredPosition = newValue;
+
+    private void OnRotationChanged(float _, float newValue) => transform.rotation = Quaternion.Euler(0, 0, newValue);
+
+    private void OnScaleChanged(Vector3 _, Vector3 newValue) => rectTransform.localScale = newValue;
+
+    private void OnFlippedChanged(bool _, bool newValue) => card.FlipCard(newValue);
+
+    private void OnIsInHandChanged(bool _, bool nowInHand)
     {
         if (isOwned) return;
-        if (newValue)
-            PlayingCardsTable.Instance.ShowOnTable(card);
-        else
+        if (nowInHand)
+        {
             PlayingCardsTable.Instance.StageCard(card);
+        }
+        else
+        {
+            PlayingCardsTable.Instance.ShowOnTable(card);
+            rectTransform.anchoredPosition = position;
+            transform.rotation = Quaternion.Euler(0, 0, rotation);
+            rectTransform.localScale = scale;
+        }
     }
 
-    private void OnPositionChanged(Vector2 _, Vector2 newValue)
-    {
-        rectTransform.anchoredPosition = newValue;
-    }
 
-    private void OnRotationChanged(float _, float newValue)
-        => transform.rotation = Quaternion.Euler(0, 0, newValue);
-
-    private void OnScaleChanged(Vector3 _, Vector3 newValue)
-    {
-        rectTransform.localScale = newValue;
-    }
-
-    private void OnFlippedChanged(bool _, bool newValue)
-        => card.FlipCard(newValue);
 }
