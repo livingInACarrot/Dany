@@ -3,10 +3,29 @@ using UnityEngine.UI;
 
 public class HintUI : MonoBehaviour
 {
+    public static HintUI Instance { get; private set; }
+
     [SerializeField] private Toggle toggle;
     [SerializeField] private GameObject hint;
-    public void ToggleHints()
+
+    private bool _turnActive;
+
+    private void Awake()
     {
-        hint.SetActive(toggle.isOn);
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    public void ToggleHints() => Refresh();
+
+    public void SetTurnActive(bool active)
+    {
+        _turnActive = active;
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        hint.SetActive(toggle.isOn && _turnActive);
     }
 }

@@ -144,6 +144,45 @@ MonoBehaviour:
     m_Localized: (host)
     m_Metadata:
       m_Items: []
+  - m_Id: 31892704307699712
+    m_Localized: 'LMB - drag
+
+      RMB - return to deck
+
+      Ctrl + RMB - flip
+
+      Mouse
+      scroll - rotate'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31903026951217152
+    m_Localized: System
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914117274001408
+    m_Localized: Incorrect room input
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914413911957504
+    m_Localized: Room not found
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31915105913397248
+    m_Localized: The room is full or the game is already in progress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916112957399040
+    m_Localized: The code is copied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916940447440896
+    m_Localized: Room is now private
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31917077123031040
+    m_Localized: Room is now public
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

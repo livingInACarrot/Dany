@@ -24,10 +24,19 @@ public class NetworkPlayer : NetworkBehaviour
     [SyncVar]
     public uint GamePlayerNetId;
 
+    [SyncVar]
+    public int VoiceId = -1;
+
     public event System.Action OnDataChanged;
 
     public static event System.Action<NetworkPlayer> OnPlayerAdded;
     public static event System.Action<NetworkPlayer> OnPlayerRemoved;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        VoiceId = connectionToClient?.connectionId ?? -1;
+    }
 
     public override void OnStartClient()
     {
@@ -47,7 +56,6 @@ public class NetworkPlayer : NetworkBehaviour
     {
         base.OnStopClient();
         OnPlayerRemoved?.Invoke(this);
-        //VoiceChat.Instance?.RemoveSource(netId);
     }
 
     [Command]
@@ -78,7 +86,8 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdSendChatMessage(string message, int num)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
-        RpcReceiveChatMessage(Loc.Nick(num), message);
+        //RpcReceiveChatMessage(Loc.Nick(num), message);
+        RpcReceiveChatMessage(num.ToString(), message);
     }
 
     [ClientRpc]
@@ -90,18 +99,6 @@ public class NetworkPlayer : NetworkBehaviour
     [Command]
     public void CmdTurnTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnTurnTimerEnded(this, roomCode);
 
-
-    [Command]
-    public void CmdSendVoice(byte[] pcm) => RpcReceiveVoice(netId, pcm);
-
-    [ClientRpc]
-    private void RpcReceiveVoice(uint senderNetId, byte[] pcm)
-    {
-        if (isLocalPlayer) return;
-        //VoiceChat.Instance?.PlayRemoteAudio(senderNetId, pcm);
-    }
-
-
     [TargetRpc]
     public void TargetRoomCreated(NetworkConnectionToClient conn, string code) => LobbyManager.Instance.OnRoomCreated(code);
 
@@ -111,14 +108,16 @@ public class NetworkPlayer : NetworkBehaviour
     [TargetRpc]
     public void TargetRoomError(NetworkConnectionToClient conn, string error) => LobbyManager.Instance.OnRoomError(error);
 
-
     private void OnNumberChanged(int _, int __) => OnDataChanged?.Invoke();
+
     private void OnCountryChanged(string _, string __) => OnDataChanged?.Invoke();
+
     private void OnReadyChanged(bool _, bool __)
     {
         OnDataChanged?.Invoke();
         LobbyManager.Instance?.RefreshRoomPanel();
     }
     private void OnIsHostChanged(bool _, bool __) => LobbyManager.Instance?.RefreshRoomPanel();
+
     private void OnCurrentRoomCodeChanged(string _, string __) => LobbyManager.Instance?.RefreshRoomPanel();
 }

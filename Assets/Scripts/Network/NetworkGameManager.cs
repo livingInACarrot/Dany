@@ -55,12 +55,12 @@ public class NetworkGameManager : NetworkBehaviour
 
         if (!_rooms.TryGetValue(code, out var state))
         {
-            player.TargetRoomError(player.connectionToClient, "Комната не найдена");
+            player.TargetRoomError(player.connectionToClient, Loc.Text("error.roomNotFound"));
             return;
         }
         if (!state.Room.TryAddPlayer(player))
         {
-            player.TargetRoomError(player.connectionToClient, "Комната заполнена или игра уже идёт");
+            player.TargetRoomError(player.connectionToClient, Loc.Text("error.roomFull"));
             return;
         }
         player.CurrentRoomCode = code;
@@ -124,10 +124,9 @@ public class NetworkGameManager : NetworkBehaviour
         {
             string msg = $"Голос {playerNumber} вышел из игры. Недостаточно игроков для продолжения.\nЛичности: {state.Room.PersonalitiesScore} | Дэни: {state.Room.DanyScore}";
             RpcShowAbortionPanel(code, msg);
-            StartCoroutine(DelayedAction(5f, code, () => ServerReturnToLobby(code)));
+            //StartCoroutine(DelayedAction(5f, code, () => ServerReturnToLobby(code)));
             return;
         }
-
         RpcRoomUpdated(code);
     }
 
@@ -198,9 +197,6 @@ public class NetworkGameManager : NetworkBehaviour
             else if (gp.RoomIndex == state.DecisiveIndex)  gp.Role = Role.Decisive;
             else gp.Role = Role.Waiting;
         }
-
-        // Убрать потом
-        //PlayerListGameUI.Instance.RefreshList();
         ServerDrawCardsForPlayers(state);
         ServerDrawIdeasCard(state);
         RpcStartTurn(roomCode);
@@ -236,12 +232,6 @@ public class NetworkGameManager : NetworkBehaviour
 
                 GameObject cardObj = Instantiate(networkCardPrefab);
                 NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
-                if (netCard == null)
-                {
-                    Debug.LogError($"[Server] networkCardPrefab '{networkCardPrefab?.name}' не содержит NetworkCard!");
-                    Destroy(cardObj);
-                    return;
-                }
                 netCard.Initialize(spriteIdx, gp.OwnerNetId);
                 NetworkServer.Spawn(cardObj, gp.connectionToClient);
 
@@ -554,14 +544,14 @@ public class NetworkGameManager : NetworkBehaviour
 public class RoomGameState
 {
     public GameRoom Room;
-    public int CurrentIndex  = -1;
+    public int CurrentIndex = -1;
     public int DecisiveIndex = -1;
     public int DanyIndex;
     public int DanyLobbyNumber;
-    public List<GamePlayer>    GamePlayers      = new();
-    public IdeasCard           CurrentIdeasCard;
-    public int                 SecretWordIndex;
-    public Dictionary<int,int> Votes            = new();
+    public List<GamePlayer> GamePlayers = new();
+    public IdeasCard CurrentIdeasCard;
+    public int SecretWordIndex;
+    public Dictionary<int,int> Votes = new();
 
     public RoomGameState(GameRoom room) => Room = room;
 }

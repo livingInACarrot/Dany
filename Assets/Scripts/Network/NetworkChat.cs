@@ -40,7 +40,7 @@ public class NetworkChat : MonoBehaviour
 
     public void AddMessage(string sender, string message) => AddMessageToUI(sender, message);
 
-    public void AddSystemMessage(string message) => AddMessageToUI("Система", message);
+    public void AddSystemMessage(string message) => AddMessageToUI(Loc.Text("chat.system"), message);
 
     public void EnableDiscussionMode()
     {
@@ -55,8 +55,7 @@ public class NetworkChat : MonoBehaviour
         GameObject msgObj = Instantiate(messagePrefab, messageContainer);
         _messages.Add(msgObj);
 
-        TextMeshProUGUI text = msgObj.GetComponentInChildren<TextMeshProUGUI>();
-        if (text != null) text.text = $"{sender}: {message}";
+        msgObj.GetComponentInChildren<TextMeshProUGUI>().text = $"{sender}: {message}";
 
         Canvas.ForceUpdateCanvases();
 

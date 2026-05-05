@@ -86,7 +86,14 @@ public class GamePlayer : NetworkBehaviour
     private void OnChangedRole(Role _, Role newRole)
     {
         OnRoleChanged.Invoke(this);
-        if (isLocalPlayer)
+        bool isOwnerLocal = NetworkClient.localPlayer != null && OwnerNetId == NetworkClient.localPlayer.netId;
+        if (isOwnerLocal)
+        {
             LobbyManager.Instance.RefreshRoomPanel();
+            LobbyManager.Instance.SetGameReadyVisible(newRole == Role.Active);
+            if (VoiceController.Instance != null)
+                VoiceController.Instance.TurnMuted = newRole == Role.Active;
+            HintUI.Instance?.SetTurnActive(newRole == Role.Active);
+        }
     }
 }

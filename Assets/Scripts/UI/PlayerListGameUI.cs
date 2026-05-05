@@ -64,6 +64,14 @@ public class PlayerListGameUI : MonoBehaviour
             back.color = waitingPlayerColor;
 
         entry.GetComponentInChildren<Toggle>().gameObject.SetActive(false);
+
+        int voiceId = -1;
+        if (NetworkClient.spawned.TryGetValue(gp.OwnerNetId, out NetworkIdentity ownerIdentity))
+        {
+            var np = ownerIdentity.GetComponent<NetworkPlayer>();
+            if (np != null) voiceId = np.VoiceId;
+        }
+        entry.GetComponentInChildren<MicIndicatorUI>()?.Init(voiceId, gp.isLocalPlayer);
     }
 
     private void ClearPlayerList()

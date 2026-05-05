@@ -1,18 +1,12 @@
-using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.UI;
 
 public class VoiceButton : MonoBehaviour
 {
-    public static Key Bind;
+    public static Key Bind = Key.X;
 
     [SerializeField] private TMP_Text label;
-    [SerializeField] private Key defaultKey = Key.X;
 
     private bool waitingForKey = false;
     private Keyboard keyboard;
@@ -20,7 +14,6 @@ public class VoiceButton : MonoBehaviour
     private void Start()
     {
         keyboard = Keyboard.current;
-        Bind = defaultKey;
         UpdateLabel();
     }
     void Update()

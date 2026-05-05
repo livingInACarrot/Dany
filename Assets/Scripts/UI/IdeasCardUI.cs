@@ -1,9 +1,5 @@
 using Mirror;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,9 +8,10 @@ public class IdeasCardUI : MonoBehaviour
     public static IdeasCardUI Instance { get; private set; }
 
     [SerializeField] private GameObject wordsPanel;
+    [SerializeField] private Color currentWordColor = new(0.9f, 1f, 0.9f);
+    [SerializeField] private Color defaultWordColor = new(1f, 1f, 1f);
 
     private Button[] wordButtons;
-
 
     private void Awake()
     {
@@ -24,32 +21,31 @@ public class IdeasCardUI : MonoBehaviour
             Destroy(gameObject);
 
         wordButtons = wordsPanel.GetComponentsInChildren<Button>();
-        wordsPanel.SetActive(true);
+        HideCard();
     }
 
     public void ShowForActiveRole(IdeasCard card, int wordIndex)
     {
-        wordsPanel.SetActive(true);
-
         for (int i = 0; i < 5; i++)
         {
             wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = card.Words[i];
-            if (i == wordIndex)
-            {
-                wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = "(" + card.Words[i] + ")";
-            }
+            wordButtons[i].GetComponent<Image>().color = defaultWordColor;
+
+            if (i == wordIndex) wordButtons[i].GetComponent<Image>().color = currentWordColor;
         }
         ToggleInteractable(false);
+        wordsPanel.SetActive(true);
     }
 
     public void ShowForOthers(IdeasCard card)
     {
-        wordsPanel.SetActive(true);
         for (int i = 0; i < 5; i++)
         {
             wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = card.Words[i];
+            wordButtons[i].GetComponent<Image>().color = defaultWordColor;
         }
         ToggleInteractable(false);
+        wordsPanel.SetActive(true);
     }
 
     public void ShowGuessPanel(IdeasCard card)
@@ -60,10 +56,10 @@ public class IdeasCardUI : MonoBehaviour
 
     public void OnWordButtonClicked(int wordIndex)
     {
-        if (NetworkClient.localPlayer == null) return;
-        GamePlayer localGamePlayer = NetworkClient.localPlayer.GetComponent<GamePlayer>();
-        if (localGamePlayer == null) return;
-        localGamePlayer.CmdWordGuessed(wordIndex);
+        NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
+        if (np == null) return;
+        if (NetworkClient.spawned.TryGetValue(np.GamePlayerNetId, out NetworkIdentity id))
+            id.GetComponent<GamePlayer>()?.CmdWordGuessed(wordIndex);
     }
 
     public void HideCard()
@@ -76,7 +72,6 @@ public class IdeasCardUI : MonoBehaviour
         for (int i = 0; i < wordButtons.Length; i++)
         {
             wordButtons[i].interactable = active;
-            //wordButtons[i].GetComponent<Image>().raycastTarget = active;
         }
     }
 }

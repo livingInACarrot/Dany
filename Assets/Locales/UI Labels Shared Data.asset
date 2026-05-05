@@ -139,6 +139,38 @@ MonoBehaviour:
     m_Key: me
     m_Metadata:
       m_Items: []
+  - m_Id: 31892704307699712
+    m_Key: hints
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31903026951217152
+    m_Key: chat.system
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914117274001408
+    m_Key: error.incorrectRoomInput
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914413911957504
+    m_Key: error.roomNotFound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31915105913397248
+    m_Key: error.roomFull
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916112957399040
+    m_Key: codeCopied
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916940447440896
+    m_Key: popup.roomPrivate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31917077123031040
+    m_Key: popup.roomPublic
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -15,6 +15,7 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject lobbyPanel;
     [SerializeField] private GameObject gameplayPanel;
+    [SerializeField] private GameObject finalRoundPanel;
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private GameObject rulesPanel;
     [SerializeField] private GameObject openRoomsPanel;
@@ -22,7 +23,6 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private GameObject gameEndPanel;
     [SerializeField] private GameObject chatPanel;
     [SerializeField] private GameObject abortionPanel;
-    [SerializeField] private TextMeshProUGUI abortionText;
 
     [Header("Main Menu")]
     [SerializeField] private TMP_InputField roomCodeInput;
@@ -32,6 +32,9 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Button startGameButton;
     [SerializeField] private Toggle readyToggle;
     [SerializeField] private Toggle privateRoomToggle;
+
+    [Header("Gameplay")]
+    [SerializeField] private Toggle gameReadyToggle;
 
     [Header("Settings")]
     [SerializeField] private Dropdown languageDropdown;
@@ -74,8 +77,10 @@ public class LobbyManager : MonoBehaviour
         startGameButton.onClick.AddListener(OnStartGameClick);
         readyToggle.onValueChanged.AddListener(OnReadyToggleChanged);
         privateRoomToggle.onValueChanged.AddListener(OnPrivacyToggleChanged);
-        //voiceVolumeSlider.onValueChanged.AddListener(v => VoiceChat.Instance?.SetOutputVolume(v));
-        //micVolumeSlider.onValueChanged.AddListener(v => VoiceChat.Instance?.SetMicVolume(v));
+        voiceVolumeSlider.onValueChanged.AddListener(v => VoiceController.Instance?.SetOutputVolume(v));
+        micVolumeSlider.onValueChanged.AddListener(v => VoiceController.Instance?.SetMicVolume(v));
+        gameReadyToggle.onValueChanged.AddListener(OnGameReadyToggled);
+        gameReadyToggle.gameObject.SetActive(false);
     }
 
     private void SubscribeToEvents()
@@ -125,8 +130,9 @@ public class LobbyManager : MonoBehaviour
 
     public void ShowAbortionScreen(string message)
     {
-        HideAllPanels();
-        abortionText.text = message;
+        //HideAllPanels();
+        //abortionText.text = message;
+        abortionPanel.GetComponentsInChildren<TMP_Text>()[1].text = message;
         abortionPanel.SetActive(true);
     }
 
@@ -135,6 +141,7 @@ public class LobbyManager : MonoBehaviour
         mainMenuPanel.SetActive(false);
         lobbyPanel.SetActive(false);
         gameplayPanel.SetActive(false);
+        finalRoundPanel.SetActive(false);
         settingsPanel.SetActive(false);
         rulesPanel.SetActive(false);
         openRoomsPanel.SetActive(false);
@@ -164,7 +171,11 @@ public class LobbyManager : MonoBehaviour
     public void OnJoinByCodeClick()
     {
         string code = roomCodeInput.text?.Trim();
-        if (string.IsNullOrWhiteSpace(code) || code.Length != 5) return;
+        if (string.IsNullOrWhiteSpace(code) || code.Length != 5)
+        {
+            PopupUI.Instance.Show(Loc.Text("error.incorrectRoomInput"));
+            return;
+        }
         JoinRoom(code);
     }
 
@@ -202,7 +213,7 @@ public class LobbyManager : MonoBehaviour
     public void OnRoomCodeButtonClick()
     {
         GUIUtility.systemCopyBuffer = _roomCode;
-        Debug.Log($"Код скопирован: {_roomCode}");
+        PopupUI.Instance.Show($"{Loc.Text("codeCopied")}: {_roomCode}!", 2f);
     }
 
     public void OnBackToMainMenuClick()
@@ -233,7 +244,26 @@ public class LobbyManager : MonoBehaviour
     private void OnPrivacyToggleChanged(bool isPrivate)
     {
         if (_isHost)
+        {
             NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdSetRoomPrivacy(isPrivate);
+
+            PopupUI.Instance.Show(isPrivate ? Loc.Text("popup.roomPrivate") : Loc.Text("popup.roomPublic"), 2f);
+        }
+    }
+
+    public void SetGameReadyVisible(bool visible)
+    {
+        gameReadyToggle.isOn = false;
+        gameReadyToggle.gameObject.SetActive(visible);
+    }
+
+    private void OnGameReadyToggled(bool isOn)
+    {
+        if (!isOn) return;
+        NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
+        if (np == null) return;
+        if (NetworkClient.spawned.TryGetValue(np.GamePlayerNetId, out NetworkIdentity id))
+            id.GetComponent<GamePlayer>()?.CmdFinishTurn();
     }
 
     #endregion
@@ -260,7 +290,7 @@ public class LobbyManager : MonoBehaviour
 
     public void OnRoomError(string error)
     {
-        NetworkChat.Instance.AddSystemMessage($"Ошибка: {error}");
+        PopupUI.Instance.Show($"{error}");
     }
 
     public void OnHostMigrated(uint newHostNetId)
@@ -284,6 +314,21 @@ public class LobbyManager : MonoBehaviour
         gameplayPanel.SetActive(true);
         chatPanel.SetActive(true);
         PlayerListGameUI.Instance.RefreshList();
+    }
+
+    public void OnFinalRoundStarted()
+    {
+        finalRoundPanel.SetActive(true);
+        SetGameReadyVisible(false);
+        PlayingCardsTable.Instance.ClearTable();
+        PlayingCardsTable.Instance.ClearHand();
+        IdeasCardUI.Instance.HideCard();
+        HintUI.Instance?.SetTurnActive(false);
+    }
+
+    public void HideFinalRoundPanel()
+    {
+        finalRoundPanel.SetActive(false);
     }
 
     public void OnRoleAssigned(bool isDany)

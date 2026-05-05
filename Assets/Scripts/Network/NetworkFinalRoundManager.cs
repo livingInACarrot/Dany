@@ -7,12 +7,10 @@ public class NetworkFinalRoundManager : NetworkBehaviour
 {
     public static NetworkFinalRoundManager Instance { get; private set; }
 
-    [SerializeField] private GameObject finalRoundPanel;
     [SerializeField] private Transform votingButtonsContainer;
     [SerializeField] private GameObject voteButtonPrefab;
 
-    private float discussionTime = 60f;
-    private string _currentRoomCode;
+    private readonly float discussionTime = 60f;
     private bool _votingActive;
 
     private void Awake()
@@ -23,10 +21,9 @@ public class NetworkFinalRoundManager : NetworkBehaviour
 
     public void StartFinalRound(int danyLobbyNumber, string roomCode)
     {
-        _currentRoomCode = roomCode;
         _votingActive = false;
 
-        finalRoundPanel.SetActive(true);
+        LobbyManager.Instance.OnFinalRoundStarted();
         BuildVotingButtons(roomCode);
         NetworkChat.Instance.AddSystemMessage($"Финальный раунд! У вас {discussionTime} секунд на обсуждение.");
         TimerUI.Instance.StartTimer(discussionTime, OnDiscussionEnd);
@@ -77,7 +74,7 @@ public class NetworkFinalRoundManager : NetworkBehaviour
             ? $"{Loc.Nick(suspectedLobbyNumber)} — это Дэни! Личности победили!"
             : $"{Loc.Nick(suspectedLobbyNumber)} — не Дэни. Дэни победил!";
         NetworkChat.Instance.AddSystemMessage(result);
-        finalRoundPanel.SetActive(false);
+        LobbyManager.Instance.HideFinalRoundPanel();
     }
 
     [ClientRpc]
