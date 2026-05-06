@@ -52,7 +52,7 @@ public class PlayerListGameUI : MonoBehaviour
         //   0      1    2   3
 
         texts[1].text = gp.LobbyNumber.ToString();
-        texts[2].gameObject.SetActive(gp.isLocalPlayer);
+        texts[2].gameObject.SetActive(gp.GetComponent<NetworkPlayer>().isLocalPlayer);
         texts[3].gameObject.SetActive(false);
 
         Image back = entry.GetComponent<Image>();

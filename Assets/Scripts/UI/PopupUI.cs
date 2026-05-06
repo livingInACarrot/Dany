@@ -17,6 +17,7 @@ public class PopupUI : MonoBehaviour
         if (Instance == null) Instance = this;
         else { Destroy(gameObject); return; }
         canvasGroup.alpha = 0f;
+        gameObject.SetActive(true);
     }
 
     public void Show(string message, float duration = 4f)

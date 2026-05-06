@@ -86,18 +86,20 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdSendChatMessage(string message, int num)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
-        //RpcReceiveChatMessage(Loc.Nick(num), message);
-        RpcReceiveChatMessage(num.ToString(), message);
+        RpcReceiveChatMessage(num, message);
     }
 
     [ClientRpc]
-    private void RpcReceiveChatMessage(string sender, string message) => NetworkChat.Instance.AddMessage(sender, message);
+    private void RpcReceiveChatMessage(int senderNum, string message) => NetworkChat.Instance.AddMessage(Loc.Nick(senderNum), message);
 
     [Command]
     public void CmdVote(int suspectedLobbyNumber) => NetworkGameManager.Instance.ServerOnVoteReceived(this, suspectedLobbyNumber);
 
     [Command]
     public void CmdTurnTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnTurnTimerEnded(this, roomCode);
+
+    [Command]
+    public void CmdDecisiveTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnDecisiveTimerEnded(this, roomCode);
 
     [TargetRpc]
     public void TargetRoomCreated(NetworkConnectionToClient conn, string code) => LobbyManager.Instance.OnRoomCreated(code);

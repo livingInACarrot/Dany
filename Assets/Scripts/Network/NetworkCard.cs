@@ -86,6 +86,7 @@ public class NetworkCard : NetworkBehaviour
         Image img = GetComponent<Image>();
         img.raycastTarget = interactable;
     }
+
     public bool IsOwnedByLocalPlayer() => NetworkClient.localPlayer != null && NetworkClient.localPlayer.netId == ownerNetId;
 
     private void OnSpriteIndexChanged(int _, int newIndex)

@@ -171,6 +171,26 @@ MonoBehaviour:
     m_Key: popup.roomPublic
     m_Metadata:
       m_Items: []
+  - m_Id: 31971561543032832
+    m_Key: abortionText
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32000464319930368
+    m_Key: lostByTimeout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32008776797118464
+    m_Key: chat.correctGuess
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009064660590592
+    m_Key: chat.wrongGuess
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009345049812992
+    m_Key: chat.playerLeft
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -42,12 +42,6 @@ public class NetworkChat : MonoBehaviour
 
     public void AddSystemMessage(string message) => AddMessageToUI(Loc.Text("chat.system"), message);
 
-    public void EnableDiscussionMode()
-    {
-        messageInput.interactable = true;
-        AddSystemMessage("Началось обсуждение! Все могут писать в чат.");
-    }
-
     public void ActivateChat(bool active) => messageInput.interactable = active;
 
     private void AddMessageToUI(string sender, string message)

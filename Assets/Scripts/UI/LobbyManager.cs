@@ -254,12 +254,14 @@ public class LobbyManager : MonoBehaviour
     public void SetGameReadyVisible(bool visible)
     {
         gameReadyToggle.isOn = false;
+        gameReadyToggle.interactable = true;
         gameReadyToggle.gameObject.SetActive(visible);
     }
 
     private void OnGameReadyToggled(bool isOn)
     {
         if (!isOn) return;
+        gameReadyToggle.interactable = false;
         NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
         if (np == null) return;
         if (NetworkClient.spawned.TryGetValue(np.GamePlayerNetId, out NetworkIdentity id))

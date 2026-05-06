@@ -66,11 +66,14 @@ public class PlayerListLobbyUI : MonoBehaviour
         texts[3].gameObject.SetActive(player.IsHost);
 
         Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
-        readyToggle.isOn = player.IsReady;
+        readyToggle.SetIsOnWithoutNotify(player.IsReady);
 
         entry.GetComponentInChildren<MicIndicatorUI>()?.Init(player.VoiceId, player.isLocalPlayer);
 
-        void OnDataChanged() { readyToggle.isOn = player.IsReady; }
+        void OnDataChanged()
+        {
+            if (readyToggle != null) readyToggle.SetIsOnWithoutNotify(player.IsReady);
+        }
         player.OnDataChanged += OnDataChanged;
         _readyHandlers[player] = OnDataChanged;
     }

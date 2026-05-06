@@ -19,22 +19,21 @@ public class NetworkFinalRoundManager : NetworkBehaviour
         else Destroy(gameObject);
     }
 
-    public void StartFinalRound(int danyLobbyNumber, string roomCode)
+    public void StartFinalRound(int danyLobbyNumber, string roomCode, List<int> lobbyNumbers)
     {
         _votingActive = false;
 
         LobbyManager.Instance.OnFinalRoundStarted();
-        BuildVotingButtons(roomCode);
+        BuildVotingButtons(lobbyNumbers);
         NetworkChat.Instance.AddSystemMessage($"Финальный раунд! У вас {discussionTime} секунд на обсуждение.");
         TimerUI.Instance.StartTimer(discussionTime, OnDiscussionEnd);
     }
 
-    private void BuildVotingButtons(string roomCode)
+    private void BuildVotingButtons(List<int> lobbyNumbers)
     {
         foreach (Transform child in votingButtonsContainer)
             Destroy(child.gameObject);
 
-        List<int> lobbyNumbers = NetworkGameManager.Instance.GetPlayersNumbers(roomCode);
         foreach (int lobbyNum in lobbyNumbers)
         {
             GameObject btnObj = Instantiate(voteButtonPrefab, votingButtonsContainer);

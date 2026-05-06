@@ -14,8 +14,8 @@ public class GameRoom : NetworkBehaviour
     [SyncVar] public bool IsInProgress;
 
     [SyncVar] public GamePhase Phase = GamePhase.Lobby;
-    [SyncVar] public int PersonalitiesScore;
-    [SyncVar] public int DanyScore;
+    [SyncVar(hook = nameof(OnScoreChanged))] public int PersonalitiesScore;
+    [SyncVar(hook = nameof(OnScoreChanged))] public int DanyScore;
 
     public static readonly List<GameRoom> All = new();
     public static event Action OnRoomListChanged;
@@ -49,6 +49,11 @@ public class GameRoom : NetworkBehaviour
         OnRoomListChanged?.Invoke();
     }
 
+    private void OnScoreChanged(int _, int __)
+    {
+        ScoreUI.Instance?.UpdateScore(PersonalitiesScore, DanyScore);
+    }
+
     [Server]
     public bool TryAddPlayer(NetworkPlayer player)
     {
@@ -71,6 +76,8 @@ public class GameRoom : NetworkBehaviour
         _players.Remove(player);
         player.Number = 0;
         PlayerCount = _players.Count;
+        for (int i = 0; i < _players.Count; i++)
+            _players[i].Number = i + 1;
         if (wasHost) MigrateHost();
     }
 

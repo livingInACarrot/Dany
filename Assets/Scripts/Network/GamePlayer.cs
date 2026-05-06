@@ -1,5 +1,6 @@
 using Mirror;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GamePlayer : NetworkBehaviour
 {
@@ -71,10 +72,14 @@ public class GamePlayer : NetworkBehaviour
         Card card = identity.GetComponent<Card>();
         if (card == null) return;
         PlayingCardsTable.Instance.ReturnCardToHand(card);
-        var img = identity.GetComponent<UnityEngine.UI.Image>();
-        if (img != null) img.raycastTarget = canInteract;
-        var btn = identity.GetComponent<UnityEngine.UI.Button>();
-        if (btn != null) btn.interactable = canInteract;
+        identity.GetComponent<Image>().raycastTarget = canInteract;
+        identity.GetComponent<Button>().interactable = canInteract;
+    }
+
+    [TargetRpc]
+    public void TargetClearHand(NetworkConnectionToClient conn)
+    {
+        PlayingCardsTable.Instance.ClearHand();
     }
 
     [TargetRpc]

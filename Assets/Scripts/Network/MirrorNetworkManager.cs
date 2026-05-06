@@ -5,10 +5,12 @@ public class MirrorNetworkManager : NetworkManager
 {
    // LocalHost
     private readonly string editorAddress = "127.0.0.1";
+    //private readonly string editorAddress = "146.103.118.171";
     // Внешний IP 
     private readonly string buildAddress = "46.138.156.199";
 
     public static string SERVER_ADDRESS = "127.0.0.1";
+    //public static string SERVER_ADDRESS = "146.103.118.171";
 
     public override void Awake()
     {
@@ -77,21 +79,27 @@ public class MirrorNetworkManager : NetworkManager
         Debug.Log($"[Server] Player disconnected: connId={conn.connectionId}");
     }
 
+    private bool _wasConnected;
+
     public override void OnStartClient()
     {
         base.OnStartClient();
+        _wasConnected = false;
         Debug.Log($"[Client] Connecting to {networkAddress}");
     }
 
     public override void OnClientConnect()
     {
         base.OnClientConnect();
+        _wasConnected = true;
         Debug.Log("[Client] Connected to server");
     }
 
     public override void OnClientDisconnect()
     {
         base.OnClientDisconnect();
+        if (!_wasConnected)
+            PopupUI.Instance?.Show("Не удалось подключиться к серверу", 4f);
         LobbyManager.Instance.OnDisconnected();
     }
 }

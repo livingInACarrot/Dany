@@ -69,10 +69,20 @@ public class PlayingCardsTable : MonoBehaviour
             null);
     }
 
+    public void ToggleInteractions(bool active)
+    {
+        NetworkCard[] cardsOnTable = tableArea.GetComponentsInChildren<NetworkCard>(true);
+        foreach (var card in cardsOnTable)
+        {
+            if (card.IsOwnedByLocalPlayer())
+                card.GetComponent<UnityEngine.UI.Image>().raycastTarget = active;
+        }
+    }
+
     public void ClearTable()
     {
         Card[] cardsOnTable = tableArea.GetComponentsInChildren<Card>();
-        foreach (Card card in cardsOnTable)
+        foreach (var card in cardsOnTable)
             Destroy(card.gameObject);
     }
 

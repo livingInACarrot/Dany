@@ -183,6 +183,27 @@ MonoBehaviour:
     m_Localized: Room is now public
     m_Metadata:
       m_Items: []
+  - m_Id: 31971561543032832
+    m_Localized: left the room. There are not enough players to continue.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32000464319930368
+    m_Localized: "Time's up! The Decisive Player didn't choose a word \u2014 Dany
+      gets a point"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009345049812992
+    m_Localized: left the room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32008776797118464
+    m_Localized: The Decisive Player guessed it! The Personalities score a point.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009064660590592
+    m_Localized: The Decisive Player didn't guess correctly. Dany scores a point.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
