@@ -1,4 +1,5 @@
 using Mirror;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -86,11 +87,19 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdSendChatMessage(string message, int num)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
+        NetworkGameManager.Instance.ServerSaveChatMessage(CurrentRoomCode, num, message);
         RpcReceiveChatMessage(num, message);
     }
 
     [ClientRpc]
-    private void RpcReceiveChatMessage(int senderNum, string message) => NetworkChat.Instance.AddMessage(Loc.Nick(senderNum), message);
+    private void RpcReceiveChatMessage(int senderNum, string message) => NetworkChat.Instance.AddMessage(senderNum, message);
+
+    [TargetRpc]
+    public void TargetReceiveChatHistory(NetworkConnectionToClient conn, List<int> senderNums, List<string> messages)
+    {
+        for (int i = 0; i < senderNums.Count; i++)
+            NetworkChat.Instance.AddMessage(senderNums[i], messages[i]);
+    }
 
     [Command]
     public void CmdVote(int suspectedLobbyNumber) => NetworkGameManager.Instance.ServerOnVoteReceived(this, suspectedLobbyNumber);

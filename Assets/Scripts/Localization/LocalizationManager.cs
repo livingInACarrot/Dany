@@ -18,7 +18,7 @@ public class LocalizationManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            Initialize();
+            LoadTable(mainTableName);
         }
         else
         {
@@ -26,10 +26,23 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    private void Initialize()
+    private void OnEnable()
     {
+        LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+    }
+
+    private void OnDisable()
+    {
+        LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+    }
+
+    private void OnLocaleChanged(UnityEngine.Localization.Locale _)
+    {
+        mainTable = null;
         LoadTable(mainTableName);
     }
+
+    public static event System.Action OnLocaleReady;
 
     private void LoadTable(string tableName)
     {
@@ -38,9 +51,9 @@ public class LocalizationManager : MonoBehaviour
         {
             mainTable = op.Result;
             if (mainTable == null)
-            {
                 Debug.LogError($"LocalizationManager: Table '{tableName}' not found!");
-            }
+            else
+                OnLocaleReady?.Invoke();
         };
     }
 

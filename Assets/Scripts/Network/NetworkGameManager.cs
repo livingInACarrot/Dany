@@ -65,6 +65,8 @@ public class NetworkGameManager : NetworkBehaviour
         }
         player.CurrentRoomCode = code;
         player.TargetJoinedRoom(player.connectionToClient, code);
+        if (state.ChatSenderNums.Count > 0)
+            player.TargetReceiveChatHistory(player.connectionToClient, state.ChatSenderNums, state.ChatTexts);
         RpcRoomUpdated(code);
     }
 
@@ -416,6 +418,19 @@ public class NetworkGameManager : NetworkBehaviour
 
     #region Вспомогательные методы
 
+    [Server]
+    public void ServerSaveChatMessage(string roomCode, int senderNum, string text)
+    {
+        if (!_rooms.TryGetValue(roomCode, out var state)) return;
+        state.ChatSenderNums.Add(senderNum);
+        state.ChatTexts.Add(text);
+        if (state.ChatSenderNums.Count > 50)
+        {
+            state.ChatSenderNums.RemoveAt(0);
+            state.ChatTexts.RemoveAt(0);
+        }
+    }
+
     public RoomGameState GetState(string roomCode)
     {
         _rooms.TryGetValue(roomCode, out var state);
@@ -535,6 +550,8 @@ public class RoomGameState
     public IdeasCard CurrentIdeasCard;
     public int SecretWordIndex;
     public Dictionary<int, int> Votes = new();
+    public readonly List<int> ChatSenderNums = new();
+    public readonly List<string> ChatTexts = new();
 
     public RoomGameState(GameRoom room) => Room = room;
 }
