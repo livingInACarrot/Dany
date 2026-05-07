@@ -307,7 +307,7 @@ public class LobbyManager : MonoBehaviour
                 UpdateStartButton();
             }
         }
-        NetworkChat.Instance.AddSystemMessage("Хост комнаты изменился.");
+        ChatUI.Instance.AddSystemMessage("Хост комнаты изменился.");
     }
 
     public void OnGameStarted()
@@ -345,6 +345,8 @@ public class LobbyManager : MonoBehaviour
         _isHost = false;
         _pendingCreateRoom = false;
         _pendingJoinCode = null;
+
+        readyToggle.isOn = false;
         ShowMainMenu();
     }
 

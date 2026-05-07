@@ -27,7 +27,7 @@ public class NetworkGameManager : NetworkBehaviour
         Instance = this;
     }
 
-    #region Управление комнатами (Server)
+    #region Управление комнатами
 
     [Server]
     public void ServerCreateRoom(NetworkPlayer player)
@@ -96,7 +96,7 @@ public class NetworkGameManager : NetworkBehaviour
 
     #endregion
 
-    #region Управление игроками (Server)
+    #region Управление игроками
 
     [Server]
     public void OnPlayerDisconnected(NetworkPlayer player)
@@ -258,10 +258,6 @@ public class NetworkGameManager : NetworkBehaviour
         }
     }
 
-    #endregion
-
-    #region Игровые события
-
     [Server]
     public void ServerOnPlayerFinishedTurn(GamePlayer gp)
     {
@@ -373,6 +369,11 @@ public class NetworkGameManager : NetworkBehaviour
     {
         state.Room.Phase = GamePhase.GameEnd;
         RpcGameEnded(state.Room.RoomCode, dannyWins);
+        StartCoroutine(DelayedAction(5f, state, () =>
+        {
+            if (state.Room.Phase == GamePhase.GameEnd)
+                ServerReturnToLobby(state);
+        }));
     }
 
     [Server]
@@ -412,6 +413,16 @@ public class NetworkGameManager : NetworkBehaviour
         state.Room.DanyScore          = 0;
 
         RpcReturnToLobby(state.Room.RoomCode);
+    }
+
+    private void OnTurnTimerEnded(string roomCode)
+    {
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdTurnTimerEnded(roomCode);
+    }
+
+    private void OnDiscussionTimerEnded(string roomCode)
+    {
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdDecisiveTimerEnded(roomCode);
     }
 
     #endregion
@@ -495,11 +506,11 @@ public class NetworkGameManager : NetworkBehaviour
 
     [ClientRpc]
     private void RpcShowMessage(string code, string msg)
-        => NetworkChat.Instance.AddSystemMessage(msg);
+        => ChatUI.Instance.AddSystemMessage(msg);
 
     [ClientRpc]
     private void RpcShowLocalizedMessage(string code, string locKey)
-        => NetworkChat.Instance.AddSystemMessage(Loc.Text(locKey));
+        => ChatUI.Instance.AddSystemMessage(Loc.Text(locKey));
 
     [ClientRpc]
     private void RpcStartFinalRound(string code, int danyLobbyNumber, List<int> lobbyNumbers)
@@ -523,35 +534,5 @@ public class NetworkGameManager : NetworkBehaviour
     }
 
     #endregion
-
-    #region Таймеры (Client)
-
-    private void OnTurnTimerEnded(string roomCode)
-    {
-        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdTurnTimerEnded(roomCode);
-    }
-
-    private void OnDiscussionTimerEnded(string roomCode)
-    {
-        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdDecisiveTimerEnded(roomCode);
-    }
-
-    #endregion
 }
 
-public class RoomGameState
-{
-    public GameRoom Room;
-    public int CurrentIndex = -1;
-    public int DecisiveIndex = -1;
-    public int DanyIndex;
-    public int DanyLobbyNumber;
-    public List<GamePlayer> GamePlayers = new();
-    public IdeasCard CurrentIdeasCard;
-    public int SecretWordIndex;
-    public Dictionary<int, int> Votes = new();
-    public readonly List<int> ChatSenderNums = new();
-    public readonly List<string> ChatTexts = new();
-
-    public RoomGameState(GameRoom room) => Room = room;
-}

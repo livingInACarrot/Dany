@@ -51,8 +51,12 @@ public class PlayerListGameUI : MonoBehaviour
         // Voice number me host
         //   0      1    2   3
 
+        NetworkPlayer ownerNp = null;
+        if (NetworkClient.spawned.TryGetValue(gp.OwnerNetId, out NetworkIdentity ownerIdentity))
+            ownerNp = ownerIdentity.GetComponent<NetworkPlayer>();
+
         texts[1].text = gp.LobbyNumber.ToString();
-        texts[2].gameObject.SetActive(gp.GetComponent<NetworkPlayer>().isLocalPlayer);
+        texts[2].gameObject.SetActive(ownerNp != null && ownerNp.isLocalPlayer);
         texts[3].gameObject.SetActive(false);
 
         Image back = entry.GetComponent<Image>();
@@ -65,12 +69,7 @@ public class PlayerListGameUI : MonoBehaviour
 
         entry.GetComponentInChildren<Toggle>().gameObject.SetActive(false);
 
-        int voiceId = -1;
-        if (NetworkClient.spawned.TryGetValue(gp.OwnerNetId, out NetworkIdentity ownerIdentity))
-        {
-            var np = ownerIdentity.GetComponent<NetworkPlayer>();
-            if (np != null) voiceId = np.VoiceId;
-        }
+        int voiceId = ownerNp != null ? ownerNp.VoiceId : -1;
         entry.GetComponentInChildren<MicIndicatorUI>()?.Init(voiceId, gp.isLocalPlayer);
     }
 

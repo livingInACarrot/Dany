@@ -1,22 +1,17 @@
+using System.IO;
 using Mirror;
 using UnityEngine;
 
 public class MirrorNetworkManager : NetworkManager
 {
-   // LocalHost
     private readonly string editorAddress = "127.0.0.1";
-    //private readonly string editorAddress = "146.103.118.171";
-    // Внешний IP 
-    private readonly string buildAddress = "46.138.156.199";
+    private readonly string fallbackAddress = "46.138.156.199";
 
     public static string SERVER_ADDRESS = "127.0.0.1";
-    //public static string SERVER_ADDRESS = "146.103.118.171";
 
     public override void Awake()
     {
         base.Awake();
-
-        _ = buildAddress;
 
 #if UNITY_SERVER
         return;
@@ -27,8 +22,24 @@ public class MirrorNetworkManager : NetworkManager
             return;
         networkAddress = editorAddress;
 #else
-        networkAddress = buildAddress;
+        networkAddress = LoadServerAddress();
 #endif
+    }
+
+    private string LoadServerAddress()
+    {
+        string configPath = Path.Combine(Application.dataPath, "../server_config.txt");
+        if (File.Exists(configPath))
+        {
+            string address = File.ReadAllText(configPath).Trim();
+            if (!string.IsNullOrEmpty(address))
+            {
+                Debug.Log($"[Client] Server address loaded from config: {address}");
+                return address;
+            }
+        }
+        Debug.Log($"[Client] Config not found, using fallback address: {fallbackAddress}");
+        return fallbackAddress;
     }
 
     public override void Start()

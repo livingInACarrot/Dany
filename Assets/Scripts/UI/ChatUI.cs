@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class NetworkChat : MonoBehaviour
+public class ChatUI : MonoBehaviour
 {
-    public static NetworkChat Instance { get; private set; }
+    public static ChatUI Instance { get; private set; }
 
     [Header("UI Elements")]
     [SerializeField] private Transform messageContainer;
@@ -21,7 +21,7 @@ public class NetworkChat : MonoBehaviour
 
     private readonly List<ChatEntry> _entries = new();
     private readonly List<GameObject> _messages = new();
-    private const int MaxMessages = 50;
+    private const int MaxMessages = 300;
 
     private void Awake()
     {

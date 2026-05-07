@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class ScoreUI : MonoBehaviour
@@ -17,6 +16,8 @@ public class ScoreUI : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+
+        ResetScore();
     }
 
     public void UpdateScore(int personalitiesScore, int danyScore)

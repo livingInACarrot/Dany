@@ -92,13 +92,13 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcReceiveChatMessage(int senderNum, string message) => NetworkChat.Instance.AddMessage(senderNum, message);
+    private void RpcReceiveChatMessage(int senderNum, string message) => ChatUI.Instance.AddMessage(senderNum, message);
 
     [TargetRpc]
     public void TargetReceiveChatHistory(NetworkConnectionToClient conn, List<int> senderNums, List<string> messages)
     {
         for (int i = 0; i < senderNums.Count; i++)
-            NetworkChat.Instance.AddMessage(senderNums[i], messages[i]);
+            ChatUI.Instance.AddMessage(senderNums[i], messages[i]);
     }
 
     [Command]

@@ -51,7 +51,7 @@ public class IdeasCardUI : MonoBehaviour
     public void ShowGuessPanel(IdeasCard card)
     {
         ToggleInteractable(true);
-        NetworkChat.Instance.AddSystemMessage($"Решающая личность должна угадать слово!");
+        ChatUI.Instance.AddSystemMessage($"Решающая личность должна угадать слово!");
     }
 
     public void OnWordButtonClicked(int wordIndex)

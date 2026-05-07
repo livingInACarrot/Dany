@@ -27,6 +27,7 @@ public class NetworkCard : NetworkBehaviour
 
     private Card card;
     private RectTransform rectTransform;
+    private bool _initialized;
 
     private void Awake()
     {
@@ -43,8 +44,9 @@ public class NetworkCard : NetworkBehaviour
         if (!isLocalOwner)
         {
             GetComponent<Image>().raycastTarget = false;
-            PlayingCardsTable.Instance.StageCard(card);
+            PlayingCardsTable.Instance?.StageCard(card);
         }
+        _initialized = true;
     }
 
     public void Initialize(int index, uint ownerId)
@@ -107,14 +109,13 @@ public class NetworkCard : NetworkBehaviour
 
     private void OnIsInHandChanged(bool _, bool nowInHand)
     {
+        if (!_initialized) return;
         if (isOwned) return;
         if (nowInHand)
-        {
-            PlayingCardsTable.Instance.StageCard(card);
-        }
+            PlayingCardsTable.Instance?.StageCard(card);
         else
         {
-            PlayingCardsTable.Instance.ShowOnTable(card);
+            PlayingCardsTable.Instance?.ShowOnTable(card);
             rectTransform.anchoredPosition = position;
             transform.rotation = Quaternion.Euler(0, 0, rotation);
             rectTransform.localScale = scale;
