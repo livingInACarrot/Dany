@@ -1,58 +1,34 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class RulesContainerUI : MonoBehaviour//, IEndDragHandler
+public class RulesContainerUI : MonoBehaviour
 {
-    [SerializeField] private GameObject rulesPanel;
-
     private ScrollRect scrollRect;
     private RectTransform content;
     private RectTransform viewport;
 
-    private RectTransform _firstImage;
-    private RectTransform _lastImage;
-
     private void Start()
     {
-        scrollRect = GetComponent<ScrollRect>();
+        scrollRect = GetComponent<ScrollRect>() ?? GetComponentInParent<ScrollRect>();
+        if (scrollRect == null) return;
+
         content = scrollRect.content;
-        viewport = scrollRect.viewport != null ? scrollRect.viewport : (RectTransform)transform;
+        viewport = scrollRect.viewport != null ? scrollRect.viewport : (RectTransform)scrollRect.transform;
 
-        var images = GetComponentsInChildren<RectTransform>();
-        _firstImage = images[0];
-        _lastImage = images[^1];
-
-        //LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
     }
-    /*
+
     private void OnEnable()
     {
         if (content != null)
             LayoutRebuilder.ForceRebuildLayoutImmediate(content);
     }
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        ClampScrollPosition();
-    }
 
-    */
     private void Update()
     {
-        if (rulesPanel.activeSelf)
-            CheckBoundaries();
-            //ClampScrollPosition();
+        if (scrollRect == null) return;
+        ClampScrollPosition();
     }
-
-    private void CheckBoundaries()
-    {
-        float contentHeight = content.rect.height;
-        float viewportHeight = viewport.rect.height;
-        // Дописать
-    }
-
-
-
 
     private void ClampScrollPosition()
     {

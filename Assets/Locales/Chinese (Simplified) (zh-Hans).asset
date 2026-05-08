@@ -19,7 +19,7 @@ MonoBehaviour:
   m_LocaleName: Chinese (Simplified) (zh-Hans)
   m_CustomFormatCultureCode: 
   m_UseCustomFormatter: 0
-  m_SortOrder: 5
+  m_SortOrder: 6
   references:
     version: 2
     RefIds: []

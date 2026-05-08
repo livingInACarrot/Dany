@@ -96,6 +96,7 @@ public class MirrorNetworkManager : NetworkManager
     {
         base.OnStartClient();
         _wasConnected = false;
+        PopupUI.Instance?.ShowPersistent("Подключение к серверу...");
         Debug.Log($"[Client] Connecting to {networkAddress}");
     }
 
@@ -103,6 +104,7 @@ public class MirrorNetworkManager : NetworkManager
     {
         base.OnClientConnect();
         _wasConnected = true;
+        PopupUI.Instance?.Hide();
         Debug.Log("[Client] Connected to server");
     }
 
@@ -111,6 +113,8 @@ public class MirrorNetworkManager : NetworkManager
         base.OnClientDisconnect();
         if (!_wasConnected)
             PopupUI.Instance?.Show("Не удалось подключиться к серверу", 4f);
+        else
+            PopupUI.Instance?.Hide();
         LobbyManager.Instance.OnDisconnected();
     }
 }

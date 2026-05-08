@@ -25,11 +25,38 @@ public class PopupUI : MonoBehaviour
         _current = StartCoroutine(ShowRoutine(message, duration));
     }
 
+    public void ShowPersistent(string message)
+    {
+        if (_current != null) StopCoroutine(_current);
+        messageText.text = message;
+        canvasGroup.alpha = 1f;
+        _current = null;
+    }
+
+    public void Hide()
+    {
+        if (_current != null) StopCoroutine(_current);
+        _current = StartCoroutine(FadeOutRoutine());
+    }
+
     private IEnumerator ShowRoutine(string message, float duration)
     {
         messageText.text = message;
         canvasGroup.alpha = 1f;
         yield return new WaitForSeconds(Mathf.Max(0f, duration - fadeDuration));
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            canvasGroup.alpha = 1f - elapsed / fadeDuration;
+            yield return null;
+        }
+        canvasGroup.alpha = 0f;
+        _current = null;
+    }
+
+    private IEnumerator FadeOutRoutine()
+    {
         float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
