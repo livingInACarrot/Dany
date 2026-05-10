@@ -115,8 +115,8 @@ public class LobbyManager : MonoBehaviour
 
     public void ShowRolePanel(bool isDany)
     {
-        rolePanel.GetComponent<RolePanelUI>().SetTexts(isDany);
         rolePanel.SetActive(true);
+        rolePanel.GetComponent<RolePanelUI>().SetTexts(isDany);
         Invoke(nameof(HideRolePanel), 5f);
     }
     private void HideRolePanel() => rolePanel.SetActive(false);
@@ -130,8 +130,6 @@ public class LobbyManager : MonoBehaviour
 
     public void ShowAbortionScreen(string message)
     {
-        //HideAllPanels();
-        //abortionText.text = message;
         abortionPanel.GetComponentsInChildren<TMP_Text>()[1].text = message;
         abortionPanel.SetActive(true);
     }
