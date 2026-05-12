@@ -4,17 +4,19 @@ using UnityEngine;
 public class GameEndPanelUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI title;
+    [SerializeField] private TextMeshProUGUI body;
 
-    public void SetText(bool danyWon)
+    public void SetText(bool danyWon, int dany)
     {
-        switch (danyWon) 
-        { 
-            case true:
+        if (danyWon) 
+        {
                 title.text = Loc.Text("gameUI.end.danyWon");
-                break;
-            case false:
-                title.text = Loc.Text("gameUI.end.personalitiesWon");
-                break;
         }
+        else
+        {
+                title.text = Loc.Text("gameUI.end.personalitiesWon");
+        }
+        body.text = Loc.Nick(dany) + " " + Loc.Text("gameUI.end.wasDany");
+
     }
 }

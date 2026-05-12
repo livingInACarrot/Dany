@@ -23,6 +23,7 @@ public class MirrorNetworkManager : NetworkManager
         networkAddress = editorAddress;
 #else
         networkAddress = LoadServerAddress();
+        SERVER_ADDRESS = networkAddress;
 #endif
     }
 

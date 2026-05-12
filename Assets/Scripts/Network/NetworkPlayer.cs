@@ -111,6 +111,9 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdDecisiveTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnDecisiveTimerEnded(this, roomCode);
 
     [TargetRpc]
+    public void TargetShowGamePopup(NetworkConnectionToClient conn, string locKey) => GamePopup.Instance.Show(Loc.Text(locKey));
+
+    [TargetRpc]
     public void TargetRoomCreated(NetworkConnectionToClient conn, string code) => LobbyManager.Instance.OnRoomCreated(code);
 
     [TargetRpc]

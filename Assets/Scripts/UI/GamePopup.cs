@@ -2,13 +2,13 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class PopupUI : MonoBehaviour
+public class GamePopup : MonoBehaviour
 {
-    public static PopupUI Instance { get; private set; }
+    public static GamePopup Instance { get; private set; }
 
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private TextMeshProUGUI messageText;
-    [SerializeField] private float fadeDuration = 0.4f;
+    [SerializeField] private float fadeDuration = 0.2f;
 
     private Coroutine _current;
 
@@ -20,7 +20,7 @@ public class PopupUI : MonoBehaviour
         canvasGroup.blocksRaycasts = false;
     }
 
-    public void Show(string message, float duration = 4f)
+    public void Show(string message, float duration = 6f)
     {
         if (_current != null) StopCoroutine(_current);
         _current = StartCoroutine(ShowRoutine(message, duration));

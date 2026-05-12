@@ -121,10 +121,9 @@ public class LobbyManager : MonoBehaviour
     }
     private void HideRolePanel() => rolePanel.SetActive(false);
 
-    public void ShowGameEndScreen(bool danyWins)
+    public void ShowGameEndScreen(bool danyWins, int dany)
     {
-        HideAllPanels();
-        gameEndPanel.GetComponent<GameEndPanelUI>().SetText(danyWins);
+        gameEndPanel.GetComponent<GameEndPanelUI>().SetText(danyWins, dany);
         gameEndPanel.SetActive(true);
     }
 
@@ -305,7 +304,7 @@ public class LobbyManager : MonoBehaviour
                 UpdateStartButton();
             }
         }
-        ChatUI.Instance.AddSystemMessage("Хост комнаты изменился.");
+        PopupUI.Instance.Show("Хост комнаты изменился.", 3f);
     }
 
     public void OnGameStarted()

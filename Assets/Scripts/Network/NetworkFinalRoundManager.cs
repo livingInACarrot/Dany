@@ -25,7 +25,7 @@ public class NetworkFinalRoundManager : NetworkBehaviour
 
         LobbyManager.Instance.OnFinalRoundStarted();
         BuildVotingButtons(lobbyNumbers);
-        ChatUI.Instance.AddSystemMessage($"Финальный раунд! У вас {discussionTime} секунд на обсуждение.");
+        GamePopup.Instance.Show($"Финальный раунд! У вас {discussionTime} секунд на обсуждение.");
         TimerUI.Instance.StartTimer(discussionTime, OnDiscussionEnd);
     }
 
@@ -54,7 +54,7 @@ public class NetworkFinalRoundManager : NetworkBehaviour
         foreach (Transform child in votingButtonsContainer)
             child.GetComponent<Button>().interactable = true;
 
-        ChatUI.Instance.AddSystemMessage("Время вышло! Голосуйте за того, кто является Дэни.");
+        GamePopup.Instance.Show("Время вышло! Голосуйте за того, кто является Дэни.");
     }
 
     public void OnVoteButtonClick(int suspectedLobbyNumber, Button btn)
@@ -72,14 +72,14 @@ public class NetworkFinalRoundManager : NetworkBehaviour
         string result = wasDany
             ? $"{Loc.Nick(suspectedLobbyNumber)} — это Дэни! Личности победили!"
             : $"{Loc.Nick(suspectedLobbyNumber)} — не Дэни. Дэни победил!";
-        ChatUI.Instance.AddSystemMessage(result);
+        GamePopup.Instance.Show(result);
         LobbyManager.Instance.HideFinalRoundPanel();
     }
 
     [ClientRpc]
     public void RpcHandleTie(int danyLobbyNumber, List<int> tiedLobbyNumbers)
     {
-        ChatUI.Instance.AddSystemMessage("Ничья в голосовании! Повторное голосование среди равных.");
+        GamePopup.Instance.Show("Ничья в голосовании! Повторное голосование среди равных.");
         RebuildButtonsForTie(tiedLobbyNumbers);
         _votingActive = true;
     }

@@ -204,6 +204,10 @@ MonoBehaviour:
     m_Localized: The Decisive Player didn't guess correctly. Dany scores a point.
     m_Metadata:
       m_Items: []
+  - m_Id: 38367934429519872
+    m_Localized: was Dany
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

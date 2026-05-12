@@ -191,6 +191,10 @@ MonoBehaviour:
     m_Key: chat.playerLeft
     m_Metadata:
       m_Items: []
+  - m_Id: 38367934429519872
+    m_Key: gameUI.end.wasDany
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
