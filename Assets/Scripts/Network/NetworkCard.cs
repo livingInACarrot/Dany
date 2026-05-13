@@ -105,7 +105,11 @@ public class NetworkCard : NetworkBehaviour
 
     private void OnScaleChanged(Vector3 _, Vector3 newValue) => rectTransform.localScale = newValue;
 
-    private void OnFlippedChanged(bool _, bool newValue) => card.FlipCard(newValue);
+    private void OnFlippedChanged(bool _, bool newValue)
+    {
+        if (isOwned) return;
+        StartCoroutine(card.PlayFlipAnimationTo(newValue));
+    }
 
     private void OnIsInHandChanged(bool _, bool nowInHand)
     {

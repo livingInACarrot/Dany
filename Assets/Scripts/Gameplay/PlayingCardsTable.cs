@@ -27,6 +27,7 @@ public class PlayingCardsTable : MonoBehaviour
     {
         card.InHand = false;
         card.transform.SetParent(tableArea, false);
+        card.transform.SetAsLastSibling();
         card.rectTransform.anchorMin = CenterAnchor;
         card.rectTransform.anchorMax = CenterAnchor;
         card.gameObject.SetActive(true);

@@ -195,6 +195,46 @@ MonoBehaviour:
     m_Key: gameUI.end.wasDany
     m_Metadata:
       m_Items: []
+  - m_Id: 35173450627670016
+    m_Key: gameUI.guess.des
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173543711858688
+    m_Key: gameUI.guess.others
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35176863125987328
+    m_Key: gameUI.guess.remind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39226736162889728
+    m_Key: gameUI.guess.act
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35208881834549248
+    m_Key: chat.placeholder.disabled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35208949127962624
+    m_Key: chat.placeholder.default
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39246227039051776
+    m_Key: lobby.openMini
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264360206426112
+    m_Key: gameUI.voteAccepted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264544604807168
+    m_Key: gameUI.voteReveal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39266912641736704
+    m_Key: gameUI.voteTie
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

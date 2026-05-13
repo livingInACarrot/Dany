@@ -91,7 +91,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 22818946406100992
-    m_Localized: DANY
+    m_Localized: ABOBA
     m_Metadata:
       m_Items: []
   - m_Id: 22819080120512512
@@ -188,8 +188,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 32000464319930368
-    m_Localized: "Time's up! The Decisive Player didn't choose a word \u2014 Dany
-      gets a point"
+    m_Localized: Time's up! The Decisive Player didn't choose a word.
     m_Metadata:
       m_Items: []
   - m_Id: 32009345049812992

@@ -11,6 +11,8 @@ public class RoomGameState
     public IdeasCard CurrentIdeasCard;
     public int SecretWordIndex;
     public Dictionary<int, int> Votes = new();
+    public bool VotingResolved;
+    public readonly HashSet<int> PlayersReturnedToLobby = new();
     public readonly List<int> ChatSenderNums = new();
     public readonly List<string> ChatTexts = new();
 

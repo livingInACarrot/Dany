@@ -53,7 +53,12 @@ public class ChatUI : MonoBehaviour
     public void AddSystemMessage(string message)
         => AddEntry(new ChatEntry { isSystem = true, senderNum = -1, text = message });
 
-    public void ActivateChat(bool active) => messageInput.interactable = active;
+    public void SetInputEnabled(bool enabled)
+    {
+        messageInput.interactable = enabled;
+        if (messageInput.placeholder is TextMeshProUGUI placeholder)
+            placeholder.text = Loc.Text(enabled ? "chat.placeholder.default" : "chat.placeholder.disabled");
+    }
 
     private void AddEntry(ChatEntry entry)
     {

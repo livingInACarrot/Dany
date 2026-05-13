@@ -28,6 +28,19 @@ public class NetworkPlayer : NetworkBehaviour
     [SyncVar]
     public int VoiceId = -1;
 
+    public GamePlayer GamePlayer
+    {
+        get
+        {
+            if (NetworkServer.spawned.TryGetValue(GamePlayerNetId, out var id)) return id.GetComponent<GamePlayer>();
+            if (NetworkClient.spawned.TryGetValue(GamePlayerNetId, out id)) return id.GetComponent<GamePlayer>();
+            return null;
+        }
+    }
+
+    [SyncVar]
+    public string LocaleCode = "en";
+
     public event System.Action OnDataChanged;
 
     public static event System.Action<NetworkPlayer> OnPlayerAdded;
@@ -50,6 +63,7 @@ public class NetworkPlayer : NetworkBehaviour
         base.OnStartLocalPlayer();
         string country = PlayerPrefs.GetString("PlayerCountry", "Unknown");
         CmdUpdateCountry(country);
+        CmdUpdateLocale(UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale.Identifier.Code);
         LobbyManager.Instance.OnLocalPlayerSpawned();
     }
 
@@ -81,18 +95,21 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdUpdateCountry(string country) => Country = country;
 
     [Command]
+    public void CmdUpdateLocale(string localeCode) => LocaleCode = localeCode;
+
+    [Command]
     public void CmdSetReady(bool ready) => IsReady = ready;
 
     [Command]
     public void CmdSendChatMessage(string message, int num)
     {
         if (string.IsNullOrWhiteSpace(message)) return;
-        NetworkGameManager.Instance.ServerSaveChatMessage(CurrentRoomCode, num, message);
-        RpcReceiveChatMessage(num, message);
+        NetworkGameManager.Instance.ServerHandleChatMessage(CurrentRoomCode, num, message);
     }
 
-    [ClientRpc]
-    private void RpcReceiveChatMessage(int senderNum, string message) => ChatUI.Instance.AddMessage(senderNum, message);
+    [TargetRpc]
+    public void TargetReceiveChatMessage(NetworkConnectionToClient conn, int senderNum, string message)
+        => ChatUI.Instance.AddMessage(senderNum, message);
 
     [TargetRpc]
     public void TargetReceiveChatHistory(NetworkConnectionToClient conn, List<int> senderNums, List<string> messages)
@@ -105,13 +122,19 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdVote(int suspectedLobbyNumber) => NetworkGameManager.Instance.ServerOnVoteReceived(this, suspectedLobbyNumber);
 
     [Command]
+    public void CmdVotingTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnVotingTimerEnded(this, roomCode);
+
+    [Command]
     public void CmdTurnTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnTurnTimerEnded(this, roomCode);
 
     [Command]
     public void CmdDecisiveTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnDecisiveTimerEnded(this, roomCode);
 
     [TargetRpc]
-    public void TargetShowGamePopup(NetworkConnectionToClient conn, string locKey) => GamePopup.Instance.Show(Loc.Text(locKey));
+    public void TargetShowLocPopup(NetworkConnectionToClient conn, string locKey) => PopupUI.Instance.Show(Loc.Text(locKey));
+
+    [TargetRpc]
+    public void TargetShowPopup(NetworkConnectionToClient conn, string text) => PopupUI.Instance.Show(text);
 
     [TargetRpc]
     public void TargetRoomCreated(NetworkConnectionToClient conn, string code) => LobbyManager.Instance.OnRoomCreated(code);

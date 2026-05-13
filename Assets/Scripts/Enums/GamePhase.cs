@@ -4,6 +4,7 @@ public enum GamePhase
     RoleDistribution,   // Раздача ролей
     TurnInProgress,     // Чей-то ход
     Discussion,         // Обсуждение
+    WordReveal,         // Показывается загаданное слово
     FinalRound,         // Решающий раунд
     GameEnd             // Игра завершена
 }

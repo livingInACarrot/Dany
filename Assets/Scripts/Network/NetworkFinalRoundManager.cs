@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Mirror;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,11 +8,16 @@ public class NetworkFinalRoundManager : NetworkBehaviour
 {
     public static NetworkFinalRoundManager Instance { get; private set; }
 
+    [SerializeField] private TMP_Text title;
     [SerializeField] private Transform votingButtonsContainer;
     [SerializeField] private GameObject voteButtonPrefab;
+    [SerializeField] private GameObject votePrefab;
+    [SerializeField] private float votingTime = 60f;
+    [SerializeField] private float resultsTime = 10f;
 
-    private readonly float discussionTime = 60f;
     private bool _votingActive;
+    private string _roomCode;
+    private readonly Dictionary<int, Transform> _buttonByLobbyNum = new();
 
     private void Awake()
     {
@@ -21,85 +27,80 @@ public class NetworkFinalRoundManager : NetworkBehaviour
 
     public void StartFinalRound(int danyLobbyNumber, string roomCode, List<int> lobbyNumbers)
     {
-        _votingActive = false;
-
+        _roomCode = roomCode;
         LobbyManager.Instance.OnFinalRoundStarted();
-        BuildVotingButtons(lobbyNumbers);
-        GamePopup.Instance.Show($"Финальный раунд! У вас {discussionTime} секунд на обсуждение.");
-        TimerUI.Instance.StartTimer(discussionTime, OnDiscussionEnd);
+        BuildVotingButtons(lobbyNumbers, interactable: true);
+        _votingActive = true;
+        TimerUI.Instance.StartTimer(votingTime, OnVotingTimerEnded);
+        title.text = Loc.Text("gameUI.voteHint");
     }
 
-    private void BuildVotingButtons(List<int> lobbyNumbers)
+    public void ShowVoteResults(List<int> suspects, List<int> voterCounts, List<int> votersFlat)
+    {
+        title.text = Loc.Text("gameUI.voteReveal");
+
+        _votingActive = false;
+        foreach (Transform child in votingButtonsContainer)
+            child.GetComponent<Button>().interactable = false;
+
+        int voterIdx = 0;
+        for (int i = 0; i < suspects.Count; i++)
+        {
+            int count = voterCounts[i];
+            if (_buttonByLobbyNum.TryGetValue(suspects[i], out Transform btnTransform))
+            {
+                for (int j = 0; j < count; j++)
+                {
+                    GameObject voteObj = Instantiate(votePrefab, btnTransform.GetComponentInChildren<VerticalLayoutGroup>().transform);
+                    voteObj.GetComponentInChildren<TMP_Text>().text = Loc.Nick(votersFlat[voterIdx + j]);
+                }
+            }
+            voterIdx += count;
+        }
+
+        TimerUI.Instance.StartTimer(resultsTime, null);
+    }
+
+    public void StartTieVote(List<int> tiedLobbyNumbers)
+    {
+        title.text = Loc.Text("gameUI.voteTie");
+        BuildVotingButtons(tiedLobbyNumbers, interactable: true);
+        _votingActive = true;
+        TimerUI.Instance.StartTimer(votingTime, OnVotingTimerEnded);
+    }
+
+    private void BuildVotingButtons(List<int> lobbyNumbers, bool interactable)
     {
         foreach (Transform child in votingButtonsContainer)
             Destroy(child.gameObject);
+        _buttonByLobbyNum.Clear();
 
         foreach (int lobbyNum in lobbyNumbers)
         {
             GameObject btnObj = Instantiate(voteButtonPrefab, votingButtonsContainer);
-            TMPro.TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             Button btn = btnObj.GetComponent<Button>();
-
-            btnText.text = Loc.Nick(lobbyNum);
-            btn.interactable = false;
+            btnObj.GetComponentInChildren<TMP_Text>().text = Loc.Nick(lobbyNum);
+            btn.interactable = interactable;
 
             int captured = lobbyNum;
-            btn.onClick.AddListener(() => OnVoteButtonClick(captured, btn));
+            btn.onClick.AddListener(() => OnVoteButtonClick(captured));
+            _buttonByLobbyNum[lobbyNum] = btnObj.transform;
         }
     }
 
-    private void OnDiscussionEnd()
+    private void OnVoteButtonClick(int suspectedLobbyNumber)
     {
-        _votingActive = true;
-        foreach (Transform child in votingButtonsContainer)
-            child.GetComponent<Button>().interactable = true;
-
-        GamePopup.Instance.Show("Время вышло! Голосуйте за того, кто является Дэни.");
-    }
-
-    public void OnVoteButtonClick(int suspectedLobbyNumber, Button btn)
-    {
+        title.text = Loc.Text("gameUI.voteAccepted");
         if (!_votingActive) return;
-        NetworkPlayer localPlayer = NetworkClient.localPlayer.GetComponent<NetworkPlayer>();
-        localPlayer.CmdVote(suspectedLobbyNumber);
-        btn.interactable = false;
         _votingActive = false;
-    }
-
-    [ClientRpc]
-    public void RpcShowVoteResult(int suspectedLobbyNumber, bool wasDany)
-    {
-        string result = wasDany
-            ? $"{Loc.Nick(suspectedLobbyNumber)} — это Дэни! Личности победили!"
-            : $"{Loc.Nick(suspectedLobbyNumber)} — не Дэни. Дэни победил!";
-        GamePopup.Instance.Show(result);
-        LobbyManager.Instance.HideFinalRoundPanel();
-    }
-
-    [ClientRpc]
-    public void RpcHandleTie(int danyLobbyNumber, List<int> tiedLobbyNumbers)
-    {
-        GamePopup.Instance.Show("Ничья в голосовании! Повторное голосование среди равных.");
-        RebuildButtonsForTie(tiedLobbyNumbers);
-        _votingActive = true;
-    }
-
-    private void RebuildButtonsForTie(List<int> tiedLobbyNumbers)
-    {
         foreach (Transform child in votingButtonsContainer)
-            Destroy(child.gameObject);
+            child.GetComponent<Button>().interactable = false;
+        NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdVote(suspectedLobbyNumber);
+    }
 
-        foreach (int lobbyNum in tiedLobbyNumbers)
-        {
-            GameObject btnObj = Instantiate(voteButtonPrefab, votingButtonsContainer);
-            TMPro.TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            Button btn = btnObj.GetComponent<Button>();
-
-            btnText.text = Loc.Nick(lobbyNum);
-            btn.interactable = true;
-
-            int captured = lobbyNum;
-            btn.onClick.AddListener(() => OnVoteButtonClick(captured, btn));
-        }
+    private void OnVotingTimerEnded()
+    {
+        _votingActive = false;
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdVotingTimerEnded(_roomCode);
     }
 }

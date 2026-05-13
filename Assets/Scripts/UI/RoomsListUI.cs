@@ -17,7 +17,7 @@ public class RoomsListUI : MonoBehaviour
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        //else Destroy(gameObject);
     }
 
     private void OnEnable()
@@ -30,10 +30,12 @@ public class RoomsListUI : MonoBehaviour
         foreach (Transform child in roomsContainer)
             Destroy(child.gameObject);
 
+        var localCode = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CurrentRoomCode;
+
         foreach (GameRoom room in GameRoom.All)
         {
-            // Показываем только незакрытые и незапущенные комнаты
             if (room.IsPrivate || room.IsInProgress) continue;
+            if (localCode != null && localCode == room.RoomCode) continue;
             CreateRoomEntry(room);
         }
     }
@@ -52,7 +54,6 @@ public class RoomsListUI : MonoBehaviour
             string code = room.RoomCode;
             joinBtn.onClick.AddListener(() =>
             {
-                // Скрываем панель; переход в лобби произойдёт через TargetJoinedRoom → ShowLobby
                 LobbyManager.Instance.ShowMainMenu();
                 LobbyManager.Instance.JoinRoom(code);
             });

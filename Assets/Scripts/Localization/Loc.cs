@@ -1,16 +1,18 @@
-// Надстройка над LocalizationManager для удобства использования (писать меньше)
+// РћР±С‘СЂС‚РєР° РґР»СЏ LocalizationManager РґР»СЏ СѓРґРѕР±РЅРѕРіРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ
 public static class Loc
 {
     public static string Text(string key)
-    {
-        return LocalizationManager.Instance.GetText(key);
-    }
+        => LocalizationManager.Instance.GetText(key);
+
     public static string Text(string key, string table)
-    {
-        return LocalizationManager.Instance.GetText(key, table);
-    }
+        => LocalizationManager.Instance.GetText(key, table);
+
+    public static string TextFor(NetworkPlayer player, string key)
+        => LocalizationManager.Instance.GetTextForLocale(player.LocaleCode, key);
+
     public static string Nick(int num)
-    {
-        return $"{Text("voice")} {num}";
-    }
+        => $"{Text("voice")} {num}";
+
+    public static string NickFor(NetworkPlayer player, int num)
+        => $"{TextFor(player, "voice")} {num}";
 }

@@ -10,6 +10,8 @@ public class IdeasCardUI : MonoBehaviour
     [SerializeField] private GameObject wordsPanel;
     [SerializeField] private Color currentWordColor = new(0.9f, 1f, 0.9f);
     [SerializeField] private Color defaultWordColor = new(1f, 1f, 1f);
+    [SerializeField] private Color wrongWordColor = new(1f, 0.8f, 0.8f);
+    [SerializeField] private Color correctWordColor = new(0.8f, 1f, 0.8f);
 
     private Button[] wordButtons;
 
@@ -26,7 +28,7 @@ public class IdeasCardUI : MonoBehaviour
 
     public void ShowForActiveRole(IdeasCard card, int wordIndex)
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < wordButtons.Length; i++)
         {
             wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = card.Words[i];
             wordButtons[i].GetComponent<Image>().color = defaultWordColor;
@@ -51,7 +53,6 @@ public class IdeasCardUI : MonoBehaviour
     public void ShowGuessPanel(IdeasCard card)
     {
         ToggleInteractable(true);
-        GamePopup.Instance.Show($"Решающая личность должна угадать слово!");
     }
 
     public void OnWordButtonClicked(int wordIndex)
@@ -73,5 +74,18 @@ public class IdeasCardUI : MonoBehaviour
         {
             wordButtons[i].interactable = active;
         }
+    }
+
+    public void HighLightGuess(int correct, int guess)
+    {
+        for (int i = 0; i < wordButtons.Length; i++)
+        {
+            wordButtons[i].GetComponent<Image>().color = defaultWordColor;
+
+            if (i == correct) wordButtons[i].GetComponent<Image>().color = correctWordColor;
+            else if (i == guess) wordButtons[i].GetComponent<Image>().color = wrongWordColor;
+        }
+        ToggleInteractable(false);
+        wordsPanel.SetActive(true);
     }
 }

@@ -11,7 +11,7 @@ public class GameRoom : NetworkBehaviour
     [SyncVar(hook = nameof(OnPrivacyChanged))] public bool IsPrivate;
     [SyncVar] public int PlayerCount;
     [SyncVar] public int MaxPlayers = DefaultMaxPlayers;
-    [SyncVar] public bool IsInProgress;
+    [SyncVar(hook = nameof(OnIsInProgressChanged))] public bool IsInProgress;
 
     [SyncVar] public GamePhase Phase = GamePhase.Lobby;
     [SyncVar(hook = nameof(OnScoreChanged))] public int PersonalitiesScore;
@@ -40,6 +40,9 @@ public class GameRoom : NetworkBehaviour
         OnRoomListChanged?.Invoke();
     }
 
+    private void OnIsInProgressChanged(bool _, bool __)
+        => LobbyManager.Instance?.RefreshRoomPanel();
+
     private void OnPrivacyChanged(bool _, bool isNowPrivate)
     {
         if (isNowPrivate)
@@ -47,6 +50,7 @@ public class GameRoom : NetworkBehaviour
         else if (!All.Contains(this))
             All.Add(this);
         OnRoomListChanged?.Invoke();
+        LobbyManager.Instance?.SyncPrivacyToggle(isNowPrivate);
     }
 
     private void OnScoreChanged(int _, int __)
@@ -88,11 +92,13 @@ public class GameRoom : NetworkBehaviour
         foreach (var p in _players) p.IsHost = false;
         _hostConnectionId = _players[0].connectionToClient.connectionId;
         _players[0].IsHost = true;
-        RpcHostMigrated(_players[0].netId);
+        uint newHostNetId = _players[0].netId;
+        foreach (var p in _players)
+            TargetHostMigrated(p.connectionToClient, newHostNetId);
     }
 
-    [ClientRpc]
-    private void RpcHostMigrated(uint newHostNetId)
+    [TargetRpc]
+    private void TargetHostMigrated(NetworkConnectionToClient conn, uint newHostNetId)
     {
         LobbyManager.Instance.OnHostMigrated(newHostNetId);
     }

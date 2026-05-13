@@ -70,6 +70,16 @@ public class LocalizationManager : MonoBehaviour
         return entry != null ? entry.GetLocalizedString() : key;
     }
 
+    public string GetTextForLocale(string localeCode, string key)
+    {
+        var locale = LocalizationSettings.AvailableLocales.GetLocale(localeCode);
+        if (locale == null) return GetText(key);
+        var op = LocalizationSettings.StringDatabase.GetTableAsync(mainTableName, locale);
+        if (!op.IsDone) return GetText(key);
+        var entry = op.Result?.GetEntry(key);
+        return entry != null ? entry.GetLocalizedString() : key;
+    }
+
     private StringTable GetTable(string tableName)
     {
         if (mainTable != null && tableName == mainTableName)

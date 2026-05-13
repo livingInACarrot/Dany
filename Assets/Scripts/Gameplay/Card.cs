@@ -188,6 +188,12 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
 
     private IEnumerator PlayFlipAnimation()
     {
+        yield return PlayFlipAnimationTo(!isFlipped);
+        if (!InHand) SendNetworkUpdate();
+    }
+
+    public IEnumerator PlayFlipAnimationTo(bool targetFlipped)
+    {
         float flipSpeed = 1000f;
         float targetWidth = rectTransform.rect.width;
         float currentWidth = targetWidth;
@@ -199,7 +205,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             rectTransform.sizeDelta = new Vector2(currentWidth, rectTransform.sizeDelta.y);
             yield return null;
         }
-        FlipCard();
+        FlipCard(targetFlipped);
         while (currentWidth < targetWidth)
         {
             currentWidth += flipSpeed * Time.deltaTime;
@@ -207,6 +213,5 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             rectTransform.sizeDelta = new Vector2(currentWidth, rectTransform.sizeDelta.y);
             yield return null;
         }
-        if (!InHand) SendNetworkUpdate();
     }
 }

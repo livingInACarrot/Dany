@@ -106,6 +106,7 @@ public class LobbyManager : MonoBehaviour
         HideAllPanels();
         lobbyPanel.SetActive(true);
         chatPanel.SetActive(true);
+        ChatUI.Instance?.SetInputEnabled(true);
         RefreshRoomPanel();
     }
 
@@ -203,8 +204,11 @@ public class LobbyManager : MonoBehaviour
         if (!NetworkClient.isConnected) Reconnect();
         ShowOpenRooms();
     }
+
     public void OnSettingsClick() => ShowSettings();
+
     public void OnRulesClick() => ShowRules();
+
     public void OnExitClick() => Application.Quit();
 
     public void OnRoomCodeButtonClick()
@@ -225,6 +229,11 @@ public class LobbyManager : MonoBehaviour
         _roomCode = string.Empty;
         _isHost = false;
         ShowMainMenu();
+    }
+
+    public void OnReturnToLobbyClick()
+    {
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdReturnToLobby();
     }
 
     private void OnStartGameClick()
@@ -285,6 +294,11 @@ public class LobbyManager : MonoBehaviour
         roomCodeText.text = code;
         privateRoomToggle.interactable = false;
         ShowLobby();
+    }
+
+    public void SyncPrivacyToggle(bool isPrivate)
+    {
+        privateRoomToggle.SetIsOnWithoutNotify(isPrivate);
     }
 
     public void OnRoomError(string error)

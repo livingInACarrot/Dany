@@ -19,6 +19,28 @@ public class GamePlayer : NetworkBehaviour
 
     public readonly SyncList<uint> HandCardNetIds = new();
 
+    public NetworkPlayer Owner
+    {
+        get
+        {
+            if (NetworkServer.spawned.TryGetValue(OwnerNetId, out var id)) return id.GetComponent<NetworkPlayer>();
+            if (NetworkClient.spawned.TryGetValue(OwnerNetId, out id)) return id.GetComponent<NetworkPlayer>();
+            return null;
+        }
+    }
+
+    public static GamePlayer Local
+    {
+        get
+        {
+            if (NetworkClient.localPlayer == null) return null;
+            var np = NetworkClient.localPlayer.GetComponent<NetworkPlayer>();
+            if (np == null) return null;
+            if (!NetworkClient.spawned.TryGetValue(np.GamePlayerNetId, out var identity)) return null;
+            return identity.GetComponent<GamePlayer>();
+        }
+    }
+
     public static event System.Action<GamePlayer> OnSpawned;
     public static event System.Action<GamePlayer> OnDespawned;
     public static event System.Action<GamePlayer> OnRoleChanged;
@@ -66,6 +88,12 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
+    public void TargetHighLightGuess(NetworkConnectionToClient conn, int corr, int guess)
+    {
+        IdeasCardUI.Instance.HighLightGuess(corr, guess);
+    }
+
+    [TargetRpc]
     public void TargetAddCardToHand(NetworkConnectionToClient conn, uint cardNetId, bool canInteract)
     {
         if (!NetworkClient.spawned.TryGetValue(cardNetId, out NetworkIdentity identity)) return;
@@ -88,6 +116,14 @@ public class GamePlayer : NetworkBehaviour
         IdeasCardUI.Instance.ShowGuessPanel(card);
     }
 
+    [TargetRpc]
+    public void TargetShowLocGamePopup(NetworkConnectionToClient conn, string locKey, float time) 
+        => GamePopup.Instance.Show(Loc.Text(locKey), time);
+
+    [TargetRpc]
+    public void TargetShowGamePopup(NetworkConnectionToClient conn, string text, float time) 
+        => GamePopup.Instance.Show(text, time);
+
     private void OnChangedRole(Role _, Role newRole)
     {
         OnRoleChanged.Invoke(this);
@@ -99,6 +135,7 @@ public class GamePlayer : NetworkBehaviour
             if (VoiceController.Instance != null)
                 VoiceController.Instance.TurnMuted = newRole == Role.Active;
             HintUI.Instance?.SetTurnActive(newRole == Role.Active);
+            ChatUI.Instance?.SetInputEnabled(newRole != Role.Active);
         }
     }
 }

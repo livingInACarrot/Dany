@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
@@ -8,7 +7,7 @@ public class TimerUI : MonoBehaviour
     public static TimerUI Instance { get; private set; }
 
     [SerializeField] private GameObject timerPanel;
-    [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private TMP_Text timerText;
     [SerializeField] private Color normalColor = Color.black;
     [SerializeField] private Color warningColor = Color.darkRed;
     [SerializeField] private float warningThreshold = 10f;
@@ -24,17 +23,14 @@ public class TimerUI : MonoBehaviour
         else
             Destroy(gameObject);
 
-        timerPanel.SetActive(false);
+        ResetTimer();
     }
 
     public void StartTimer(float seconds, System.Action onComplete = null)
     {
         StopTimer();
-
         currentTime = seconds;
         onTimerEnd = onComplete;
-
-        timerPanel.SetActive(true);
         timerCoroutine = StartCoroutine(TimerRoutine());
     }
 
@@ -50,7 +46,7 @@ public class TimerUI : MonoBehaviour
         currentTime = 0;
         UpdateTimerDisplay();
 
-        timerPanel.SetActive(false);
+        ResetTimer();
         onTimerEnd?.Invoke();
     }
 
@@ -69,6 +65,12 @@ public class TimerUI : MonoBehaviour
             StopCoroutine(timerCoroutine);
             timerCoroutine = null;
         }
-        timerPanel.SetActive(false);
+        ResetTimer();
+    }
+
+    public void ResetTimer()
+    {
+        timerText.color = normalColor;
+        timerText.text = $"00:00";
     }
 }
