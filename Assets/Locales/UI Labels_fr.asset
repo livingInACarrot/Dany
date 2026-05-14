@@ -27,7 +27,222 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 32008776797118464
-    m_Localized: 
+    m_Localized: "La personnalit\xE9 d\xE9cisive a devin\xE9 ! Les personnalit\xE9s
+      obtiennent un point."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 479563034624
+    m_Localized: DANY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2649456848896
+    m_Localized: Dany
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818946406100992
+    m_Localized: DANY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11313693536256
+    m_Localized: "Cr\xE9er une salle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11341967339520
+    m_Localized: Rejoindre par code
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11360699101184
+    m_Localized: Salles ouvertes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 623176003584
+    m_Localized: "Personnalit\xE9s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3158976704512
+    m_Localized: "\xC9crivez quelque chose..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12777249093660672
+    m_Localized: "Pr\xEAt"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14084517210828800
+    m_Localized: Commencer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14086603176620032
+    m_Localized: 'Code de la salle: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14087567262560256
+    m_Localized: "voix dans la t\xEAte"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623551268794368
+    m_Localized: Microphone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623751194488832
+    m_Localized: Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22624159577092096
+    m_Localized: Bouton d'activation du microphone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818554070904832
+    m_Localized: "PERSONNALIT\xC9 ALTERNATIVE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819080120512512
+    m_Localized: "Votre t\xE2che est de trouver Dani et de deviner sans erreur ce
+      que les autres essaient de montrer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819145887199232
+    m_Localized: "Votre t\xE2che est d'emp\xEAcher les autres personnalit\xE9s de
+      deviner correctement et de ne jamais vous trahir. "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22932733339578368
+    m_Localized: ' Indisponible pendant le tour'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23220011731464192
+    m_Localized: joueurs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23242873792094208
+    m_Localized: "Votez pour le joueur que vous pensez \xEAtre Dani"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457660659326976
+    m_Localized: "Dani a gagn\xE9!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457903660523520
+    m_Localized: "Les personnalit\xE9s ont gagn\xE9 ! "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29138085500411904
+    m_Localized: "Priv\xE9e"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29139615637037056
+    m_Localized: Aucune salle ouverte
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29213294622400512
+    m_Localized: "Conseils de contr\xF4le"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155404817195008
+    m_Localized: "(h\xF4te)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155407031787520
+    m_Localized: (moi)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31903026951217152
+    m_Localized: "Syst\xE8me"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914117274001408
+    m_Localized: "Num\xE9ro de salle incorrect"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914413911957504
+    m_Localized: Salle introuvable
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31915105913397248
+    m_Localized: "La salle est pleine ou la partie est d\xE9j\xE0 en cours"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916112957399040
+    m_Localized: "Code copi\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916940447440896
+    m_Localized: "La salle est devenue priv\xE9e"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31917077123031040
+    m_Localized: La salle est devenue publique
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31971561543032832
+    m_Localized: "a quitt\xE9 la partie. Pas assez de joueurs pour continuer."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32000464319930368
+    m_Localized: "Temps \xE9coul\xE9 ! La personnalit\xE9 d\xE9cisive n'a pas choisi
+      de mot."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009064660590592
+    m_Localized: "La personnalit\xE9 d\xE9cisive n'a pas devin\xE9. Dani obtient
+      un point."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009345049812992
+    m_Localized: "a quitt\xE9 la salle"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38367934429519872
+    m_Localized: "\xE9tait Dani"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173450627670016
+    m_Localized: "Vous \xEAtes la personnalit\xE9 d\xE9cisive. Consultez les autres
+      joueurs et faites votre choix."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173543711858688
+    m_Localized: doit choisir un mot. Vous avez le temps de discuter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35176863125987328
+    m_Localized: CHOISISSEZ UN MOT!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39226736162889728
+    m_Localized: doit choisir un mot. Les joueurs ont le temps de discuter.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39246227039051776
+    m_Localized: 'Salles ouvertes actuellement : '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264360206426112
+    m_Localized: 'En attente des autres joueurs... '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264544604807168
+    m_Localized: "R\xE9sultats du vote : "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39266912641736704
+    m_Localized: "\xC9galit\xE9 dans le vote ! Nous revotons. "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39466414396923904
+    m_Localized: "L'h\xF4te de la salle a chang\xE9. "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467192641642496
+    m_Localized: Impossible de se connecter au serveur
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467429674344448
+    m_Localized: Connexion au serveur...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31892704307699712
+    m_Localized: "Left click - d\xE9placer\nClic droit - retourner en main\nCtrl
+      + clic droit - retourner\nMolette - rotation\nCtrl + molette - changer la taille"
     m_Metadata:
       m_Items: []
   references:

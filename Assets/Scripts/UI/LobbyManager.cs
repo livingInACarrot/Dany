@@ -318,7 +318,7 @@ public class LobbyManager : MonoBehaviour
                 UpdateStartButton();
             }
         }
-        PopupUI.Instance.Show("Хост комнаты изменился.", 3f);
+        PopupUI.Instance.Show(Loc.Text("lobby.host.migrated"), 3f);
     }
 
     public void OnGameStarted()

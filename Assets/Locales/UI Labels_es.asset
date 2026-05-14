@@ -27,7 +27,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11313693536256
-    m_Localized: "Crear una habitaci\xF3n"
+    m_Localized: Crear sala
     m_Metadata:
       m_Items: []
   - m_Id: 11341967339520
@@ -35,11 +35,213 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 11360699101184
-    m_Localized: Habitaciones abiertas
+    m_Localized: Salas abiertas
     m_Metadata:
       m_Items: []
   - m_Id: 14087567262560256
     m_Localized: voces en la cabeza
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2649456848896
+    m_Localized: Dany
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818946406100992
+    m_Localized: DANY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 623176003584
+    m_Localized: Personalidades
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3158976704512
+    m_Localized: Escribe algo...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12777249093660672
+    m_Localized: Listo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14084517210828800
+    m_Localized: Iniciar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14086603176620032
+    m_Localized: "C\xF3digo de sala:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22618040905445376
+    m_Localized: Idioma
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623551268794368
+    m_Localized: "Micr\xF3fono"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623751194488832
+    m_Localized: Volumen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22624159577092096
+    m_Localized: "Bot\xF3n de activaci\xF3n del micr\xF3fono"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818554070904832
+    m_Localized: PERSONALIDAD ALTERNATIVA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819080120512512
+    m_Localized: "Tu tarea es encontrar a Dani y adivinar sin errores lo que los
+      dem\xE1s intentan mostrar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819145887199232
+    m_Localized: Tu tarea es impedir que las otras personalidades adivinen correctamente
+      y no delatarte bajo ninguna circunstancia.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22932733339578368
+    m_Localized: No disponible durante el turno
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23220011731464192
+    m_Localized: jugadores
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23242873792094208
+    m_Localized: Vota por el jugador que crees que es Dani
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457660659326976
+    m_Localized: "\xA1Dani gan\xF3!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457903660523520
+    m_Localized: "\xA1Las personalidades ganaron!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29138085500411904
+    m_Localized: Privada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29139615637037056
+    m_Localized: No hay salas abiertas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29213294622400512
+    m_Localized: Consejos de control
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155404817195008
+    m_Localized: "(anfitri\xF3n)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155407031787520
+    m_Localized: (yo)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31903026951217152
+    m_Localized: Sistema
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914117274001408
+    m_Localized: "N\xFAmero de sala incorrecto"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914413911957504
+    m_Localized: Sala no encontrada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31915105913397248
+    m_Localized: "La sala est\xE1 llena o la partida ya est\xE1 en curso"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916112957399040
+    m_Localized: "C\xF3digo copiado"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916940447440896
+    m_Localized: La sala se ha vuelto privada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31917077123031040
+    m_Localized: "La sala se ha vuelto p\xFAblica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31971561543032832
+    m_Localized: "sali\xF3 del juego. No hay suficientes jugadores para continuar."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32000464319930368
+    m_Localized: " \xA1Tiempo agotado! La personalidad decisiva no eligi\xF3 una
+      palabra."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32008776797118464
+    m_Localized: " \xA1La personalidad decisiva adivin\xF3! Las personalidades obtienen
+      un punto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009064660590592
+    m_Localized: "La personalidad decisiva no adivin\xF3. Dani obtiene un punto."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009345049812992
+    m_Localized: "abandon\xF3 la sala"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38367934429519872
+    m_Localized: era Dani
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173450627670016
+    m_Localized: "Eres la personalidad decisiva. Consulta con los dem\xE1s jugadores
+      y toma tu decisi\xF3n."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173543711858688
+    m_Localized: debe elegir una palabra. Tienen tiempo para discutir.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35176863125987328
+    m_Localized: " \xA1ELIGE UNA PALABRA!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39226736162889728
+    m_Localized: debe elegir una palabra. Los jugadores tienen tiempo para discutir.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39246227039051776
+    m_Localized: 'Salas abiertas ahora:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264360206426112
+    m_Localized: "Esperando a los dem\xE1s jugadores..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264544604807168
+    m_Localized: "Resultados de la votaci\xF3n:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39266912641736704
+    m_Localized: "\xA1Empate en la votaci\xF3n! Votamos de nuevo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39466414396923904
+    m_Localized: "El anfitri\xF3n de la sala ha cambiado."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467192641642496
+    m_Localized: No se pudo conectar al servidor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467429674344448
+    m_Localized: Conectando al servidor...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31892704307699712
+    m_Localized: "Clic izquierdo - arrastrar\nClic derecho - devolver a la mano\nCtrl
+      + clic derecho - voltear\nRueda - rotar\nCtrl + rueda - cambiar tama\xF1o"
     m_Metadata:
       m_Items: []
   references:

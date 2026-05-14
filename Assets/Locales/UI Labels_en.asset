@@ -46,10 +46,6 @@ MonoBehaviour:
     m_Localized: Open rooms
     m_Metadata:
       m_Items: []
-  - m_Id: 11869191352320
-    m_Localized: My language speakers only
-    m_Metadata:
-      m_Items: []
   - m_Id: 12777249093660672
     m_Localized: Ready
     m_Metadata:
@@ -91,7 +87,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 22818946406100992
-    m_Localized: ABOBA
+    m_Localized: DANY
     m_Metadata:
       m_Items: []
   - m_Id: 22819080120512512
@@ -147,12 +143,14 @@ MonoBehaviour:
   - m_Id: 31892704307699712
     m_Localized: 'LMB - drag
 
-      RMB - return to deck
+      RMB - return to hand
 
       Ctrl + RMB - flip
 
-      Mouse
-      scroll - rotate'
+      Scroll
+      wheel - rotate
+
+      Ctrl + scroll wheel - resize'
     m_Metadata:
       m_Items: []
   - m_Id: 31903026951217152
@@ -205,6 +203,51 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 38367934429519872
     m_Localized: was Dany
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173450627670016
+    m_Localized: You are the decisive personality. Consult with the other players
+      and make your choice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173543711858688
+    m_Localized: must choose a word. You have time to discuss.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35176863125987328
+    m_Localized: PICK A WORD!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39226736162889728
+    m_Localized: must choose a word. Players are given time to discuss.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39246227039051776
+    m_Localized: 'Open rooms now:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264360206426112
+    m_Localized: Waiting for other players...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264544604807168
+    m_Localized: 'Voting results:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39266912641736704
+    m_Localized: 'Tie in the vote! We are voting again. '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39466414396923904
+    m_Localized: The room host has changed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467192641642496
+    m_Localized: Failed to connect to the server
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467429674344448
+    m_Localized: Connecting to the server...
     m_Metadata:
       m_Items: []
   references:

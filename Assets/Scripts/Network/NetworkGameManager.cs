@@ -663,8 +663,8 @@ public class NetworkGameManager : NetworkBehaviour
         PlayingCardsTable.Instance.ClearTable();
         PlayingCardsTable.Instance.ClearHand();
         ScoreUI.Instance.ResetScore();
-        GamePopup.Instance.Abort();
-        PopupUI.Instance.Abort();
+        GamePopup.Instance.Hide();
+        PopupUI.Instance.Hide();
         LobbyManager.Instance.ShowLobby();
         TimerUI.Instance.StopTimer();
     }

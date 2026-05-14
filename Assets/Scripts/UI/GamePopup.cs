@@ -40,13 +40,6 @@ public class GamePopup : MonoBehaviour
         _current = StartCoroutine(FadeOutRoutine());
     }
 
-    public void Abort()
-    {
-        if (_current != null) StopCoroutine(_current);
-        _current = null;
-        canvasGroup.alpha = 0f;
-    }
-
     private IEnumerator ShowRoutine(string message, float duration)
     {
         messageText.text = message;

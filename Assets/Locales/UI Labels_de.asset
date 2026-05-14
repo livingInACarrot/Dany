@@ -22,6 +22,229 @@ MonoBehaviour:
     m_Localized: Stimme
     m_Metadata:
       m_Items: []
+  - m_Id: 479563034624
+    m_Localized: DANY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2649456848896
+    m_Localized: Dany
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818946406100992
+    m_Localized: DANY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11313693536256
+    m_Localized: Raum erstellen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11341967339520
+    m_Localized: Per Code beitreten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11360699101184
+    m_Localized: "Offene R\xE4ume"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 623176003584
+    m_Localized: "Pers\xF6nlichkeiten"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3158976704512
+    m_Localized: Schreiben Sie etwas...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 12777249093660672
+    m_Localized: Bereit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14084517210828800
+    m_Localized: Starten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14086603176620032
+    m_Localized: 'Raumcode:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22618040905445376
+    m_Localized: Sprache
+    m_Metadata:
+      m_Items: []
+  - m_Id: 14087567262560256
+    m_Localized: Stimmen im Kopf
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623551268794368
+    m_Localized: Mikrofon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22623751194488832
+    m_Localized: "Lautst\xE4rke"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22624159577092096
+    m_Localized: Mikrofon-Aktivierungstaste
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22818554070904832
+    m_Localized: "ALTERNATIVE PERS\xD6NLICHKEIT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819080120512512
+    m_Localized: Ihre Aufgabe ist es, Dani zu finden und fehlerfrei zu erraten, was
+      die anderen zeigen wollen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22819145887199232
+    m_Localized: "Ihre Aufgabe ist es, die anderen Pers\xF6nlichkeiten am richtigen
+      Raten zu hindern und sich auf keinen Fall zu verraten."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22932733339578368
+    m_Localized: "W\xE4hrend des Zuges nicht verf\xFCgbar"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23220011731464192
+    m_Localized: Spieler
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23242873792094208
+    m_Localized: "Stimmen Sie f\xFCr den Spieler, den Sie f\xFCr Dani halten"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457660659326976
+    m_Localized: Dani hat gewonnen!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 26457903660523520
+    m_Localized: "Die Pers\xF6nlichkeiten haben gewonnen!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29138085500411904
+    m_Localized: Privat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29139615637037056
+    m_Localized: "Keine offenen R\xE4ume"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29213294622400512
+    m_Localized: Steuerungshinweise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155404817195008
+    m_Localized: (Host)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30155407031787520
+    m_Localized: (ich)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31903026951217152
+    m_Localized: System
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914117274001408
+    m_Localized: "Ung\xFCltige Raumnummer"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31914413911957504
+    m_Localized: Raum nicht gefunden
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31915105913397248
+    m_Localized: "Der Raum ist voll oder das Spiel l\xE4uft bereits"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916112957399040
+    m_Localized: Code kopiert
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31916940447440896
+    m_Localized: Der Raum ist jetzt privat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31917077123031040
+    m_Localized: "Der Raum ist jetzt \xF6ffentlich"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31971561543032832
+    m_Localized: hat das Spiel verlassen. Nicht genug Spieler zum Weitermachen.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32000464319930368
+    m_Localized: "Zeit abgelaufen! Die entscheidende Pers\xF6nlichkeit hat kein Wort
+      gew\xE4hlt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32008776797118464
+    m_Localized: "Die entscheidende Pers\xF6nlichkeit hat geraten! Die Pers\xF6nlichkeiten
+      bekommen einen Punkt."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009064660590592
+    m_Localized: "Die entscheidende Pers\xF6nlichkeit hat nicht geraten. Dani bekommt
+      einen Punkt. "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32009345049812992
+    m_Localized: hat den Raum verlassen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38367934429519872
+    m_Localized: war Dani
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173450627670016
+    m_Localized: "Sie sind die entscheidende Pers\xF6nlichkeit. Beraten Sie sich
+      mit den anderen Spielern und treffen Sie Ihre Wahl."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35173543711858688
+    m_Localized: "muss ein Wort w\xE4hlen. Sie haben Zeit zum Besprechen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35176863125987328
+    m_Localized: "W\xC4HLEN SIE EIN WORT!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39226736162889728
+    m_Localized: "muss ein Wort w\xE4hlen. Die Spieler haben Zeit zum Besprechen."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39246227039051776
+    m_Localized: "Aktuell offene R\xE4ume:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264360206426112
+    m_Localized: Warten auf andere Spieler...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39264544604807168
+    m_Localized: 'Abstimmungsergebnisse:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39266912641736704
+    m_Localized: Stimmengleichheit! Wir stimmen erneut ab.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39466414396923904
+    m_Localized: "Der Raumhost hat sich ge\xE4ndert."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467192641642496
+    m_Localized: Verbindung zum Server fehlgeschlagen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467429674344448
+    m_Localized: Verbindung zum Server...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31892704307699712
+    m_Localized: "Linksklick - ziehen\nRechtsklick - in die Hand zur\xFCck\nStrg
+      + Rechtsklick - umdrehen\nMausrad - drehen\nStrg + Mausrad - Gr\xF6\xDFe \xE4ndern"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

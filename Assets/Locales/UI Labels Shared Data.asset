@@ -31,10 +31,6 @@ MonoBehaviour:
     m_Key: mainMenu.findOpenRoom
     m_Metadata:
       m_Items: []
-  - m_Id: 11869191352320
-    m_Key: mainMenu.findOpenRoom.myLangSpeakers
-    m_Metadata:
-      m_Items: []
   - m_Id: 623176003584
     m_Key: gameUI.score.personalities
     m_Metadata:
@@ -211,14 +207,6 @@ MonoBehaviour:
     m_Key: gameUI.guess.act
     m_Metadata:
       m_Items: []
-  - m_Id: 35208881834549248
-    m_Key: chat.placeholder.disabled
-    m_Metadata:
-      m_Items: []
-  - m_Id: 35208949127962624
-    m_Key: chat.placeholder.default
-    m_Metadata:
-      m_Items: []
   - m_Id: 39246227039051776
     m_Key: lobby.openMini
     m_Metadata:
@@ -233,6 +221,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 39266912641736704
     m_Key: gameUI.voteTie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39466414396923904
+    m_Key: lobby.host.migrated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467192641642496
+    m_Key: popup.server.failedConn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 39467429674344448
+    m_Key: popup.server.conn
     m_Metadata:
       m_Items: []
   m_Metadata:

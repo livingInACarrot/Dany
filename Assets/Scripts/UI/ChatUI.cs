@@ -57,7 +57,7 @@ public class ChatUI : MonoBehaviour
     {
         messageInput.interactable = enabled;
         if (messageInput.placeholder is TextMeshProUGUI placeholder)
-            placeholder.text = Loc.Text(enabled ? "chat.placeholder.default" : "chat.placeholder.disabled");
+            placeholder.text = Loc.Text(enabled ? "gameUI.chat.input" : "gameUI.chat.input.disabled");
     }
 
     private void AddEntry(ChatEntry entry)
