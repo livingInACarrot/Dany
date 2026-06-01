@@ -1,5 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
+using Adrenak.UniMic;
 using Adrenak.UniVoice;
+using Adrenak.UniVoice.Inputs;
 using Adrenak.UniVoice.Outputs;
 using Adrenak.UniVoice.Samples;
 using UnityEngine;
@@ -10,6 +13,8 @@ public class VoiceController : MonoBehaviour
     public static VoiceController Instance { get; private set; }
 
     private MicVolumeFilter _micFilter;
+    private UniMicInput _micInput;
+    private Mic.Device _currentMicDevice;
     private float _outputVolume = 1f;
     private float _micVolume = 1f;
 
@@ -53,6 +58,50 @@ public class VoiceController : MonoBehaviour
             _micFilter.Volume = volume;
     }
 
+    public List<string> GetMicDeviceNames()
+    {
+        return new List<string>(Microphone.devices);
+    }
+
+    public int GetCurrentMicIndex()
+    {
+        if (_currentMicDevice == null) return 0;
+        int idx = System.Array.IndexOf(Microphone.devices, _currentMicDevice.Name);
+        return idx < 0 ? 0 : idx;
+    }
+
+    public void SetMicDevice(int index)
+    {
+        string[] deviceNames = Microphone.devices;
+        if (index < 0 || index >= deviceNames.Length) return;
+
+        var newDevice = Mic.AvailableDevices.Find(d => d.Name == deviceNames[index]);
+        if (newDevice == null || newDevice == _currentMicDevice) return;
+
+        _currentMicDevice?.StopRecording();
+        newDevice.StartRecording(60);
+
+        if (_micInput != null)
+            _micInput.Device = newDevice;
+
+        _currentMicDevice = newDevice;
+        PlayerPrefs.SetInt("MicDeviceIndex", index);
+    }
+
+    // ── Output device ────────────────────────────────────────────────────────
+
+    public List<string> GetOutputDeviceNames() => AudioOutputDevices.GetDeviceNames();
+
+    public int GetCurrentOutputDeviceIndex() => AudioOutputDevices.GetCurrentDeviceIndex();
+
+    public void SetOutputDevice(int index)
+    {
+        if (AudioOutputDevices.SetDevice(index))
+            PlayerPrefs.SetInt("OutputDeviceIndex", index);
+    }
+
+    // ── Peer speaking ────────────────────────────────────────────────────────
+
     public bool IsPeerSpeaking(int voiceId)
     {
         if (!UniVoiceMirrorSetupSample.HasSetUp) return false;
@@ -73,6 +122,16 @@ public class VoiceController : MonoBehaviour
 
         _micFilter = new MicVolumeFilter();
         session.InputFilters.Insert(0, _micFilter);
+
+        _micInput = session.Input as UniMicInput;
+        if (_micInput != null)
+            _currentMicDevice = _micInput.Device;
+
+        int savedMic = PlayerPrefs.GetInt("MicDeviceIndex", 0);
+        if (savedMic > 0) SetMicDevice(savedMic);
+
+        int savedOutput = PlayerPrefs.GetInt("OutputDeviceIndex", 0);
+        if (savedOutput > 0) SetOutputDevice(savedOutput);
 
         session.Client.OnPeerJoined += _ => ApplyOutputVolumeToAll();
     }

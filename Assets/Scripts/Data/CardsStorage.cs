@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Localization.Settings;
-using static UnityEngine.Rendering.GPUSort;
 
 public class CardsStorage : MonoBehaviour
 {
@@ -38,25 +35,15 @@ public class CardsStorage : MonoBehaviour
         DanyCardSprite = danyCardSprite;
         PersonalityCardSprite = personalityCardSprite;
         PictureCardsSprites = pictureCardsSprites;
-        IdeasCards = ParseIdeasKeys();
+        IdeasCards = GenerateIdeasCards();
     }
 
-    private List<IdeasCard> ParseIdeasKeys()
+    private List<IdeasCard> GenerateIdeasCards()
     {
         List<IdeasCard> result = new();
-        var table = LocalizationSettings.StringDatabase.GetTable("Word Cards Labels");
         for (int i = 1; i <= ideasCardsAmount; ++i)
         {
-            string key = ideasCardsKeyName + "." + i.ToString();
-            string cardText = table.GetEntry(key).GetLocalizedString();
-            string[] words = cardText.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-            IdeasCard card = new();
-            for (int j = 0; j < words.Length; ++j)
-            {
-                card.Words[j] = words[j][3..];
-            }
-            result.Add(card);
+            result.Add(new IdeasCard(ideasCardsKeyName + "." + i.ToString()));
         }
         return result;
     }

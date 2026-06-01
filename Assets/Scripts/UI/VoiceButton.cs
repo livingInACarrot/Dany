@@ -10,10 +10,12 @@ public class VoiceButton : MonoBehaviour
 
     private bool waitingForKey = false;
     private Keyboard keyboard;
+    private RectTransform panel;
 
     private void Start()
     {
         keyboard = Keyboard.current;
+        panel = GetComponentInParent<RectTransform>().GetComponentInParent<RectTransform>();
         UpdateLabel();
     }
     void Update()
@@ -41,6 +43,13 @@ public class VoiceButton : MonoBehaviour
         waitingForKey = true;
         label.text = "";
     }
+
+    public void OnClose()
+    {
+        waitingForKey = false;
+        UpdateLabel();
+    }
+
     private void UpdateLabel()
     {
         label.text = Bind.ToString();

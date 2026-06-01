@@ -235,6 +235,10 @@ MonoBehaviour:
     m_Key: popup.server.conn
     m_Metadata:
       m_Items: []
+  - m_Id: 39881110669221888
+    m_Key: kicked
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

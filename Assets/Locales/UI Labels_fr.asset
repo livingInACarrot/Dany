@@ -245,6 +245,10 @@ MonoBehaviour:
       + clic droit - retourner\nMolette - rotation\nCtrl + molette - changer la taille"
     m_Metadata:
       m_Items: []
+  - m_Id: 39881110669221888
+    m_Localized: "Vous avez \xE9t\xE9 exclu du lobby"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

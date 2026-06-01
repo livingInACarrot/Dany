@@ -18,6 +18,8 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
     private bool isDragging = false;
     public bool isFlipped = false;
     private Vector2 offset;
+    private float _naturalWidth;
+    private Coroutine _flipCoroutine;
 
     public void Awake()
     {
@@ -26,6 +28,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         networkCard = GetComponent<NetworkCard>();
         image.sprite = sprite;
         image.raycastTarget = true;
+        _naturalWidth = rectTransform.sizeDelta.x;
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -34,11 +37,15 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         {
             if (Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.rightCtrlKey.isPressed)
             {
-                StartCoroutine(PlayFlipAnimation());
+                StartLocalFlip();
             }
             else
             {
-                if (isFlipped) StartCoroutine(PlayFlipAnimation());
+                if (isFlipped)
+                {
+                    StopFlipAnimation();
+                    FlipCard(false);
+                }
                 PlayingCardsTable.Instance.ReturnCardToHand(this);
                 networkCard.CmdReturnFromTable();
             }
@@ -69,7 +76,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             isDragging = false;
             if (InHand)
             {
-                if (PlayingCardsTable.Instance.IsOverTableArea(eventData.position))
+                if (PlayingCardsTable.Instance.IsOverTableArea(eventData.position, eventData.pressEventCamera))
                 {
                     PlayingCardsTable.Instance.PlaceCardFromHandOnTable(this, networkCard);
                 }
@@ -136,12 +143,6 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         image.sprite = isFlipped ? CardsStorage.PictureCardBackSprite : (faceSprite ?? sprite);
     }
 
-    private void FlipCard()
-    {
-        isFlipped = !isFlipped;
-        image.sprite = isFlipped ? CardsStorage.PictureCardBackSprite : (faceSprite ?? sprite);
-    }
-
     private void SendNetworkUpdate()
     {
         if (!networkCard.isOwned) return;
@@ -186,16 +187,46 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         }
     }
 
-    private IEnumerator PlayFlipAnimation()
+    private void StartLocalFlip()
     {
-        yield return PlayFlipAnimationTo(!isFlipped);
+        bool target = !isFlipped;
+        StopFlipAnimation();
+        _flipCoroutine = StartCoroutine(LocalFlipCoroutine(target));
+    }
+
+    private IEnumerator LocalFlipCoroutine(bool targetFlipped)
+    {
+        yield return PlayFlipAnimationTo(targetFlipped);
+        _flipCoroutine = null;
         if (!InHand) SendNetworkUpdate();
     }
 
-    public IEnumerator PlayFlipAnimationTo(bool targetFlipped)
+    public void TriggerFlipAnimation(bool targetFlipped)
+    {
+        StopFlipAnimation();
+        _flipCoroutine = StartCoroutine(NetworkFlipCoroutine(targetFlipped));
+    }
+
+    private IEnumerator NetworkFlipCoroutine(bool targetFlipped)
+    {
+        yield return PlayFlipAnimationTo(targetFlipped);
+        _flipCoroutine = null;
+    }
+
+    public void StopFlipAnimation()
+    {
+        if (_flipCoroutine != null)
+        {
+            StopCoroutine(_flipCoroutine);
+            _flipCoroutine = null;
+            rectTransform.sizeDelta = new Vector2(_naturalWidth, rectTransform.sizeDelta.y);
+        }
+    }
+
+    private IEnumerator PlayFlipAnimationTo(bool targetFlipped)
     {
         float flipSpeed = 1000f;
-        float targetWidth = rectTransform.rect.width;
+        float targetWidth = _naturalWidth;
         float currentWidth = targetWidth;
 
         while (currentWidth > 0)
@@ -214,4 +245,29 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
             yield return null;
         }
     }
+
+    public const float SweepDuration = 1.5f;
+
+    public void SweepCard()
+    {
+        StartCoroutine(PlaySweepAnimation());
+    }
+
+    private IEnumerator PlaySweepAnimation()
+    {
+        float elapsed = 0f;
+        float shift = Random.Range(-50f, 50f);
+        Vector2 startPos = rectTransform.anchoredPosition;
+        Vector2 target = new(startPos.x + shift, startPos.y + Screen.height * 2);
+
+        while (elapsed < SweepDuration)
+        {
+            elapsed += Time.deltaTime;
+            rectTransform.anchoredPosition = Vector2.Lerp(startPos, target, Mathf.Clamp01(elapsed / SweepDuration));
+            yield return null;
+        }
+
+        rectTransform.anchoredPosition = target;
+    }
+
 }

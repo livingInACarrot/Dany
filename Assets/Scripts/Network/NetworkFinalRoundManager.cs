@@ -75,12 +75,14 @@ public class NetworkFinalRoundManager : NetworkBehaviour
             Destroy(child.gameObject);
         _buttonByLobbyNum.Clear();
 
+        GamePlayer localGP = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.GamePlayer;
+        int? localNum = localGP?.LobbyNumber;
         foreach (int lobbyNum in lobbyNumbers)
         {
             GameObject btnObj = Instantiate(voteButtonPrefab, votingButtonsContainer);
             Button btn = btnObj.GetComponent<Button>();
             btnObj.GetComponentInChildren<TMP_Text>().text = Loc.Nick(lobbyNum);
-            btn.interactable = interactable;
+            btn.interactable = localNum == lobbyNum ? false : interactable;
 
             int captured = lobbyNum;
             btn.onClick.AddListener(() => OnVoteButtonClick(captured));
@@ -95,7 +97,7 @@ public class NetworkFinalRoundManager : NetworkBehaviour
         _votingActive = false;
         foreach (Transform child in votingButtonsContainer)
             child.GetComponent<Button>().interactable = false;
-        NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdVote(suspectedLobbyNumber);
+        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdVote(suspectedLobbyNumber);
     }
 
     private void OnVotingTimerEnded()

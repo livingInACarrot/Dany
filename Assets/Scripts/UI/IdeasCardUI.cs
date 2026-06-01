@@ -28,9 +28,10 @@ public class IdeasCardUI : MonoBehaviour
 
     public void ShowForActiveRole(IdeasCard card, int wordIndex)
     {
+        string[] words = card.GetWords();
         for (int i = 0; i < wordButtons.Length; i++)
         {
-            wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = card.Words[i];
+            wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = words[i];
             wordButtons[i].GetComponent<Image>().color = defaultWordColor;
 
             if (i == wordIndex) wordButtons[i].GetComponent<Image>().color = currentWordColor;
@@ -41,9 +42,10 @@ public class IdeasCardUI : MonoBehaviour
 
     public void ShowForOthers(IdeasCard card)
     {
+        string[] words = card.GetWords();
         for (int i = 0; i < 5; i++)
         {
-            wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = card.Words[i];
+            wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = words[i];
             wordButtons[i].GetComponent<Image>().color = defaultWordColor;
         }
         ToggleInteractable(false);

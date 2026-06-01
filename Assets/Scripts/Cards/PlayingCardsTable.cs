@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayingCardsTable : MonoBehaviour
 {
@@ -10,9 +12,12 @@ public class PlayingCardsTable : MonoBehaviour
 
     private static readonly Vector2 CenterAnchor = new Vector2(0.5f, 0.5f);
 
+    private Vector2 _handRestPosition;
+
     private void Awake()
     {
         Instance = this;
+        _handRestPosition = handArea.anchoredPosition;
     }
 
     public void StageCard(Card card)
@@ -62,12 +67,12 @@ public class PlayingCardsTable : MonoBehaviour
         card.gameObject.SetActive(true);
     }
 
-    public bool IsOverTableArea(Vector2 screenPosition)
+    public bool IsOverTableArea(Vector2 screenPosition, Camera cam = null)
     {
         return RectTransformUtility.RectangleContainsScreenPoint(
             tableArea,
             screenPosition,
-            null);
+            cam);
     }
 
     public void ToggleInteractions(bool active)
@@ -78,6 +83,13 @@ public class PlayingCardsTable : MonoBehaviour
             if (card.IsOwnedByLocalPlayer())
                 card.GetComponent<UnityEngine.UI.Image>().raycastTarget = active;
         }
+    }
+
+    public void SweepAllTableCards()
+    {
+        Card[] cardsOnTable = tableArea.GetComponentsInChildren<Card>();
+        foreach (var card in cardsOnTable)
+            card.SweepCard();
     }
 
     public void ClearTable()
@@ -102,5 +114,30 @@ public class PlayingCardsTable : MonoBehaviour
     public void ShowHand()
     {
         handArea.gameObject.SetActive(true);
+    }
+
+    public void PopdownHand()
+    {
+        handArea.anchoredPosition = new(_handRestPosition.x, _handRestPosition.y - handArea.rect.height);
+    }
+
+    public void PopupHand()
+    {
+        StartCoroutine(PopupHandCoroutine());
+    }
+
+    private IEnumerator PopupHandCoroutine()
+    {
+        float elapsed = 0f;
+        float duration = 0.5f;
+        Vector2 startPos = handArea.anchoredPosition;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            handArea.anchoredPosition = Vector2.Lerp(startPos, _handRestPosition, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+        handArea.anchoredPosition = _handRestPosition;
     }
 }

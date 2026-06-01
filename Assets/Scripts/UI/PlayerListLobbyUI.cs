@@ -13,7 +13,6 @@ public class PlayerListLobbyUI : MonoBehaviour
 
     [SerializeField] private GameObject playerEntryPrefab;
     [SerializeField] private Transform playerListContainer;
-    [SerializeField] private Color localPlayerColor = new(0.9f, 1f, 0.9f);
 
     private readonly Dictionary<NetworkPlayer, GameObject> _entries = new();
     private readonly Dictionary<NetworkPlayer, System.Action> _readyHandlers = new();
@@ -61,9 +60,18 @@ public class PlayerListLobbyUI : MonoBehaviour
         //   0      1    2   3
 
         texts[1].text = player.Number.ToString();
-        //if (player.isLocalPlayer) entry.GetComponent<Image>().color = localPlayerColor;
         texts[2].gameObject.SetActive(player.isLocalPlayer);
         texts[3].gameObject.SetActive(player.IsHost);
+
+        // Only host sees kick buttons
+        Button kickButton = entry.GetComponentInChildren<Button>();
+        kickButton.gameObject.SetActive(false);
+        if (NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.IsHost == true && !player.IsHost)
+        {
+            kickButton.gameObject.SetActive(true);
+            kickButton.onClick.AddListener(() =>
+                NetworkClient.localPlayer.GetComponent<NetworkPlayer>().CmdKickPlayer(player.Number));
+        }
 
         Toggle readyToggle = entry.GetComponentInChildren<Toggle>();
         readyToggle.SetIsOnWithoutNotify(player.IsReady);

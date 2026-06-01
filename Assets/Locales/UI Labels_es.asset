@@ -244,6 +244,10 @@ MonoBehaviour:
       + clic derecho - voltear\nRueda - rotar\nCtrl + rueda - cambiar tama\xF1o"
     m_Metadata:
       m_Items: []
+  - m_Id: 39881110669221888
+    m_Localized: Ha sido expulsado del lobby
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

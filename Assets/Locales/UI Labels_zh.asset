@@ -240,6 +240,10 @@ MonoBehaviour:
       - \u7F29\u653E"
     m_Metadata:
       m_Items: []
+  - m_Id: 39881110669221888
+    m_Localized: "\u60A8\u5DF2\u88AB\u79FB\u51FA\u5927\u5385"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -23,7 +23,7 @@ public class LocalPlayerStats : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
+    private void OnDestroy()
     {
         SaveStats();
     }
@@ -51,14 +51,41 @@ public class LocalPlayerStats : MonoBehaviour
         PlayerPrefs.SetInt("DanyWins", DanyWins);
         PlayerPrefs.SetInt("PersonalityPlays", PersonalityPlays);
         PlayerPrefs.SetInt("PersonalityWins", PersonalityWins);
+        PlayerPrefs.SetInt("StatsChecksum", ComputeChecksum(DanyPlays, DanyWins, PersonalityPlays, PersonalityWins));
         PlayerPrefs.Save();
     }
 
     private void LoadStats()
     {
-        DanyPlays = PlayerPrefs.GetInt("DanyPlays", 0);
-        DanyWins = PlayerPrefs.GetInt("DanyWins", 0);
-        PersonalityPlays = PlayerPrefs.GetInt("PersonalityPlays", 0);
-        PersonalityWins = PlayerPrefs.GetInt("PersonalityWins", 0);
+        int dp = PlayerPrefs.GetInt("DanyPlays", 0);
+        int dw = PlayerPrefs.GetInt("DanyWins", 0);
+        int pp = PlayerPrefs.GetInt("PersonalityPlays", 0);
+        int pw = PlayerPrefs.GetInt("PersonalityWins", 0);
+        int savedChecksum = PlayerPrefs.GetInt("StatsChecksum", 0);
+
+        if (savedChecksum != 0 && savedChecksum != ComputeChecksum(dp, dw, pp, pw))
+        {
+            Debug.LogWarning("[Stats] Integrity check failed — resetting stats.");
+            return;
+        }
+
+        DanyPlays = dp;
+        DanyWins = dw;
+        PersonalityPlays = pp;
+        PersonalityWins = pw;
+    }
+
+    private static int ComputeChecksum(int dp, int dw, int pp, int pw)
+    {
+        unchecked
+        {
+            int h = 17;
+            h = h * 31 + dp;
+            h = h * 31 + dw;
+            h = h * 31 + pp;
+            h = h * 31 + pw;
+            h = h * 31 + 0x44414e59; // "DANY"
+            return h;
+        }
     }
 }

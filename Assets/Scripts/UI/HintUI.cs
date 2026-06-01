@@ -1,3 +1,4 @@
+using Mirror;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,24 +9,16 @@ public class HintUI : MonoBehaviour
     [SerializeField] private Toggle toggle;
     [SerializeField] private GameObject hint;
 
-    private bool _turnActive;
-
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
 
-    public void ToggleHints() => Refresh();
-
-    public void SetTurnActive(bool active)
+    public void ToggleHints()
     {
-        _turnActive = active;
-        Refresh();
-    }
-
-    private void Refresh()
-    {
-        hint.SetActive(toggle.isOn && _turnActive);
+        var gp = NetworkClient.localPlayer?.GetComponent<GamePlayer>();
+        if (gp == null) return;
+        hint.SetActive(toggle.isOn && gp.Role == Role.Active);
     }
 }

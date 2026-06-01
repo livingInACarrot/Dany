@@ -61,8 +61,9 @@ public class NetworkCard : NetworkBehaviour
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdPlaceOnTable(Vector2 pos, float rot, Vector3 sc, bool flipped)
+    public void CmdPlaceOnTable(Vector2 pos, float rot, Vector3 sc, bool flipped, NetworkConnectionToClient sender = null)
     {
+        if (sender?.identity?.netId != ownerNetId) return;
         position = pos;
         rotation = rot;
         scale = sc;
@@ -71,20 +72,27 @@ public class NetworkCard : NetworkBehaviour
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdReturnFromTable() => inHand = true;
+    public void CmdReturnFromTable(NetworkConnectionToClient sender = null)
+    {
+        if (sender?.identity?.netId != ownerNetId) return;
+        inHand = true;
+        isFlipped = false;
+    }
 
     [Command(requiresAuthority = false)]
-    public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped)
+    public void CmdUpdateCard(Vector2 newPosition, float newRotation, Vector3 newScale, bool flipped, NetworkConnectionToClient sender = null)
     {
-        position  = newPosition;
-        rotation  = newRotation;
-        scale     = newScale;
+        if (sender?.identity?.netId != ownerNetId) return;
+        position = newPosition;
+        rotation = newRotation;
+        scale = newScale;
         isFlipped = flipped;
     }
 
     [Command(requiresAuthority = false)]
-    public void CmdToggleCardInteraction(bool interactable)
+    public void CmdToggleCardInteraction(bool interactable, NetworkConnectionToClient sender = null)
     {
+        if (sender?.identity?.netId != ownerNetId) return;
         Image img = GetComponent<Image>();
         img.raycastTarget = interactable;
     }
@@ -108,7 +116,12 @@ public class NetworkCard : NetworkBehaviour
     private void OnFlippedChanged(bool _, bool newValue)
     {
         if (isOwned) return;
-        StartCoroutine(card.PlayFlipAnimationTo(newValue));
+        if (!card.gameObject.activeInHierarchy)
+        {
+            card.FlipCard(newValue);
+            return;
+        }
+        card.TriggerFlipAnimation(newValue);
     }
 
     private void OnIsInHandChanged(bool _, bool nowInHand)
@@ -119,12 +132,12 @@ public class NetworkCard : NetworkBehaviour
             PlayingCardsTable.Instance?.StageCard(card);
         else
         {
+            card.StopFlipAnimation();
             PlayingCardsTable.Instance?.ShowOnTable(card);
             rectTransform.anchoredPosition = position;
             transform.rotation = Quaternion.Euler(0, 0, rotation);
             rectTransform.localScale = scale;
+            card.FlipCard(isFlipped);
         }
     }
-
-
 }

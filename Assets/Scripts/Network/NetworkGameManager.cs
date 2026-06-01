@@ -18,6 +18,11 @@ public class NetworkGameManager : NetworkBehaviour
     [Header("Game Settings")]
     [SerializeField] private float turnTime = 90f;
     [SerializeField] private float discussionTime = 40f;
+    [SerializeField] private float votingTime = 60f;
+
+    // Grace period (seconds) allowed between server-recorded start time and host-reported end.
+    // Accounts for network latency and frame-timing drift.
+    private const float TimerGracePeriod = 2f;
 
     private readonly Dictionary<string, RoomGameState> _rooms = new();
 
@@ -39,7 +44,7 @@ public class NetworkGameManager : NetworkBehaviour
         room.RoomCode = code;
         NetworkServer.Spawn(room.gameObject);
 
-        _rooms[code] = new RoomGameState(room);
+        _rooms[code] = new RoomGameState(room) { MatchId = System.Guid.NewGuid() };
 
         room.TryAddPlayer(player);
         player.CurrentRoomCode = code;
@@ -132,6 +137,21 @@ public class NetworkGameManager : NetworkBehaviour
             state.Room.IsPrivate = isPrivate;
     }
 
+    [Server]
+    public void ServerKickPlayer(NetworkPlayer requester, int targetNumber)
+    {
+        if (requester == null || !requester.IsHost) return;
+        if (!_rooms.TryGetValue(requester.CurrentRoomCode, out var state)) return;
+
+        NetworkPlayer target = null;
+        foreach (NetworkPlayer p in state.Room.Players)
+            if (p.Number == targetNumber) { target = p; break; }
+        if (target == null || target.IsHost) return;
+
+        target.TargetKicked(target.connectionToClient);
+        ServerLeaveRoom(target);
+    }
+
     #endregion
 
     #region Управление игроками
@@ -203,8 +223,8 @@ public class NetworkGameManager : NetworkBehaviour
             GamePlayer gp = Instantiate(gamePlayerPrefab);
             gp.RoomIndex   = i;
             gp.LobbyNumber = players[i].Number;
-            gp.IsDany      = (i == danyIdx);
             gp.OwnerNetId  = players[i].netId;
+            gp.gameObject.AddComponent<NetworkMatch>().matchId = state.MatchId;
             NetworkServer.Spawn(gp.gameObject, players[i].connectionToClient);
             players[i].GamePlayerNetId = gp.netId;
             state.GamePlayers.Add(gp);
@@ -223,7 +243,7 @@ public class NetworkGameManager : NetworkBehaviour
         state.Room.Phase = GamePhase.RoleDistribution;
 
         foreach (var gp in state.GamePlayers)
-            gp.TargetSendRole(gp.connectionToClient, gp.IsDany);
+            gp.TargetSendRole(gp.connectionToClient, gp.RoomIndex == state.DanyIndex);
 
         StartCoroutine(DelayedAction(3f, state, () => ServerStartNextTurn(state)));
     }
@@ -231,6 +251,14 @@ public class NetworkGameManager : NetworkBehaviour
     #endregion
 
     #region Ходы
+
+    [Server]
+    private void ServerSweepAndStartNextTurn(RoomGameState state)
+    {
+        foreach (NetworkPlayer np in state.Room.Players)
+            TargetSweepTableCards(np.connectionToClient);
+        StartCoroutine(DelayedAction(Card.SweepDuration + 0.3f, state, () => ServerStartNextTurn(state)));
+    }
 
     [Server]
     private void ServerStartNextTurn(RoomGameState state)
@@ -253,6 +281,17 @@ public class NetworkGameManager : NetworkBehaviour
         ServerDrawIdeasCard(state);
         foreach (NetworkPlayer np in state.Room.Players)
             TargetStartTurn(np.connectionToClient, state.Room.RoomCode);
+
+        state.TurnStartTime = Time.time;
+        int capturedTurnIdx = state.CurrentIndex;
+        StartCoroutine(DelayedAction(turnTime, state, () =>
+        {
+            if (state.Room.Phase == GamePhase.TurnInProgress && state.CurrentIndex == capturedTurnIdx)
+            {
+                GamePlayer gp = state.GamePlayers.Find(p => p.RoomIndex == capturedTurnIdx);
+                if (gp != null) ServerOnPlayerFinishedTurn(gp);
+            }
+        }));
     }
 
     [Server]
@@ -275,6 +314,7 @@ public class NetworkGameManager : NetworkBehaviour
         {
             if (gp.Role != Role.Active) continue;
             gp.HandCardNetIds.Clear();
+
             for (int i = 0; i < 7; i++)
             {
                 Sprite pic = PicturesDeck.Instance.DrawCard();
@@ -285,11 +325,14 @@ public class NetworkGameManager : NetworkBehaviour
                 GameObject cardObj = Instantiate(networkCardPrefab);
                 NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
                 netCard.Initialize(spriteIdx, gp.OwnerNetId);
+                cardObj.AddComponent<NetworkMatch>().matchId = state.MatchId;
                 NetworkServer.Spawn(cardObj, gp.connectionToClient);
 
                 gp.HandCardNetIds.Add(netCard.netId);
                 gp.TargetAddCardToHand(gp.connectionToClient, netCard.netId, canInteract: true);
             }
+            TargetPopdownHand(gp.connectionToClient);
+            TargetPopupHand(gp.connectionToClient);
         }
     }
 
@@ -314,8 +357,11 @@ public class NetworkGameManager : NetworkBehaviour
     {
         if (!TryFindState(gPlayer, out var state)) return;
         if (gPlayer.RoomIndex != state.CurrentIndex) return;
+        if (state.Room.Phase != GamePhase.TurnInProgress) return;
 
         state.Room.Phase = GamePhase.Discussion;
+        state.DiscussionStartTime = Time.time;
+        TargetToggleGameReadyToggle(gPlayer.connectionToClient, false);
         gPlayer.TargetClearHand(gPlayer.connectionToClient);
 
         // Enable word buttons for decisive + send popup to everyone
@@ -330,25 +376,33 @@ public class NetworkGameManager : NetworkBehaviour
                 gp.TargetShowLocGamePopup(np.connectionToClient, "gameUI.guess.des", delay);
 
                 // Remind to choose a word
+                var savedScore = (state.Room.DanyScore, state.Room.PersonalitiesScore);
                 StartCoroutine(DelayedAction(discussionTime - 10f, state, () =>
                 {
-                    if (state.Room.Phase == GamePhase.Discussion)
+                    if (savedScore == (state.Room.DanyScore, state.Room.PersonalitiesScore))
                         gp.TargetShowLocGamePopup(np.connectionToClient, "gameUI.guess.remind", 2f);
                 }));
             }
             else if (gp.Role == Role.Active)
             {
-                gp.TargetShowGamePopup(np.connectionToClient,
-                    $"{Loc.NickFor(np, state.GamePlayers[state.DecisiveIndex].LobbyNumber)} " +
-                    $"{Loc.TextFor(np, "gameUI.guess.act")}", delay);
+                gp.TargetShowNickLocGamePopup(np.connectionToClient,
+                    state.GamePlayers[state.DecisiveIndex].LobbyNumber,
+                    "gameUI.guess.act", delay);
             }
             else
             {
-                gp.TargetShowGamePopup(np.connectionToClient, 
-                    $"{Loc.NickFor(np, state.GamePlayers[state.DecisiveIndex].LobbyNumber)} " +
-                    $"{Loc.TextFor(np, "gameUI.guess.others")}", delay);
+                gp.TargetShowNickLocGamePopup(np.connectionToClient,
+                    state.GamePlayers[state.DecisiveIndex].LobbyNumber,
+                    "gameUI.guess.others", delay);
             }
         }
+
+        int capturedDecisiveIdx = state.DecisiveIndex;
+        StartCoroutine(DelayedAction(discussionTime, state, () =>
+        {
+            if (state.Room.Phase == GamePhase.Discussion && state.DecisiveIndex == capturedDecisiveIdx)
+                ServerHandleDiscussionTimeout(state);
+        }));
     }
 
     [Server]
@@ -357,6 +411,8 @@ public class NetworkGameManager : NetworkBehaviour
         if (!_rooms.TryGetValue(roomCode, out var state)) return;
         if (state.Room.Phase != GamePhase.TurnInProgress) return;
         if (player == null || !player.IsHost) return;
+        if (player.CurrentRoomCode != roomCode) return;
+        if (Time.time - state.TurnStartTime < turnTime - TimerGracePeriod) return;
         GamePlayer gp = state.GamePlayers.Find(p => p.RoomIndex == state.CurrentIndex);
         if (gp != null) ServerOnPlayerFinishedTurn(gp);
     }
@@ -367,7 +423,15 @@ public class NetworkGameManager : NetworkBehaviour
         if (!_rooms.TryGetValue(roomCode, out var state)) return;
         if (state.Room.Phase != GamePhase.Discussion) return;
         if (player == null || !player.IsHost) return;
+        if (player.CurrentRoomCode != roomCode) return;
+        if (Time.time - state.DiscussionStartTime < discussionTime - TimerGracePeriod) return;
+        ServerHandleDiscussionTimeout(state);
+    }
 
+    [Server]
+    private void ServerHandleDiscussionTimeout(RoomGameState state)
+    {
+        if (state.Room.Phase != GamePhase.Discussion) return;
         state.Room.DanyScore++;
         state.Room.Phase = GamePhase.WordReveal;
 
@@ -380,7 +444,7 @@ public class NetworkGameManager : NetworkBehaviour
         StartCoroutine(DelayedAction(delay, state, () =>
         {
             if (!ServerCheckGameEnd(state))
-                ServerStartNextTurn(state);
+                ServerSweepAndStartNextTurn(state);
         }));
     }
 
@@ -389,6 +453,7 @@ public class NetworkGameManager : NetworkBehaviour
     {
         if (!TryFindState(gplayer, out var state)) return;
         if (gplayer.RoomIndex != state.DecisiveIndex) return;
+        if (state.Room.Phase != GamePhase.Discussion) return;
 
         state.Room.Phase = GamePhase.WordReveal;
 
@@ -413,7 +478,7 @@ public class NetworkGameManager : NetworkBehaviour
         StartCoroutine(DelayedAction(delay, state, () =>
         {
             if (!ServerCheckGameEnd(state))
-                ServerStartNextTurn(state);
+                ServerSweepAndStartNextTurn(state);
         }));
     }
 
@@ -437,6 +502,8 @@ public class NetworkGameManager : NetworkBehaviour
         if (!_rooms.TryGetValue(roomCode, out var state)) return;
         if (state.Room.Phase != GamePhase.FinalRound) return;
         if (!player.IsHost) return;
+        if (player.CurrentRoomCode != roomCode) return;
+        if (Time.time - state.VotingStartTime < votingTime - TimerGracePeriod) return;
         if (state.VotingResolved) return;
         state.VotingResolved = true;
         ServerResolveVotes(state);
@@ -497,8 +564,11 @@ public class NetworkGameManager : NetworkBehaviour
     private void ServerEndGame(RoomGameState state, bool dannyWins)
     {
         state.Room.Phase = GamePhase.GameEnd;
-        foreach (NetworkPlayer np in state.Room.Players)
-            TargetGameEnded(np.connectionToClient, dannyWins, state.DanyLobbyNumber);
+        foreach (NetworkPlayer np in state.Room.Players) 
+        {
+            np.GamePlayer.Role = Role.Waiting;
+            TargetGameEnded(np.connectionToClient, dannyWins, state.DanyLobbyNumber, np.Number == state.DanyLobbyNumber);
+        }
     }
 
     [Server]
@@ -506,17 +576,27 @@ public class NetworkGameManager : NetworkBehaviour
     {
         if (state.Room.PersonalitiesScore >= 6)
         {
-            state.Room.Phase = GamePhase.GameEnd;
-            foreach (NetworkPlayer np in state.Room.Players)
-                TargetGameEnded(np.connectionToClient, false, state.DanyLobbyNumber);
+            ServerEndGame(state, false);
             return true;
         }
         if (state.Room.DanyScore >= 3 || !PicturesDeck.Instance.EnoughCardsToDraw())
         {
             state.Room.Phase = GamePhase.FinalRound;
+            state.VotingStartTime = Time.time;
             var numbers = state.GamePlayers.ConvertAll(gp => gp.LobbyNumber);
             foreach (NetworkPlayer np in state.Room.Players)
+            {
+                np.GamePlayer.Role = Role.Waiting;
                 TargetStartFinalRound(np.connectionToClient, state.DanyLobbyNumber, state.Room.RoomCode, numbers);
+            }
+            StartCoroutine(DelayedAction(votingTime, state, () =>
+            {
+                if (state.Room.Phase == GamePhase.FinalRound && !state.VotingResolved)
+                {
+                    state.VotingResolved = true;
+                    ServerResolveVotes(state);
+                }
+            }));
             return true;
         }
         return false;
@@ -543,16 +623,6 @@ public class NetworkGameManager : NetworkBehaviour
 
         foreach (NetworkPlayer np in state.Room.Players)
             TargetReturnToLobby(np.connectionToClient);
-    }
-
-    private void OnTurnTimerEnded(string roomCode)
-    {
-        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdTurnTimerEnded(roomCode);
-    }
-
-    private void OnDiscussionTimerEnded(string roomCode)
-    {
-        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>().CmdDecisiveTimerEnded(roomCode);
     }
 
     #endregion
@@ -612,6 +682,18 @@ public class NetworkGameManager : NetworkBehaviour
     #region Рассылка событий игрокам комнаты
 
     [TargetRpc]
+    private void TargetSweepTableCards(NetworkConnectionToClient conn)
+    => PlayingCardsTable.Instance.SweepAllTableCards();
+
+    [TargetRpc]
+    private void TargetPopupHand(NetworkConnectionToClient conn)
+        => PlayingCardsTable.Instance.PopupHand();
+
+    [TargetRpc]
+    private void TargetPopdownHand(NetworkConnectionToClient conn)
+        => PlayingCardsTable.Instance.PopdownHand();
+
+    [TargetRpc]
     private void TargetRoomUpdated(NetworkConnectionToClient conn)
         => LobbyManager.Instance.RefreshRoomPanel();
 
@@ -621,15 +703,19 @@ public class NetworkGameManager : NetworkBehaviour
 
     [TargetRpc]
     private void TargetStartTurn(NetworkConnectionToClient conn, string roomCode)
-        => TimerUI.Instance.StartTimer(turnTime, () => OnTurnTimerEnded(roomCode));
+        => TimerUI.Instance.StartTimer(turnTime, null);
 
     [TargetRpc]
     private void TargetStartDiscussion(NetworkConnectionToClient conn, string roomCode)
-        => TimerUI.Instance.StartTimer(discussionTime, () => OnDiscussionTimerEnded(roomCode));
+        => TimerUI.Instance.StartTimer(discussionTime, null);
 
     [TargetRpc]
     private void TargetToggleCardsInteraction(NetworkConnectionToClient conn, bool active)
         => PlayingCardsTable.Instance.ToggleInteractions(active);
+
+    [TargetRpc]
+    private void TargetToggleGameReadyToggle(NetworkConnectionToClient conn, bool interactable)
+        => LobbyManager.Instance.ToggleGameReadyToggle(interactable);
 
     [TargetRpc]
     private void TargetStartFinalRound(NetworkConnectionToClient conn, int danyLobbyNumber, string code, List<int> lobbyNumbers)
@@ -644,8 +730,9 @@ public class NetworkGameManager : NetworkBehaviour
         => NetworkFinalRoundManager.Instance.StartTieVote(tiedLobbyNumbers);
 
     [TargetRpc]
-    private void TargetGameEnded(NetworkConnectionToClient conn, bool danyWins, int dany)
+    private void TargetGameEnded(NetworkConnectionToClient conn, bool danyWins, int dany, bool wasDany)
     {
+        LocalPlayerStats.Instance.AddGame(wasDany, danyWins);
         LobbyManager.Instance.ShowGameEndScreen(danyWins, dany);
         TimerUI.Instance.StopTimer();
     }

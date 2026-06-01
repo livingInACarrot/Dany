@@ -245,6 +245,10 @@ MonoBehaviour:
       + Rechtsklick - umdrehen\nMausrad - drehen\nStrg + Mausrad - Gr\xF6\xDFe \xE4ndern"
     m_Metadata:
       m_Items: []
+  - m_Id: 39881110669221888
+    m_Localized: Sie wurden aus dem Raum entfernt
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

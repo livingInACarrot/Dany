@@ -1,0 +1,25 @@
+fileFormatVersion: 2
+guid: f36a8de912897634696128c180a8f08d
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Speckqtograph Handwriting
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: cc2445ed3fc78024ba9362795c6621f8, type: 3}
+  - {fileID: 12800000, guid: 841e7620375b2f141a7e656fa9211dfa, type: 3}
+  - {fileID: 12800000, guid: 1eb0cb4f2913d244b9f32363023085ae, type: 3}
+  - {fileID: 12800000, guid: 3317c2d10e679614d8f948e9484e09fd, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

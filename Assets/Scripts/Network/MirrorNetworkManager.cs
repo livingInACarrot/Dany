@@ -1,47 +1,11 @@
-using System.IO;
 using Mirror;
+using System.Collections;
 using UnityEngine;
 
 public class MirrorNetworkManager : NetworkManager
 {
-    private readonly string editorAddress = "127.0.0.1";
-    private readonly string fallbackAddress = "46.138.156.199";
-
-    public static string SERVER_ADDRESS = "127.0.0.1";
-
-    public override void Awake()
-    {
-        base.Awake();
-
-#if UNITY_SERVER
-        return;
-#endif
-
-#if UNITY_EDITOR
-        if (ParrelSync.ClonesManager.IsClone() && ParrelSync.ClonesManager.GetArgument() == "server")
-            return;
-        networkAddress = editorAddress;
-#else
-        networkAddress = LoadServerAddress();
-        SERVER_ADDRESS = networkAddress;
-#endif
-    }
-
-    private string LoadServerAddress()
-    {
-        string configPath = Path.Combine(Application.dataPath, "../server_config.txt");
-        if (File.Exists(configPath))
-        {
-            string address = File.ReadAllText(configPath).Trim();
-            if (!string.IsNullOrEmpty(address))
-            {
-                Debug.Log($"[Client] Server address loaded from config: {address}");
-                return address;
-            }
-        }
-        Debug.Log($"[Client] Config not found, using fallback address: {fallbackAddress}");
-        return fallbackAddress;
-    }
+    public const string LocalAddress = "127.0.0.1";
+    public const string Server1Address = "146.103.118.171";
 
     public override void Start()
     {
@@ -97,8 +61,8 @@ public class MirrorNetworkManager : NetworkManager
     {
         base.OnStartClient();
         _wasConnected = false;
-        PopupUI.Instance?.ShowPersistent(Loc.Text("popup.server.conn"));
         Debug.Log($"[Client] Connecting to {networkAddress}");
+        StartCoroutine(DelayedPopup());
     }
 
     public override void OnClientConnect()
@@ -117,5 +81,12 @@ public class MirrorNetworkManager : NetworkManager
         else
             PopupUI.Instance?.Hide();
         LobbyManager.Instance.OnDisconnected();
+    }
+
+    private IEnumerator DelayedPopup()
+    {
+        yield return new WaitForSeconds(0.5f);
+        if (!_wasConnected)
+            PopupUI.Instance?.ShowPersistent(Loc.Text("popup.server.conn"));
     }
 }

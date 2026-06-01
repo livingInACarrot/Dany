@@ -42,7 +42,7 @@ public class ChatUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(input)) return;
         NetworkPlayer np = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>();
         if (np != null)
-            np.CmdSendChatMessage(input, np.Number);
+            np.CmdSendChatMessage(input);
         messageInput.text = string.Empty;
         messageInput.ActivateInputField();
     }

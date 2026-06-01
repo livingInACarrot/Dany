@@ -8,8 +8,6 @@ public class GamePlayer : NetworkBehaviour
 
     [SyncVar] public int LobbyNumber;
 
-    [SyncVar] public bool IsDany;
-
     [SyncVar(hook = nameof(OnChangedRole))]
     public Role Role = Role.Waiting;
 
@@ -64,10 +62,8 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdWordGuessed(int wordIndex)
-    {
-        NetworkGameManager.Instance.ServerOnWordGuessed(this, wordIndex);
-    }
+    public void CmdWordGuessed(int wordIndex) 
+        => NetworkGameManager.Instance.ServerOnWordGuessed(this, wordIndex);
 
     [TargetRpc]
     public void TargetSendRole(NetworkConnectionToClient conn, bool isDany)
@@ -105,23 +101,23 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetClearHand(NetworkConnectionToClient conn)
-    {
-        PlayingCardsTable.Instance.ClearHand();
-    }
+    public void TargetClearHand(NetworkConnectionToClient conn) 
+        => PlayingCardsTable.Instance.ClearHand();
 
     [TargetRpc]
-    public void TargetShowGuessPanel(NetworkConnectionToClient conn, IdeasCard card)
-    {
-        IdeasCardUI.Instance.ShowGuessPanel(card);
-    }
+    public void TargetShowGuessPanel(NetworkConnectionToClient conn, IdeasCard card) 
+        => IdeasCardUI.Instance.ShowGuessPanel(card);
 
     [TargetRpc]
-    public void TargetShowLocGamePopup(NetworkConnectionToClient conn, string locKey, float time) 
+    public void TargetShowLocGamePopup(NetworkConnectionToClient conn, string locKey, float time)
         => GamePopup.Instance.Show(Loc.Text(locKey), time);
 
     [TargetRpc]
-    public void TargetShowGamePopup(NetworkConnectionToClient conn, string text, float time) 
+    public void TargetShowNickLocGamePopup(NetworkConnectionToClient conn, int playerNumber, string locKey, float time)
+        => GamePopup.Instance.Show($"{Loc.Nick(playerNumber)} {Loc.Text(locKey)}", time);
+
+    [TargetRpc]
+    public void TargetShowGamePopup(NetworkConnectionToClient conn, string text, float time)
         => GamePopup.Instance.Show(text, time);
 
     private void OnChangedRole(Role _, Role newRole)
@@ -134,7 +130,6 @@ public class GamePlayer : NetworkBehaviour
             LobbyManager.Instance.SetGameReadyVisible(newRole == Role.Active);
             if (VoiceController.Instance != null)
                 VoiceController.Instance.TurnMuted = newRole == Role.Active;
-            HintUI.Instance?.SetTurnActive(newRole == Role.Active);
             ChatUI.Instance?.SetInputEnabled(newRole != Role.Active);
         }
     }

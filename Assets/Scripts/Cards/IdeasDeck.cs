@@ -2,15 +2,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
 public class IdeasCard
 {
-    public string[] Words = new string[5];
+    public string Key { get; }
 
-    public int GetRandomWord()
-    {
-        return UnityEngine.Random.Range(0, Words.Length);
-    }
+    public IdeasCard(string key) { Key = key; }
+
+    public string[] GetWords() => ParseKey(Key);
+
+    public int GetRandomWord() => UnityEngine.Random.Range(0, 5);
+
+    private string[] ParseKey(string k) 
+        => Loc.Text(k, "Word Cards Labels").Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 }
 
 public class IdeasDeck : MonoBehaviour
@@ -42,12 +45,7 @@ public class IdeasDeck : MonoBehaviour
 
     public IdeasCard DrawCard()
     {
-        if (deck.Count == 0)
-        {
-            Debug.LogError("Закончились карты идей!");
-            return null;
-        }
-
+        if (deck.Count == 0) return null;
         return deck.Dequeue();
     }
 

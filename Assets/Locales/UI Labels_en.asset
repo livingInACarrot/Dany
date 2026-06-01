@@ -250,6 +250,10 @@ MonoBehaviour:
     m_Localized: Connecting to the server...
     m_Metadata:
       m_Items: []
+  - m_Id: 39881110669221888
+    m_Localized: You have been kicked from the lobby
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

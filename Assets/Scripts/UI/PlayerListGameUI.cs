@@ -47,6 +47,7 @@ public class PlayerListGameUI : MonoBehaviour
         GameObject entry = Instantiate(playerEntryPrefab, playerListContainer);
         _entries[gp] = entry;
 
+        entry.GetComponentInChildren<Button>().gameObject.SetActive(false);
         var texts = entry.GetComponentInChildren<HorizontalLayoutGroup>().GetComponentsInChildren<TMP_Text>();
         // Voice number me host
         //   0      1    2   3

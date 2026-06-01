@@ -41,6 +41,8 @@ public class NetworkPlayer : NetworkBehaviour
     [SyncVar]
     public string LocaleCode = "en";
 
+    private float _lastChatMessageTime = float.MinValue;
+
     public event System.Action OnDataChanged;
 
     public static event System.Action<NetworkPlayer> OnPlayerAdded;
@@ -92,19 +94,35 @@ public class NetworkPlayer : NetworkBehaviour
     public void CmdSetRoomPrivacy(bool isPrivate) => NetworkGameManager.Instance.ServerSetRoomPrivacy(this, isPrivate);
 
     [Command]
-    public void CmdUpdateCountry(string country) => Country = country;
+    public void CmdKickPlayer(int targetNumber) => NetworkGameManager.Instance.ServerKickPlayer(this, targetNumber);
+
+    [TargetRpc]
+    public void TargetKicked(NetworkConnectionToClient conn) => LobbyManager.Instance.OnKicked();
 
     [Command]
-    public void CmdUpdateLocale(string localeCode) => LocaleCode = localeCode;
+    public void CmdUpdateCountry(string country)
+    {
+        if (country != null && country.Length > 50) return;
+        Country = country;
+    }
+
+    [Command]
+    public void CmdUpdateLocale(string localeCode)
+    {
+        if (localeCode != null && localeCode.Length > 10) return;
+        LocaleCode = localeCode;
+    }
 
     [Command]
     public void CmdSetReady(bool ready) => IsReady = ready;
 
     [Command]
-    public void CmdSendChatMessage(string message, int num)
+    public void CmdSendChatMessage(string message)
     {
-        if (string.IsNullOrWhiteSpace(message)) return;
-        NetworkGameManager.Instance.ServerHandleChatMessage(CurrentRoomCode, num, message);
+        if (string.IsNullOrWhiteSpace(message) || message.Length > 300) return;
+        if (Time.time - _lastChatMessageTime < 0.5f) return;
+        _lastChatMessageTime = Time.time;
+        NetworkGameManager.Instance.ServerHandleChatMessage(CurrentRoomCode, Number, message);
     }
 
     [TargetRpc]

@@ -26,6 +26,7 @@ public class LobbyManager : MonoBehaviour
 
     [Header("Main Menu")]
     [SerializeField] private TMP_InputField roomCodeInput;
+    [SerializeField] private Toggle localGameToggle;
 
     [Header("Lobby")]
     [SerializeField] private TextMeshProUGUI roomCodeText;
@@ -37,9 +38,12 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Toggle gameReadyToggle;
 
     [Header("Settings")]
-    [SerializeField] private Dropdown languageDropdown;
+    [SerializeField] private TMP_Dropdown languageDropdown;
     [SerializeField] private Slider voiceVolumeSlider;
     [SerializeField] private Slider micVolumeSlider;
+    [SerializeField] private Dropdown micDropdown;
+    [SerializeField] private Dropdown outputDeviceDropdown;
+    [SerializeField] private TMP_Dropdown screenModeDropdown;
 
     private string _roomCode;
     private bool _isHost;
@@ -48,10 +52,14 @@ public class LobbyManager : MonoBehaviour
     private string _pendingJoinCode;
     private bool _reconnecting;
 
+    private int _chatDefaultSiblingIndex;
+
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else { Destroy(this); return; }
+
+        _chatDefaultSiblingIndex = chatPanel.transform.GetSiblingIndex();
     }
 
     private void Start()
@@ -59,6 +67,11 @@ public class LobbyManager : MonoBehaviour
         SetupUI();
         SubscribeToEvents();
         ShowMainMenu();
+    }
+
+    private void OnApplicationQuit()
+    {
+        PlayerPrefs.Save();
     }
 
     private void OnDestroy()
@@ -77,10 +90,41 @@ public class LobbyManager : MonoBehaviour
         startGameButton.onClick.AddListener(OnStartGameClick);
         readyToggle.onValueChanged.AddListener(OnReadyToggleChanged);
         privateRoomToggle.onValueChanged.AddListener(OnPrivacyToggleChanged);
-        voiceVolumeSlider.onValueChanged.AddListener(v => VoiceController.Instance?.SetOutputVolume(v));
-        micVolumeSlider.onValueChanged.AddListener(v => VoiceController.Instance?.SetMicVolume(v));
+        voiceVolumeSlider.onValueChanged.AddListener(v =>
+        {
+            VoiceController.Instance?.SetOutputVolume(v);
+            PlayerPrefs.SetFloat("VoiceVolume", v);
+        });
+        micVolumeSlider.onValueChanged.AddListener(v =>
+        {
+            VoiceController.Instance?.SetMicVolume(v);
+            PlayerPrefs.SetFloat("MicVolume", v);
+        });
+        micDropdown.onValueChanged.AddListener(OnMicDropdownChanged);
+        outputDeviceDropdown.onValueChanged.AddListener(OnOutputDeviceDropdownChanged);
+        screenModeDropdown.onValueChanged.AddListener(OnScreenModeChanged);
         gameReadyToggle.onValueChanged.AddListener(OnGameReadyToggled);
         gameReadyToggle.gameObject.SetActive(false);
+
+        localGameToggle.SetIsOnWithoutNotify(PlayerPrefs.GetInt("UseLocalAddress", 1) == 1);
+        localGameToggle.onValueChanged.AddListener(v => PlayerPrefs.SetInt("UseLocalAddress", v ? 1 : 0));
+
+        RestoreSettings();
+    }
+
+    private void RestoreSettings()
+    {
+        float voiceVol = PlayerPrefs.GetFloat("VoiceVolume", 1f);
+        voiceVolumeSlider.SetValueWithoutNotify(voiceVol);
+        VoiceController.Instance?.SetOutputVolume(voiceVol);
+
+        float micVol = PlayerPrefs.GetFloat("MicVolume", 1f);
+        micVolumeSlider.SetValueWithoutNotify(micVol);
+        VoiceController.Instance?.SetMicVolume(micVol);
+
+        int screenMode = PlayerPrefs.GetInt("ScreenMode", 0);
+        screenModeDropdown.SetValueWithoutNotify(screenMode);
+        Screen.fullScreen = screenMode == 0;
     }
 
     private void SubscribeToEvents()
@@ -98,6 +142,7 @@ public class LobbyManager : MonoBehaviour
     public void ShowMainMenu()
     {
         HideAllPanels();
+        StatsUI.Instance?.UpdateAllStats();
         mainMenuPanel.SetActive(true);
     }
 
@@ -110,7 +155,28 @@ public class LobbyManager : MonoBehaviour
         RefreshRoomPanel();
     }
 
-    public void ShowSettings() => settingsPanel.SetActive(true);
+    public void ShowSettings()
+    {
+        PopulateMicDropdown();
+        PopulateOutputDeviceDropdown();
+        SyncLanguageDropdown();
+        screenModeDropdown.SetValueWithoutNotify(Screen.fullScreen ? 0 : 1);
+        settingsPanel.SetActive(true);
+    }
+
+    private void SyncLanguageDropdown()
+    {
+        var selected = UnityEngine.Localization.Settings.LocalizationSettings.SelectedLocale;
+        var locales = UnityEngine.Localization.Settings.LocalizationSettings.AvailableLocales.Locales;
+        for (int i = 0; i < locales.Count; i++)
+        {
+            if (locales[i] == selected)
+            {
+                languageDropdown.SetValueWithoutNotify(i);
+                break;
+            }
+        }
+    }
     public void ShowRules() => rulesPanel.SetActive(true);
     public void ShowOpenRooms() => openRoomsPanel.SetActive(true);
 
@@ -126,12 +192,17 @@ public class LobbyManager : MonoBehaviour
     {
         gameEndPanel.GetComponent<GameEndPanelUI>().SetText(danyWins, dany);
         gameEndPanel.SetActive(true);
+        PlayerListGameUI.Instance.RefreshList();
+        ChatUI.Instance?.SetInputEnabled(true);
+        chatPanel.transform.SetAsLastSibling();
     }
 
     public void ShowAbortionScreen(string message)
     {
         abortionPanel.GetComponentsInChildren<TMP_Text>()[1].text = message;
         abortionPanel.SetActive(true);
+        ChatUI.Instance?.SetInputEnabled(true);
+        chatPanel.transform.SetAsLastSibling();
     }
 
     private void HideAllPanels()
@@ -145,6 +216,7 @@ public class LobbyManager : MonoBehaviour
         openRoomsPanel.SetActive(false);
         rolePanel.SetActive(false);
         gameEndPanel.SetActive(false);
+        chatPanel.transform.SetSiblingIndex(_chatDefaultSiblingIndex);
         chatPanel.SetActive(false);
         abortionPanel.SetActive(false);
     }
@@ -174,6 +246,7 @@ public class LobbyManager : MonoBehaviour
             PopupUI.Instance.Show(Loc.Text("error.incorrectRoomInput"));
             return;
         }
+        roomCodeInput.text = "";
         JoinRoom(code);
     }
 
@@ -195,7 +268,9 @@ public class LobbyManager : MonoBehaviour
         _reconnecting = true;
         if (NetworkClient.active) NetworkManager.singleton.StopClient();
         _reconnecting = false;
-        NetworkManager.singleton.networkAddress = MirrorNetworkManager.SERVER_ADDRESS;
+        NetworkManager.singleton.networkAddress = localGameToggle.isOn
+            ? MirrorNetworkManager.LocalAddress
+            : MirrorNetworkManager.Server1Address;
         NetworkManager.singleton.StartClient();
     }
 
@@ -255,6 +330,11 @@ public class LobbyManager : MonoBehaviour
 
             PopupUI.Instance.Show(isPrivate ? Loc.Text("popup.roomPrivate") : Loc.Text("popup.roomPublic"), 2f);
         }
+    }
+
+    public void ToggleGameReadyToggle(bool interactable)
+    {
+        gameReadyToggle.interactable = interactable;
     }
 
     public void SetGameReadyVisible(bool visible)
@@ -336,7 +416,7 @@ public class LobbyManager : MonoBehaviour
         PlayingCardsTable.Instance.ClearTable();
         PlayingCardsTable.Instance.ClearHand();
         IdeasCardUI.Instance.HideCard();
-        HintUI.Instance?.SetTurnActive(false);
+        PlayerListGameUI.Instance.RefreshList();
     }
 
     public void HideFinalRoundPanel()
@@ -347,6 +427,14 @@ public class LobbyManager : MonoBehaviour
     public void OnRoleAssigned(bool isDany)
     {
         ShowRolePanel(isDany);
+    }
+
+    public void OnKicked()
+    {
+        _roomCode = string.Empty;
+        _isHost = false;
+        PopupUI.Instance.Show(Loc.Text("kicked"), 4f);
+        ShowMainMenu();
     }
 
     public void OnDisconnected()
@@ -461,10 +549,50 @@ public class LobbyManager : MonoBehaviour
         PlayerListLobbyUI.Instance.UpdatePlayerList(players);
     }
 
+    private void PopulateMicDropdown()
+    {
+        Debug.Log($"[LobbyManager] PopulateMicDropdown called. VoiceController.Instance={(VoiceController.Instance != null ? "OK" : "NULL")}, micDropdown={(micDropdown != null ? "OK" : "NULL")}");
+        if (VoiceController.Instance == null) return;
+        var names = VoiceController.Instance.GetMicDeviceNames();
+        Debug.Log($"[LobbyManager] Got {names.Count} mic names");
+        micDropdown.ClearOptions();
+        micDropdown.AddOptions(names);
+        int current = VoiceController.Instance.GetCurrentMicIndex();
+        micDropdown.SetValueWithoutNotify(current < 0 ? 0 : current);
+        micDropdown.RefreshShownValue();
+    }
+
+    private void OnMicDropdownChanged(int index)
+    {
+        VoiceController.Instance?.SetMicDevice(index);
+    }
+
+    private void PopulateOutputDeviceDropdown()
+    {
+        if (VoiceController.Instance == null) return;
+        var names = VoiceController.Instance.GetOutputDeviceNames();
+        outputDeviceDropdown.ClearOptions();
+        outputDeviceDropdown.AddOptions(names);
+        int current = VoiceController.Instance.GetCurrentOutputDeviceIndex();
+        outputDeviceDropdown.SetValueWithoutNotify(current < 0 ? 0 : current);
+        outputDeviceDropdown.RefreshShownValue();
+    }
+
+    private void OnOutputDeviceDropdownChanged(int index)
+    {
+        VoiceController.Instance?.SetOutputDevice(index);
+    }
+
     private void OnLanguageChanged(int index)
     {
         LocalizationManager.Instance.SetLocale(index);
         PlayerPrefs.SetString("Language", LocalizationManager.Instance.GetStringLocale());
+    }
+
+    private void OnScreenModeChanged(int index)
+    {
+        Screen.fullScreen = index == 0;
+        PlayerPrefs.SetInt("ScreenMode", index);
     }
 
     #endregion

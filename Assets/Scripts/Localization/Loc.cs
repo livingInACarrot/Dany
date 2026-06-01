@@ -1,4 +1,4 @@
-// Обёртка для LocalizationManager для удобного использования
+// Обёртка LocalizationManager для удобного использования
 public static class Loc
 {
     public static string Text(string key)
