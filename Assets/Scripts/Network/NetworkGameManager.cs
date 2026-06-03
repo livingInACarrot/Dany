@@ -224,8 +224,8 @@ public class NetworkGameManager : NetworkBehaviour
             gp.RoomIndex   = i;
             gp.LobbyNumber = players[i].Number;
             gp.OwnerNetId  = players[i].netId;
-            gp.gameObject.AddComponent<NetworkMatch>().matchId = state.MatchId;
             NetworkServer.Spawn(gp.gameObject, players[i].connectionToClient);
+            gp.GetComponent<NetworkMatch>().matchId = state.MatchId;
             players[i].GamePlayerNetId = gp.netId;
             state.GamePlayers.Add(gp);
         }
@@ -325,8 +325,8 @@ public class NetworkGameManager : NetworkBehaviour
                 GameObject cardObj = Instantiate(networkCardPrefab);
                 NetworkCard netCard = cardObj.GetComponent<NetworkCard>();
                 netCard.Initialize(spriteIdx, gp.OwnerNetId);
-                cardObj.AddComponent<NetworkMatch>().matchId = state.MatchId;
                 NetworkServer.Spawn(cardObj, gp.connectionToClient);
+                cardObj.GetComponent<NetworkMatch>().matchId = state.MatchId;
 
                 gp.HandCardNetIds.Add(netCard.netId);
                 gp.TargetAddCardToHand(gp.connectionToClient, netCard.netId, canInteract: true);

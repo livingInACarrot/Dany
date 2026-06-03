@@ -239,6 +239,10 @@ MonoBehaviour:
     m_Key: kicked
     m_Metadata:
       m_Items: []
+  - m_Id: 42139638029082624
+    m_Key: error.joinCooldown
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

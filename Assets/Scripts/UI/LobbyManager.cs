@@ -53,6 +53,9 @@ public class LobbyManager : MonoBehaviour
     private bool _reconnecting;
 
     private int _chatDefaultSiblingIndex;
+    private float _roomCodeInputCooldown = 2f;
+    private float _currentRoomCodeCooldown;
+
 
     private void Awake()
     {
@@ -106,8 +109,11 @@ public class LobbyManager : MonoBehaviour
         gameReadyToggle.onValueChanged.AddListener(OnGameReadyToggled);
         gameReadyToggle.gameObject.SetActive(false);
 
-        localGameToggle.SetIsOnWithoutNotify(PlayerPrefs.GetInt("UseLocalAddress", 1) == 1);
-        localGameToggle.onValueChanged.AddListener(v => PlayerPrefs.SetInt("UseLocalAddress", v ? 1 : 0));
+        if (localGameToggle != null)
+        {
+            localGameToggle.SetIsOnWithoutNotify(PlayerPrefs.GetInt("UseLocalAddress", 0) == 1);
+            localGameToggle.onValueChanged.AddListener(v => PlayerPrefs.SetInt("UseLocalAddress", v ? 1 : 0));
+        }
 
         RestoreSettings();
     }
@@ -246,7 +252,16 @@ public class LobbyManager : MonoBehaviour
             PopupUI.Instance.Show(Loc.Text("error.incorrectRoomInput"));
             return;
         }
+
+        float remaining = _currentRoomCodeCooldown - Time.time;
+        if (remaining > 0)
+        {
+            PopupUI.Instance.Show($"{Loc.Text("error.joinCooldown")} {remaining:F1}s", 1.5f);
+            return;
+        }
+
         roomCodeInput.text = "";
+        _currentRoomCodeCooldown = Time.time + _roomCodeInputCooldown;
         JoinRoom(code);
     }
 
@@ -268,7 +283,7 @@ public class LobbyManager : MonoBehaviour
         _reconnecting = true;
         if (NetworkClient.active) NetworkManager.singleton.StopClient();
         _reconnecting = false;
-        NetworkManager.singleton.networkAddress = localGameToggle.isOn
+        NetworkManager.singleton.networkAddress = (localGameToggle != null && localGameToggle.isOn)
             ? MirrorNetworkManager.LocalAddress
             : MirrorNetworkManager.Server1Address;
         NetworkManager.singleton.StartClient();

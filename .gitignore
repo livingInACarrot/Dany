@@ -17,6 +17,7 @@
 .gradle/
 ExportedObj/
 .consulo/
+.claude/
 *.csproj
 *.unityproj
 *.sln

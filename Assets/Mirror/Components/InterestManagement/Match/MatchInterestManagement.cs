@@ -122,15 +122,15 @@ namespace Mirror
         [ServerCallback]
         public override bool OnCheckObserver(NetworkIdentity identity, NetworkConnectionToClient newObserver)
         {
-            // Never observed if no NetworkMatch component
+            // Objects without NetworkMatch (lobby objects: GameRoom, NetworkPlayer, etc.) are visible to everyone
             if (!identity.TryGetComponent(out NetworkMatch identityNetworkMatch))
-                return false;
+                return true;
 
-            // Guid.Empty is never a valid matchId
+            // Guid.Empty means "not in any match" → visible to everyone
             if (identityNetworkMatch.matchId == Guid.Empty)
-                return false;
+                return true;
 
-            // Never observed if no NetworkMatch component
+            // Observer not in any match cannot see match-specific objects
             if (!newObserver.identity.TryGetComponent(out NetworkMatch newObserverNetworkMatch))
                 return false;
 
@@ -144,12 +144,13 @@ namespace Mirror
         [ServerCallback]
         public override void OnRebuildObservers(NetworkIdentity identity, HashSet<NetworkConnectionToClient> newObservers)
         {
-            if (!identity.TryGetComponent(out NetworkMatch networkMatch))
+            // Objects without NetworkMatch (lobby objects) are visible to all connected clients
+            if (!identity.TryGetComponent(out NetworkMatch networkMatch) || networkMatch.matchId == Guid.Empty)
+            {
+                foreach (NetworkConnectionToClient conn in NetworkServer.connections.Values)
+                    if (conn != null) newObservers.Add(conn);
                 return;
-
-            // Guid.Empty is never a valid matchId
-            if (networkMatch.matchId == Guid.Empty)
-                return;
+            }
 
             // Abort if this match hasn't been created yet by OnSpawned or OnMatchChanged
             if (!matchObjects.TryGetValue(networkMatch.matchId, out HashSet<NetworkMatch> objects))

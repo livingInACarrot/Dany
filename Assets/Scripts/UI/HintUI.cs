@@ -17,7 +17,7 @@ public class HintUI : MonoBehaviour
 
     public void ToggleHints()
     {
-        var gp = NetworkClient.localPlayer?.GetComponent<GamePlayer>();
+        var gp = NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.GamePlayer;
         if (gp == null) return;
         hint.SetActive(toggle.isOn && gp.Role == Role.Active);
     }

@@ -1,23 +1,29 @@
 using UnityEngine;
+using UnityEngine.UI;
 
-[RequireComponent(typeof(Camera))]
+// Letterbox/pillarbox через UI-полосы поверх сцены.
+// Камера НЕ трогается — camera.rect всегда (0,0,1,1), что исключает размытость при DPI scaling.
+[RequireComponent(typeof(Canvas))]
 public class AspectRatioEnforcer : MonoBehaviour
 {
     private const float TargetAspect = 16f / 9f;
 
-    private Camera _cam;
+    private Image _barA;
+    private Image _barB;
     private int _lastWidth;
     private int _lastHeight;
 
     private void Awake()
     {
-        _cam = GetComponent<Camera>();
+        Canvas canvas = GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 32767;
+
+        _barA = CreateBar("BarA");
+        _barB = CreateBar("BarB");
     }
 
-    private void Start()
-    {
-        Apply();
-    }
+    private void Start() => Apply();
 
     private void Update()
     {
@@ -33,17 +39,49 @@ public class AspectRatioEnforcer : MonoBehaviour
         float windowAspect = (float)Screen.width / Screen.height;
         float scale = windowAspect / TargetAspect;
 
-        Rect rect;
+        if (Mathf.Abs(scale - 1f) < 0.001f)
+        {
+            _barA.gameObject.SetActive(false);
+            _barB.gameObject.SetActive(false);
+            return;
+        }
+
+        _barA.gameObject.SetActive(true);
+        _barB.gameObject.SetActive(true);
+
         if (scale < 1f)
         {
-            rect = new Rect(0f, (1f - scale) / 2f, 1f, scale);
+            // letterbox: полосы сверху и снизу
+            float barPx = Screen.height * (1f - scale) / 2f;
+            PositionBar(_barA, 0f, Screen.height - barPx, Screen.width, barPx); // top
+            PositionBar(_barB, 0f, 0f,                    Screen.width, barPx); // bottom
         }
         else
         {
-            float w = 1f / scale;
-            rect = new Rect((1f - w) / 2f, 0f, w, 1f);
+            // pillarbox: полосы слева и справа
+            float barPx = Screen.width * (1f - 1f / scale) / 2f;
+            PositionBar(_barA, 0f,                   0f, barPx, Screen.height); // left
+            PositionBar(_barB, Screen.width - barPx, 0f, barPx, Screen.height); // right
         }
+    }
 
-        _cam.rect = rect;
+    private static void PositionBar(Image bar, float x, float y, float w, float h)
+    {
+        RectTransform rt = bar.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.zero;
+        rt.pivot     = Vector2.zero;
+        rt.anchoredPosition = new Vector2(x, y);
+        rt.sizeDelta        = new Vector2(w, h);
+    }
+
+    private Image CreateBar(string barName)
+    {
+        var go = new GameObject(barName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        go.transform.SetParent(transform, false);
+        var img = go.GetComponent<Image>();
+        img.color = Color.black;
+        img.raycastTarget = false;
+        return img;
     }
 }
