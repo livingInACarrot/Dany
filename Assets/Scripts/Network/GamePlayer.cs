@@ -62,8 +62,10 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdWordGuessed(int wordIndex) 
-        => NetworkGameManager.Instance.ServerOnWordGuessed(this, wordIndex);
+    public void CmdWordGuessed(int wordIndex)
+    {
+        NetworkGameManager.Instance.ServerOnWordGuessed(this, wordIndex);
+    }
 
     [TargetRpc]
     public void TargetSendRole(NetworkConnectionToClient conn, bool isDany)
@@ -72,15 +74,15 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetShowActiveView(NetworkConnectionToClient conn, IdeasCard card, int wordIndex)
+    public void TargetShowActiveView(NetworkConnectionToClient conn, string cardKey, int wordIndex)
     {
-        IdeasCardUI.Instance.ShowForActiveRole(card, wordIndex);
+        IdeasCardUI.Instance.ShowForActiveRole(cardKey, wordIndex);
     }
 
     [TargetRpc]
-    public void TargetShowOthersView(NetworkConnectionToClient conn, IdeasCard card)
+    public void TargetShowOthersView(NetworkConnectionToClient conn, string cardKey)
     {
-        IdeasCardUI.Instance.ShowForOthers(card);
+        IdeasCardUI.Instance.ShowForOthers(cardKey);
     }
 
     [TargetRpc]
@@ -101,24 +103,34 @@ public class GamePlayer : NetworkBehaviour
     }
 
     [TargetRpc]
-    public void TargetClearHand(NetworkConnectionToClient conn) 
-        => PlayingCardsTable.Instance.ClearHand();
+    public void TargetClearHand(NetworkConnectionToClient conn)
+    {
+        PlayingCardsTable.Instance.ClearHand();
+    }
 
     [TargetRpc]
-    public void TargetShowGuessPanel(NetworkConnectionToClient conn, IdeasCard card) 
-        => IdeasCardUI.Instance.ShowGuessPanel(card);
+    public void TargetShowGuessPanel(NetworkConnectionToClient conn, IdeasCard card)
+    {
+        IdeasCardUI.Instance.ShowGuessPanel(card);
+    }
 
     [TargetRpc]
     public void TargetShowLocGamePopup(NetworkConnectionToClient conn, string locKey, float time)
-        => GamePopup.Instance.Show(Loc.Text(locKey), time);
+    {
+        GamePopup.Instance.Show(Loc.Text(locKey), time);
+    }
 
     [TargetRpc]
     public void TargetShowNickLocGamePopup(NetworkConnectionToClient conn, int playerNumber, string locKey, float time)
-        => GamePopup.Instance.Show($"{Loc.Nick(playerNumber)} {Loc.Text(locKey)}", time);
+    {
+        GamePopup.Instance.Show($"{Loc.Nick(playerNumber)} {Loc.Text(locKey)}", time);
+    }
 
     [TargetRpc]
     public void TargetShowGamePopup(NetworkConnectionToClient conn, string text, float time)
-        => GamePopup.Instance.Show(text, time);
+    {
+        GamePopup.Instance.Show(text, time);
+    }
 
     private void OnChangedRole(Role _, Role newRole)
     {

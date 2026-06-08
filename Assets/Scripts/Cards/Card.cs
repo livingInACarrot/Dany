@@ -19,6 +19,7 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
     public bool isFlipped = false;
     private Vector2 offset;
     private float _naturalWidth;
+    private float _rotationAngle = 0f;
     private Coroutine _flipCoroutine;
 
     public void Awake()
@@ -120,10 +121,13 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
         rectTransform.anchoredPosition = newPos;
         rectTransform.rotation = newRot;
         rectTransform.localScale = newScale;
+        _rotationAngle = newRot.eulerAngles.z;
+        if (_rotationAngle > 180f) _rotationAngle -= 360f;
     }
 
     public void ReturnToHand()
     {
+        _rotationAngle = 0f;
         rectTransform.rotation = Quaternion.Euler(0f, 0f, 0f);
         rectTransform.localScale = Vector3.one;
         InHand = true;
@@ -156,9 +160,8 @@ public class Card : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDrag
     private void RotateCard(float delta)
     {
         float rotationSpeed = 0.5f;
-        float currentRotation = transform.rotation.eulerAngles.z;
-        if (currentRotation > 180f) currentRotation -= 360f;
-        transform.rotation = Quaternion.Euler(0f, 0f, currentRotation + delta * rotationSpeed);
+        _rotationAngle += delta * rotationSpeed;
+        transform.rotation = Quaternion.Euler(0f, 0f, _rotationAngle);
     }
 
     private void ScaleCard(float delta)

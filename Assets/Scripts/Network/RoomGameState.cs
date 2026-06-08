@@ -24,5 +24,8 @@ public class RoomGameState
     public float DiscussionStartTime;
     public float VotingStartTime;
 
+    public int GameId;
+    public int TieVoteCount;
+
     public RoomGameState(GameRoom room) => Room = room;
 }

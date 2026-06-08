@@ -130,7 +130,7 @@ public class LobbyManager : MonoBehaviour
 
         int screenMode = PlayerPrefs.GetInt("ScreenMode", 0);
         screenModeDropdown.SetValueWithoutNotify(screenMode);
-        Screen.fullScreen = screenMode == 0;
+        OnScreenModeChanged(screenMode);
     }
 
     private void SubscribeToEvents()
@@ -318,6 +318,7 @@ public class LobbyManager : MonoBehaviour
         }
         _roomCode = string.Empty;
         _isHost = false;
+        ChatUI.Instance?.Clear();
         ShowMainMenu();
     }
 
@@ -333,7 +334,8 @@ public class LobbyManager : MonoBehaviour
 
     private void OnReadyToggleChanged(bool isReady)
     {
-        NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdSetReady(isReady);
+        if (NetworkClient.isConnected)
+            NetworkClient.localPlayer?.GetComponent<NetworkPlayer>()?.CmdSetReady(isReady);
         UpdateStartButton();
     }
 
@@ -379,6 +381,7 @@ public class LobbyManager : MonoBehaviour
         _isHost = true;
         roomCodeText.text = code;
         privateRoomToggle.interactable = true;
+        ChatUI.Instance?.Clear();
         ShowLobby();
     }
 
@@ -388,17 +391,13 @@ public class LobbyManager : MonoBehaviour
         _isHost = false;
         roomCodeText.text = code;
         privateRoomToggle.interactable = false;
+        ChatUI.Instance?.Clear();
         ShowLobby();
     }
 
     public void SyncPrivacyToggle(bool isPrivate)
     {
         privateRoomToggle.SetIsOnWithoutNotify(isPrivate);
-    }
-
-    public void OnRoomError(string error)
-    {
-        PopupUI.Instance.Show($"{error}");
     }
 
     public void OnHostMigrated(uint newHostNetId)
@@ -461,6 +460,7 @@ public class LobbyManager : MonoBehaviour
         _pendingJoinCode = null;
 
         readyToggle.isOn = false;
+        ChatUI.Instance?.Clear();
         ShowMainMenu();
     }
 
@@ -606,7 +606,25 @@ public class LobbyManager : MonoBehaviour
 
     private void OnScreenModeChanged(int index)
     {
-        Screen.fullScreen = index == 0;
+        if (index == 0)
+        {
+            Resolution native = Screen.currentResolution;
+            Screen.SetResolution(native.width, native.height, FullScreenMode.ExclusiveFullScreen);
+        }
+        else
+        {
+            Resolution native = Screen.currentResolution;
+            int titleBarHeight = 40;
+            int panelHeight = 20;
+            int frameWidth = 16;
+            int w = native.width  / 2 - frameWidth;
+            int h = native.height / 2 - titleBarHeight - panelHeight;
+            if (w * 9 > h * 16) 
+                w = h * 16 / 9;
+            else
+                h = w * 9 / 16;
+            Screen.SetResolution(w, h, FullScreenMode.Windowed);
+        }
         PlayerPrefs.SetInt("ScreenMode", index);
     }
 

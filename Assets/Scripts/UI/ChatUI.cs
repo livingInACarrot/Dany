@@ -53,6 +53,14 @@ public class ChatUI : MonoBehaviour
     public void AddSystemMessage(string message)
         => AddEntry(new ChatEntry { isSystem = true, senderNum = -1, text = message });
 
+    public void Clear()
+    {
+        _entries.Clear();
+        foreach (var msg in _messages)
+            if (msg != null) Destroy(msg);
+        _messages.Clear();
+    }
+
     public void SetInputEnabled(bool enabled)
     {
         messageInput.interactable = enabled;

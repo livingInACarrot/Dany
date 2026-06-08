@@ -45,7 +45,9 @@ public class PlayingCardsTable : MonoBehaviour
         card.transform.SetParent(tableArea, false);
         card.rectTransform.anchorMin = CenterAnchor;
         card.rectTransform.anchorMax = CenterAnchor;
+        card.rectTransform.pivot = CenterAnchor;
         card.rectTransform.position = worldPos;
+        card.transform.SetAsLastSibling();
         if (networkCard != null && networkCard.isOwned)
         {
             networkCard.CmdPlaceOnTable(

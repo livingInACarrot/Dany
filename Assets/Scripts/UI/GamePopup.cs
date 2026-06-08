@@ -36,8 +36,9 @@ public class GamePopup : MonoBehaviour
 
     public void Hide()
     {
+        if (canvasGroup.alpha == 0f) return;
         if (_current != null) StopCoroutine(_current);
-        _current = StartCoroutine(FadeOutRoutine());
+        _current = StartCoroutine(FadeOutRoutine(1f - canvasGroup.alpha));
     }
 
     private IEnumerator ShowRoutine(string message, float duration)
@@ -48,9 +49,8 @@ public class GamePopup : MonoBehaviour
         _current = StartCoroutine(FadeOutRoutine());
     }
 
-    private IEnumerator FadeOutRoutine()
+    private IEnumerator FadeOutRoutine(float elapsed = 0f)
     {
-        float elapsed = 0f;
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;

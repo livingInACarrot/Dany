@@ -25,7 +25,9 @@ public class PlayerListLobbyUI : MonoBehaviour
     public void UpdatePlayerList(List<NetworkPlayer> players)
     {
         ClearPlayerList();
-        foreach (var player in players)
+        var sorted = new List<NetworkPlayer>(players);
+        sorted.Sort((a, b) => a.Number.CompareTo(b.Number));
+        foreach (var player in sorted)
             if (player != null) CreatePlayerEntry(player);
     }
 

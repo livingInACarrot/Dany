@@ -43,6 +43,8 @@ public class IdeasDeck : MonoBehaviour
         }
     }
 
+    public void Reset() => InitializeDeck();
+
     public IdeasCard DrawCard()
     {
         if (deck.Count == 0) return null;

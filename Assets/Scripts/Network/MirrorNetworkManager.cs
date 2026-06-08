@@ -1,5 +1,6 @@
-using Mirror;
+using System;
 using System.Collections;
+using Mirror;
 using UnityEngine;
 
 public class MirrorNetworkManager : NetworkManager
@@ -27,20 +28,20 @@ public class MirrorNetworkManager : NetworkManager
     public override void OnStartServer()
     {
         base.OnStartServer();
-        Debug.Log("[Server] Dedicated server started");
+        Debug.Log($"[{DateTime.Now:HH:mm:ss}][Server] Dedicated server started");
     }
 
     public override void OnStopServer()
     {
         base.OnStopServer();
-        Debug.Log("[Server] Stopped");
+        Debug.Log($"[{DateTime.Now:HH:mm:ss}][Server] Stopped");
     }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
         GameObject playerObj = Instantiate(playerPrefab);
         NetworkServer.AddPlayerForConnection(conn, playerObj);
-        Debug.Log($"[Server] Player connected: connId={conn.connectionId}");
+        Debug.Log($"[{DateTime.Now:HH:mm:ss}][Server] Player connected: connId={conn.connectionId}");
     }
 
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
@@ -52,7 +53,7 @@ public class MirrorNetworkManager : NetworkManager
                 NetworkGameManager.Instance.OnPlayerDisconnected(player);
         }
         base.OnServerDisconnect(conn);
-        Debug.Log($"[Server] Player disconnected: connId={conn.connectionId}");
+        Debug.Log($"[{DateTime.Now:HH:mm:ss}][Server] Player disconnected: connId={conn.connectionId}");
     }
 
     private bool _wasConnected;
@@ -61,7 +62,7 @@ public class MirrorNetworkManager : NetworkManager
     {
         base.OnStartClient();
         _wasConnected = false;
-        Debug.Log($"[Client] Connecting to {networkAddress}");
+        Debug.Log($"[{DateTime.Now:HH:mm:ss}][Client] Connecting to {networkAddress}");
         StartCoroutine(DelayedPopup());
     }
 
@@ -70,7 +71,7 @@ public class MirrorNetworkManager : NetworkManager
         base.OnClientConnect();
         _wasConnected = true;
         PopupUI.Instance?.Hide();
-        Debug.Log("[Client] Connected to server");
+        Debug.Log($"[{DateTime.Now:HH:mm:ss}][Client] Connected to server");
     }
 
     public override void OnClientDisconnect()

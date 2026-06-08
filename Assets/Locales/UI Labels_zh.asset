@@ -248,6 +248,18 @@ MonoBehaviour:
     m_Localized: Wait...
     m_Metadata:
       m_Items: []
+  - m_Id: 43482353291485184
+    m_Localized: "\u603B\u80DC\u5229\u6570\uFF1A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43482328469594112
+    m_Localized: "\u4F5C\u4E3A\u4EBA\u683C\u7684\u80DC\u5229\uFF1A"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43482011204050944
+    m_Localized: "\u4F5C\u4E3A\u8FBE\u5C3C\u7684\u80DC\u5229\uFF1A"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

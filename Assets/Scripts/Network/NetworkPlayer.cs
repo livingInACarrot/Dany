@@ -76,28 +76,52 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdCreateRoom() => NetworkGameManager.Instance.ServerCreateRoom(this);
+    public void CmdCreateRoom()
+    {
+        NetworkGameManager.Instance.ServerCreateRoom(this);
+    }
 
     [Command]
-    public void CmdJoinRoom(string code) => NetworkGameManager.Instance.ServerJoinRoom(code, this);
+    public void CmdJoinRoom(string code)
+    {
+        NetworkGameManager.Instance.ServerJoinRoom(code, this);
+    }
 
     [Command]
-    public void CmdLeaveRoom() => NetworkGameManager.Instance.ServerLeaveRoom(this);
+    public void CmdLeaveRoom()
+    {
+        NetworkGameManager.Instance.ServerLeaveRoom(this);
+    }
 
     [Command]
-    public void CmdStartGame() => NetworkGameManager.Instance.ServerRequestStartGame(this);
+    public void CmdStartGame()
+    {
+        NetworkGameManager.Instance.ServerRequestStartGame(this);
+    }
 
     [Command]
-    public void CmdReturnToLobby() => NetworkGameManager.Instance.ServerRequestReturnToLobby(this);
+    public void CmdReturnToLobby()
+    {
+        NetworkGameManager.Instance.ServerRequestReturnToLobby(this);
+    }
 
     [Command]
-    public void CmdSetRoomPrivacy(bool isPrivate) => NetworkGameManager.Instance.ServerSetRoomPrivacy(this, isPrivate);
+    public void CmdSetRoomPrivacy(bool isPrivate)
+    {
+        NetworkGameManager.Instance.ServerSetRoomPrivacy(this, isPrivate);
+    }
 
     [Command]
-    public void CmdKickPlayer(int targetNumber) => NetworkGameManager.Instance.ServerKickPlayer(this, targetNumber);
+    public void CmdKickPlayer(int targetNumber)
+    {
+        NetworkGameManager.Instance.ServerKickPlayer(this, targetNumber);
+    }
 
     [TargetRpc]
-    public void TargetKicked(NetworkConnectionToClient conn) => LobbyManager.Instance.OnKicked();
+    public void TargetKicked(NetworkConnectionToClient conn)
+    {
+        LobbyManager.Instance.OnKicked();
+    }
 
     [Command]
     public void CmdUpdateCountry(string country)
@@ -114,7 +138,10 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdSetReady(bool ready) => IsReady = ready;
+    public void CmdSetReady(bool ready)
+    {
+        IsReady = ready;
+    }
 
     [Command]
     public void CmdSendChatMessage(string message)
@@ -127,7 +154,9 @@ public class NetworkPlayer : NetworkBehaviour
 
     [TargetRpc]
     public void TargetReceiveChatMessage(NetworkConnectionToClient conn, int senderNum, string message)
-        => ChatUI.Instance.AddMessage(senderNum, message);
+    {
+        ChatUI.Instance.AddMessage(senderNum, message);
+    }
 
     [TargetRpc]
     public void TargetReceiveChatHistory(NetworkConnectionToClient conn, List<int> senderNums, List<string> messages)
@@ -137,31 +166,52 @@ public class NetworkPlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdVote(int suspectedLobbyNumber) => NetworkGameManager.Instance.ServerOnVoteReceived(this, suspectedLobbyNumber);
+    public void CmdVote(int suspectedLobbyNumber)
+    {
+        NetworkGameManager.Instance.ServerOnVoteReceived(this, suspectedLobbyNumber);
+    }
 
     [Command]
-    public void CmdVotingTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnVotingTimerEnded(this, roomCode);
+    public void CmdVotingTimerEnded(string roomCode)
+    {
+        NetworkGameManager.Instance.ServerOnVotingTimerEnded(this, roomCode);
+    }
 
     [Command]
-    public void CmdTurnTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnTurnTimerEnded(this, roomCode);
+    public void CmdTurnTimerEnded(string roomCode)
+    {
+        NetworkGameManager.Instance.ServerOnTurnTimerEnded(this, roomCode);
+    }
 
     [Command]
-    public void CmdDecisiveTimerEnded(string roomCode) => NetworkGameManager.Instance.ServerOnDecisiveTimerEnded(this, roomCode);
+    public void CmdDecisiveTimerEnded(string roomCode)
+    {
+        NetworkGameManager.Instance.ServerOnDecisiveTimerEnded(this, roomCode);
+    }
 
     [TargetRpc]
-    public void TargetShowLocPopup(NetworkConnectionToClient conn, string locKey) => PopupUI.Instance.Show(Loc.Text(locKey));
+    public void TargetShowLocPopup(NetworkConnectionToClient conn, string locKey)
+    {
+        PopupUI.Instance.Show(Loc.Text(locKey));
+    }
 
     [TargetRpc]
-    public void TargetShowPopup(NetworkConnectionToClient conn, string text) => PopupUI.Instance.Show(text);
+    public void TargetShowPopup(NetworkConnectionToClient conn, string text)
+    {
+        PopupUI.Instance.Show(text);
+    }
 
     [TargetRpc]
-    public void TargetRoomCreated(NetworkConnectionToClient conn, string code) => LobbyManager.Instance.OnRoomCreated(code);
+    public void TargetRoomCreated(NetworkConnectionToClient conn, string code)
+    {
+        LobbyManager.Instance.OnRoomCreated(code);
+    }
 
     [TargetRpc]
-    public void TargetJoinedRoom(NetworkConnectionToClient conn, string code) => LobbyManager.Instance.OnJoinedRoom(code);
-
-    [TargetRpc]
-    public void TargetRoomError(NetworkConnectionToClient conn, string error) => LobbyManager.Instance.OnRoomError(error);
+    public void TargetJoinedRoom(NetworkConnectionToClient conn, string code)
+    {
+        LobbyManager.Instance.OnJoinedRoom(code);
+    }
 
     private void OnNumberChanged(int _, int __) => OnDataChanged?.Invoke();
 

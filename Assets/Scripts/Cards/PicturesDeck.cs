@@ -36,6 +36,8 @@ public class PicturesDeck : MonoBehaviour
         return deck.Dequeue();
     }
 
+    public void Reset() => InitializeDeck();
+
     public bool EnoughCardsToDraw()
     {
         return deck.Count >= 7;

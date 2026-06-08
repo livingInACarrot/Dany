@@ -9,7 +9,7 @@ public class GameRoom : NetworkBehaviour
 
     [SyncVar] public string RoomCode;
     [SyncVar(hook = nameof(OnPrivacyChanged))] public bool IsPrivate;
-    [SyncVar] public int PlayerCount;
+    [SyncVar(hook = nameof(OnPlayerCountChanged))] public int PlayerCount;
     [SyncVar] public int MaxPlayers = DefaultMaxPlayers;
     [SyncVar(hook = nameof(OnIsInProgressChanged))] public bool IsInProgress;
 
@@ -39,6 +39,9 @@ public class GameRoom : NetworkBehaviour
         All.Remove(this);
         OnRoomListChanged?.Invoke();
     }
+
+    private void OnPlayerCountChanged(int _, int __)
+        => OnRoomListChanged?.Invoke();
 
     private void OnIsInProgressChanged(bool _, bool __)
         => LobbyManager.Instance?.RefreshRoomPanel();

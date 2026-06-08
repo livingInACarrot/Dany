@@ -1,6 +1,8 @@
+using System;
 using Mirror;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 public class IdeasCardUI : MonoBehaviour
@@ -26,30 +28,51 @@ public class IdeasCardUI : MonoBehaviour
         HideCard();
     }
 
-    public void ShowForActiveRole(IdeasCard card, int wordIndex)
+    public void ShowForActiveRole(string cardKey, int wordIndex)
     {
-        string[] words = card.GetWords();
-        for (int i = 0; i < wordButtons.Length; i++)
-        {
-            wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = words[i];
-            wordButtons[i].GetComponent<Image>().color = defaultWordColor;
-
-            if (i == wordIndex) wordButtons[i].GetComponent<Image>().color = currentWordColor;
-        }
-        ToggleInteractable(false);
         wordsPanel.SetActive(true);
+        ToggleInteractable(false);
+        FetchWords(cardKey, words =>
+        {
+            int count = Mathf.Min(wordButtons.Length, words.Length);
+            for (int i = 0; i < count; i++)
+            {
+                wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = words[i];
+                wordButtons[i].GetComponent<Image>().color = i == wordIndex ? currentWordColor : defaultWordColor;
+            }
+        });
     }
 
-    public void ShowForOthers(IdeasCard card)
+    public void ShowForOthers(string cardKey)
     {
-        string[] words = card.GetWords();
-        for (int i = 0; i < 5; i++)
-        {
-            wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = words[i];
-            wordButtons[i].GetComponent<Image>().color = defaultWordColor;
-        }
-        ToggleInteractable(false);
         wordsPanel.SetActive(true);
+        ToggleInteractable(false);
+        FetchWords(cardKey, words =>
+        {
+            int count = Mathf.Min(wordButtons.Length, words.Length);
+            for (int i = 0; i < count; i++)
+            {
+                wordButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = words[i];
+                wordButtons[i].GetComponent<Image>().color = defaultWordColor;
+            }
+        });
+    }
+
+    private void FetchWords(string cardKey, Action<string[]> onReady)
+    {
+        var op = LocalizationSettings.StringDatabase.GetTableAsync("Word Cards Labels");
+        if (op.IsDone)
+        {
+            onReady(ParseWords(op.Result?.GetEntry(cardKey)?.GetLocalizedString()));
+            return;
+        }
+        op.Completed += handle => onReady(ParseWords(handle.Result?.GetEntry(cardKey)?.GetLocalizedString()));
+    }
+
+    private static string[] ParseWords(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return Array.Empty<string>();
+        return raw.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
     }
 
     public void ShowGuessPanel(IdeasCard card)

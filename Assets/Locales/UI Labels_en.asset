@@ -258,6 +258,18 @@ MonoBehaviour:
     m_Localized: Wait...
     m_Metadata:
       m_Items: []
+  - m_Id: 43482011204050944
+    m_Localized: 'Wins as Dani:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43482328469594112
+    m_Localized: 'Wins as Personalities:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43482353291485184
+    m_Localized: 'Total wins:'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
